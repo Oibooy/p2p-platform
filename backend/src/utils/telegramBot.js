@@ -1,0 +1,1 @@
+// Telegram bot utility implementation
