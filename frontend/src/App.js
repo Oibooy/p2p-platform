@@ -1,1 +1,0 @@
-// Main React application setup

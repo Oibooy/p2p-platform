@@ -1,12 +1,5 @@
 {
-  "name": "p2p-platform",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "devDependencies": {
+    "eslint-plugin-tailwindcss": "^3.17.5"
+  }
 }
