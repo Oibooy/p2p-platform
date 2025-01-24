@@ -13,14 +13,20 @@ if (!process.env.TRON_PRIVATE_KEY) {
 }
 
 const tronWeb = new TronWeb({
-  fullHost: process.env.TRON_API_URL,
-  privateKey: process.env.TRON_PRIVATE_KEY || '',
+    fullHost: process.env.TRON_API_URL,
+    privateKey: process.env.TRON_PRIVATE_KEY || '',
+    headers: { "TRON-PRO-API-KEY": process.env.TRON_API_KEY },
+    timeout: 30000,
+    eventServer: process.env.TRON_EVENT_SERVER || process.env.TRON_API_URL
 });
+
+// Включаем кэширование для снижения нагрузки
+tronWeb.setHeader({"Content-Type": "application/json"});
 
 (async () => {
   try {
     const nodeInfo = await tronWeb.trx.getNodeInfo();
-    console.log('Full Node Info:', JSON.stringify(nodeInfo, null, 2)); // Отладочный вывод
+    console.log('Full Node Info:', JSON.stringify(nodeInfo, null, 2)); 
     const nodeName = nodeInfo?.nodeName || 'Unknown Node';
     logger.info(`Connected to Tron node: ${nodeName}`);
   } catch (error) {
@@ -30,6 +36,3 @@ const tronWeb = new TronWeb({
 })();
 
 module.exports = tronWeb;
-
-
-
