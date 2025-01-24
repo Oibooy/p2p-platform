@@ -9,3 +9,7 @@ channel = "stable-24_05"
 [deployment]
 run = ["sh", "-c", "cd backend && node src/app.js"]
 deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

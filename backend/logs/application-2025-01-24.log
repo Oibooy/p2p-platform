@@ -1,0 +1,7 @@
+2025-01-24 23:18:54 [WARN]: ESCROW_PRIVATE_KEY is not defined. Transactions requiring private key may fail.
+2025-01-24 23:18:54 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-24 23:18:54 [INFO]: Server running on http://localhost:5000
+2025-01-24 23:18:55 [INFO]: Connected to MTT Network: unknown
+2025-01-24 23:18:56 [INFO]: Connected to Tron node: Unknown Node
+2025-01-24 23:18:58 [INFO]: ::ffff:172.31.196.29 - - [24/Jan/2025:23:18:58 +0000] "GET / HTTP/1.1" 404 44 "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar385%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-24 23:19:24 [ERROR]: MongoDB connection error: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/
