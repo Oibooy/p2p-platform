@@ -8,7 +8,7 @@ if (!process.env.MTT_RPC_URL) {
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.MTT_RPC_URL, {
   name: 'MTT',
-  chainId: 1205, // Используем chainId сети MTT
+  chainId: 6880, // Используем chainId сети MTT
 });
 const wallet = new ethers.Wallet(process.env.MTT_PRIVATE_KEY, provider);
 

@@ -43,3 +43,9 @@
 2025-01-24 23:43:33 [INFO]: Обработчик истечения срока сделок запущен
 2025-01-24 23:43:33 [INFO]: Server running on http://localhost:5000
 2025-01-24 23:43:33 [ERROR]: Failed to connect to MTT Network: underlying network changed (event="changed", network={"name":"MTT","chainId":1205}, detectedNetwork={"chainId":6880,"name":"unknown"}, code=NETWORK_ERROR, version=providers/5.7.2)
+2025-01-24 23:45:05 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-24 23:45:06 [INFO]: Server running on http://localhost:5000
+2025-01-24 23:45:06 [INFO]: MongoDB connected
+2025-01-24 23:45:06 [INFO]: Connected to MTT Network: MTT, Chain ID: 6880, Block: 6228513
+2025-01-24 23:45:07 [INFO]: Connected to Tron node: Unknown Node
+2025-01-24 23:45:09 [INFO]: ::ffff:172.31.196.29 - - [24/Jan/2025:23:45:09 +0000] "GET / HTTP/1.1" 404 44 "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar42s%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
