@@ -3,7 +3,7 @@ const hre = require("hardhat");
 
 async function main() {
   // Получаем адрес кошелька для комиссии
-  const commissionWalletAddress = process.env.COMMISSION_WALLET_ADDRESS;
+  const commissionWalletAddress = process.env.MTT_COMMISSION_WALLET_ADDRESS;
 
   if (!commissionWalletAddress) {
     throw new Error("COMMISSION_WALLET_ADDRESS must be set in environment variables");

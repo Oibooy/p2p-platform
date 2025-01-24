@@ -3,7 +3,7 @@ const tronWeb = require('../src/utils/tronWeb');
 
 async function main() {
   const usdtAddress = process.env.USDT_TOKEN_ADDRESS;
-  const commissionWalletAddress = process.env.COMMISSION_WALLET_ADDRESS;
+  const commissionWalletAddress = process.env.TRON_COMMISSION_WALLET_ADDRESS;
 
   if (!usdtAddress || !commissionWalletAddress) {
     throw new Error("USDT_TOKEN_ADDRESS and COMMISSION_WALLET_ADDRESS must be set");
