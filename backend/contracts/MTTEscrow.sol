@@ -1,13 +1,18 @@
-
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract MTTEscrow is ReentrancyGuard {
-    IERC20 public mttToken;
-    address public owner;
+    using Address for address;
+
+    IERC20 public immutable mttToken;
+    address public immutable owner;
+    uint256 private constant DENOMINATOR = 10000;
+    uint256 public commissionRate = 100; // 1% (basis points)
+    address public commissionWallet;
 
     struct Deal {
         address buyer;
@@ -21,26 +26,37 @@ contract MTTEscrow is ReentrancyGuard {
     mapping(uint256 => Deal) public deals;
     uint256 public dealCount;
 
-    event DealCreated(uint256 dealId, address indexed buyer, address indexed seller, uint256 amount, uint256 deadline);
-    event FundsReleased(uint256 dealId, address indexed seller, uint256 amount);
-    event FundsRefunded(uint256 dealId, address indexed buyer, uint256 amount);
-    event DisputeResolved(uint256 dealId, string resolution);
+    error Unauthorized();
+    error InvalidDeadline();
+    error TransferFailed();
+    error FundsAlreadyProcessed();
+    error DeadlineExceeded();
+    error DeadlineNotExceeded();
+
+    event DealCreated(uint256 indexed dealId, address indexed buyer, address indexed seller, uint256 amount, uint256 deadline);
+    event FundsReleased(uint256 indexed dealId, address indexed seller, uint256 amount);
+    event FundsRefunded(uint256 indexed dealId, address indexed buyer, uint256 amount);
+    event DisputeResolved(uint256 indexed dealId, string resolution);
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
+        if (msg.sender != owner) revert Unauthorized();
         _;
     }
 
-    constructor(address _mttToken) {
+    constructor(address _mttToken, address _commissionWallet) {
         mttToken = IERC20(_mttToken);
         owner = msg.sender;
+        commissionWallet = _commissionWallet;
     }
 
     function createDeal(address _seller, uint256 _amount, uint256 _deadline) external nonReentrant returns (uint256) {
-        require(_deadline > block.timestamp, "Invalid deadline");
-        require(mttToken.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+        if (_deadline <= block.timestamp) revert InvalidDeadline();
+        if (!mttToken.transferFrom(msg.sender, address(this), _amount)) revert TransferFailed();
 
-        dealCount++;
+        unchecked {
+            dealCount++;
+        }
+
         deals[dealCount] = Deal({
             buyer: msg.sender,
             seller: _seller,
@@ -56,39 +72,47 @@ contract MTTEscrow is ReentrancyGuard {
 
     function releaseFunds(uint256 dealId) external nonReentrant {
         Deal storage deal = deals[dealId];
-        require(msg.sender == deal.buyer || msg.sender == owner, "Unauthorized");
-        require(!deal.isReleased && !deal.isRefunded, "Funds already processed");
-        require(block.timestamp <= deal.deadline, "Deadline exceeded");
+        if (msg.sender != deal.buyer && msg.sender != owner) revert Unauthorized();
+        if (deal.isReleased || deal.isRefunded) revert FundsAlreadyProcessed();
+        if (block.timestamp > deal.deadline) revert DeadlineExceeded();
 
         deal.isReleased = true;
-        require(mttToken.transfer(deal.seller, deal.amount), "Transfer failed");
+        uint256 commission = (deal.amount * commissionRate) / DENOMINATOR;
+        uint256 sellerAmount = deal.amount - commission;
 
-        emit FundsReleased(dealId, deal.seller, deal.amount);
+        if (!mttToken.transfer(commissionWallet, commission)) revert TransferFailed();
+        if (!mttToken.transfer(deal.seller, sellerAmount)) revert TransferFailed();
+
+        emit FundsReleased(dealId, deal.seller, sellerAmount);
     }
 
     function refundFunds(uint256 dealId) external nonReentrant {
         Deal storage deal = deals[dealId];
-        require(msg.sender == deal.buyer || msg.sender == owner, "Unauthorized");
-        require(!deal.isReleased && !deal.isRefunded, "Funds already processed");
-        require(block.timestamp > deal.deadline, "Deadline not exceeded");
+        if (msg.sender != deal.buyer && msg.sender != owner) revert Unauthorized();
+        if (deal.isReleased || deal.isRefunded) revert FundsAlreadyProcessed();
+        if (block.timestamp <= deal.deadline) revert DeadlineNotExceeded();
 
         deal.isRefunded = true;
-        require(mttToken.transfer(deal.buyer, deal.amount), "Transfer failed");
+        if (!mttToken.transfer(deal.buyer, deal.amount)) revert TransferFailed();
 
         emit FundsRefunded(dealId, deal.buyer, deal.amount);
     }
 
     function resolveDispute(uint256 dealId, bool favorSeller) external onlyOwner nonReentrant {
         Deal storage deal = deals[dealId];
-        require(!deal.isReleased && !deal.isRefunded, "Funds already processed");
+        if (deal.isReleased || deal.isRefunded) revert FundsAlreadyProcessed();
 
         if (favorSeller) {
             deal.isReleased = true;
-            require(mttToken.transfer(deal.seller, deal.amount), "Transfer failed");
+            uint256 commission = (deal.amount * commissionRate) / DENOMINATOR;
+            uint256 sellerAmount = deal.amount - commission;
+
+            if (!mttToken.transfer(commissionWallet, commission)) revert TransferFailed();
+            if (!mttToken.transfer(deal.seller, sellerAmount)) revert TransferFailed();
             emit DisputeResolved(dealId, "Funds released to seller");
         } else {
             deal.isRefunded = true;
-            require(mttToken.transfer(deal.buyer, deal.amount), "Transfer failed");
+            if (!mttToken.transfer(deal.buyer, deal.amount)) revert TransferFailed();
             emit DisputeResolved(dealId, "Funds refunded to buyer");
         }
     }

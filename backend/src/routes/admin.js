@@ -96,5 +96,24 @@ router.delete('/users/:id', verifyToken, checkRole('admin'), async (req, res) =>
   }
 });
 
+// Изменение комиссии
+router.post('/commission', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { newRate } = req.body;
+    if (newRate < 0 || newRate > 1000) {
+      return res.status(400).json({ error: 'Commission rate must be between 0 and 1000 basis points (0-10%)' });
+    }
+
+    const escrowContract = await ethers.getContractAt("MTTEscrow", process.env.ESCROW_CONTRACT_ADDRESS);
+    const tx = await escrowContract.setCommissionRate(newRate);
+    await tx.wait();
+
+    res.json({ message: 'Commission rate updated successfully', newRate });
+  } catch (error) {
+    console.error('Error updating commission rate:', error);
+    res.status(500).json({ error: 'Failed to update commission rate' });
+  }
+});
+
 module.exports = router;
 
