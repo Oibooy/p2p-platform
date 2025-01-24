@@ -31,6 +31,16 @@ const server = http.createServer(app);
 // Middleware для безопасности
 app.use(helmet());
 app.use(cors());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 100, // максимум 100 запросов за период
+  trustProxy: true,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
 
 // Ограничение частоты запросов
