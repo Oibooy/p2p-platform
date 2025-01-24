@@ -1,95 +1,79 @@
 const tronWeb = require('../utils/tronWeb');
+const { wallet: mttWallet } = require('../utils/mttWeb');
+const logger = require('../utils/logger');
+const ethers = require('ethers'); // Added ethers.js import
 
-// Адрес смарт-контракта
-const contractAddress = process.env.ESCROW_CONTRACT_ADDRESS;
+const USDT_CONTRACT_ADDRESS = process.env.USDT_CONTRACT_ADDRESS;
+const MTT_CONTRACT_ADDRESS = process.env.MTT_CONTRACT_ADDRESS;
+const ESCROW_CONTRACT_ADDRESS = process.env.ESCROW_CONTRACT_ADDRESS;
 
-/**
- * Внесение средств в эскроу
- */
-async function depositFunds(to, amount) {
-  if (!to || !amount) {
-    return { success: false, error: 'Invalid parameters: to and amount are required.' };
-  }
-
+async function depositFunds(dealId, token, amount, from, to) {
   try {
-    const contract = await tronWeb.contract().at(contractAddress);
+    if (token === 'USDT') {
+      const contract = await tronWeb.contract().at(ESCROW_CONTRACT_ADDRESS);
+      const tx = await contract.deposit(dealId, to, amount).send({
+        feeLimit: 100000000,
+      });
+      logger.info('USDT deposit successful:', tx);
+      return { success: true, tx };
+    } else if (token === 'MTT') {
+      const contract = new ethers.Contract(
+        MTT_CONTRACT_ADDRESS,
+        ['function approve(address spender, uint256 amount)', 'function transferFrom(address from, address to, uint256 amount)'],
+        mttWallet
+      );
 
-    // Вызов метода депозита
-    const tx = await contract.deposit(to, amount).send({
-      feeLimit: 100000000,
-    });
+      // Approve escrow contract
+      const approveTx = await contract.approve(ESCROW_CONTRACT_ADDRESS, amount);
+      await approveTx.wait();
 
-    console.log('Deposit transaction successful:', tx);
-    return { success: true, tx };
+      // Deposit to escrow
+      const escrowContract = new ethers.Contract(
+        ESCROW_CONTRACT_ADDRESS,
+        ['function depositMTT(uint256 dealId, address to, uint256 amount)'],
+        mttWallet
+      );
+      const tx = await escrowContract.depositMTT(dealId, to, amount);
+      const receipt = await tx.wait();
+
+      logger.info('MTT deposit successful:', receipt);
+      return { success: true, tx: receipt };
+    }
+
+    throw new Error('Unsupported token type');
   } catch (error) {
-    console.error('Error in depositFunds:', error);
+    logger.error(`Error in depositFunds: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * Разблокировка средств из эскроу
- */
-async function releaseFunds(from, amount) {
-  if (!from || !amount) {
-    return { success: false, error: 'Invalid parameters: from and amount are required.' };
-  }
-
+async function releaseFunds(dealId, token, amount, to) {
   try {
-    const contract = await tronWeb.contract().at(contractAddress);
+    if (token === 'USDT') {
+      const contract = await tronWeb.contract().at(ESCROW_CONTRACT_ADDRESS);
+      const tx = await contract.release(dealId, to, amount).send({
+        feeLimit: 100000000,
+      });
+      logger.info('USDT release successful:', tx);
+      return { success: true, tx };
+    } else if (token === 'MTT') {
+      const contract = new ethers.Contract(
+        ESCROW_CONTRACT_ADDRESS,
+        ['function releaseMTT(uint256 dealId, address to, uint256 amount)'],
+        mttWallet
+      );
+      const tx = await contract.releaseMTT(dealId, to, amount);
+      const receipt = await tx.wait();
 
-    // Вызов метода разблокировки
-    const tx = await contract.release(from, amount).send({
-      feeLimit: 100000000,
-    });
+      logger.info('MTT release successful:', receipt);
+      return { success: true, tx: receipt };
+    }
 
-    console.log('Release transaction successful:', tx);
-    return { success: true, tx };
+    throw new Error('Unsupported token type');
   } catch (error) {
-    console.error('Error in releaseFunds:', error);
+    logger.error(`Error in releaseFunds: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * Возврат средств покупателю
- */
-async function refundFunds(to, amount) {
-  if (!to || !amount) {
-    return { success: false, error: 'Invalid parameters: to and amount are required.' };
-  }
-
-  try {
-    const contract = await tronWeb.contract().at(contractAddress);
-
-    // Вызов метода возврата средств
-    const tx = await contract.refund(to, amount).send({
-      feeLimit: 100000000,
-    });
-
-    console.log('Refund transaction successful:', tx);
-    return { success: true, tx };
-  } catch (error) {
-    console.error('Error in refundFunds:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-/**
- * Проверка баланса смарт-контракта
- */
-async function getContractBalance() {
-  try {
-    const contract = await tronWeb.contract().at(contractAddress);
-    const balance = await contract.getBalance().call();
-
-    console.log('Contract balance:', balance);
-    return { success: true, balance };
-  } catch (error) {
-    console.error('Error fetching contract balance:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-module.exports = { depositFunds, releaseFunds, refundFunds, getContractBalance };
-
+module.exports = { depositFunds, releaseFunds };
