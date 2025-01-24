@@ -1,14 +1,13 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 contract MTTEscrow is ReentrancyGuard {
     using Address for address;
 
-    IERC20 public immutable mttToken;
     address public immutable owner;
     uint256 private constant DENOMINATOR = 10000;
     uint256 public commissionRate = 100; // 1% (basis points)
@@ -28,10 +27,11 @@ contract MTTEscrow is ReentrancyGuard {
 
     error Unauthorized();
     error InvalidDeadline();
-    error TransferFailed();
+    error InsufficientValue();
     error FundsAlreadyProcessed();
     error DeadlineExceeded();
     error DeadlineNotExceeded();
+    error TransferFailed();
 
     event DealCreated(uint256 indexed dealId, address indexed buyer, address indexed seller, uint256 amount, uint256 deadline);
     event FundsReleased(uint256 indexed dealId, address indexed seller, uint256 amount);
@@ -43,15 +43,14 @@ contract MTTEscrow is ReentrancyGuard {
         _;
     }
 
-    constructor(address _mttToken, address _commissionWallet) {
-        mttToken = IERC20(_mttToken);
+    constructor(address _commissionWallet) {
         owner = msg.sender;
         commissionWallet = _commissionWallet;
     }
 
-    function createDeal(address _seller, uint256 _amount, uint256 _deadline) external nonReentrant returns (uint256) {
+    function createDeal(address _seller, uint256 _deadline) external payable nonReentrant returns (uint256) {
         if (_deadline <= block.timestamp) revert InvalidDeadline();
-        if (!mttToken.transferFrom(msg.sender, address(this), _amount)) revert TransferFailed();
+        if (msg.value == 0) revert InsufficientValue();
 
         unchecked {
             dealCount++;
@@ -60,13 +59,13 @@ contract MTTEscrow is ReentrancyGuard {
         deals[dealCount] = Deal({
             buyer: msg.sender,
             seller: _seller,
-            amount: _amount,
+            amount: msg.value,
             deadline: _deadline,
             isReleased: false,
             isRefunded: false
         });
 
-        emit DealCreated(dealCount, msg.sender, _seller, _amount, _deadline);
+        emit DealCreated(dealCount, msg.sender, _seller, msg.value, _deadline);
         return dealCount;
     }
 
@@ -80,8 +79,11 @@ contract MTTEscrow is ReentrancyGuard {
         uint256 commission = (deal.amount * commissionRate) / DENOMINATOR;
         uint256 sellerAmount = deal.amount - commission;
 
-        if (!mttToken.transfer(commissionWallet, commission)) revert TransferFailed();
-        if (!mttToken.transfer(deal.seller, sellerAmount)) revert TransferFailed();
+        (bool successCommission, ) = commissionWallet.call{value: commission}("");
+        if (!successCommission) revert TransferFailed();
+        
+        (bool successSeller, ) = deal.seller.call{value: sellerAmount}("");
+        if (!successSeller) revert TransferFailed();
 
         emit FundsReleased(dealId, deal.seller, sellerAmount);
     }
@@ -93,7 +95,8 @@ contract MTTEscrow is ReentrancyGuard {
         if (block.timestamp <= deal.deadline) revert DeadlineNotExceeded();
 
         deal.isRefunded = true;
-        if (!mttToken.transfer(deal.buyer, deal.amount)) revert TransferFailed();
+        (bool success, ) = deal.buyer.call{value: deal.amount}("");
+        if (!success) revert TransferFailed();
 
         emit FundsRefunded(dealId, deal.buyer, deal.amount);
     }
@@ -107,12 +110,17 @@ contract MTTEscrow is ReentrancyGuard {
             uint256 commission = (deal.amount * commissionRate) / DENOMINATOR;
             uint256 sellerAmount = deal.amount - commission;
 
-            if (!mttToken.transfer(commissionWallet, commission)) revert TransferFailed();
-            if (!mttToken.transfer(deal.seller, sellerAmount)) revert TransferFailed();
+            (bool successCommission, ) = commissionWallet.call{value: commission}("");
+            if (!successCommission) revert TransferFailed();
+            
+            (bool successSeller, ) = deal.seller.call{value: sellerAmount}("");
+            if (!successSeller) revert TransferFailed();
+            
             emit DisputeResolved(dealId, "Funds released to seller");
         } else {
             deal.isRefunded = true;
-            if (!mttToken.transfer(deal.buyer, deal.amount)) revert TransferFailed();
+            (bool success, ) = deal.buyer.call{value: deal.amount}("");
+            if (!success) revert TransferFailed();
             emit DisputeResolved(dealId, "Funds refunded to buyer");
         }
     }
