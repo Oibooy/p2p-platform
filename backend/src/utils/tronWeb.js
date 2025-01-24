@@ -15,13 +15,18 @@ if (!process.env.TRON_PRIVATE_KEY) {
 const tronWeb = new TronWeb({
     fullHost: process.env.TRON_API_URL,
     privateKey: process.env.TRON_PRIVATE_KEY || '',
-    headers: { "TRON-PRO-API-KEY": process.env.TRON_API_KEY },
-    timeout: 30000,
-    eventServer: process.env.TRON_EVENT_SERVER || process.env.TRON_API_URL
+    headers: { 
+        "TRON-PRO-API-KEY": process.env.TRON_API_KEY,
+        "Content-Type": "application/json"
+    },
+    timeout: 60000,
+    eventServer: process.env.TRON_EVENT_SERVER || process.env.TRON_API_URL,
+    solidityNode: process.env.TRON_SOLIDITY_NODE || process.env.TRON_API_URL,
+    fullNode: process.env.TRON_FULL_NODE || process.env.TRON_API_URL
 });
 
-// Включаем кэширование для снижения нагрузки
-tronWeb.setHeader({"Content-Type": "application/json"});
+// Настройка повторных попыток подключения
+tronWeb.setStatusCheck(true);
 
 (async () => {
   try {
