@@ -37,19 +37,12 @@ const limiter = rateLimit({
   max: 100, // максимум 100 запросов за период
   trustProxy: true,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  message: 'Слишком много запросов с вашего IP, попробуйте позже.'
 });
 
 app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
-
-// Ограничение частоты запросов
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Слишком много запросов с вашего IP, попробуйте позже.',
-});
-app.use(limiter);
 
 // Логирование HTTP-запросов
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
