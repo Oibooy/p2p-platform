@@ -1,8 +1,8 @@
 modules = ["nodejs-20", "web"]
-run = "node index.js"
+run = "nodemon src/app.js"
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "node index.js"]
+run = ["sh", "-c", "node src/app.js"]
