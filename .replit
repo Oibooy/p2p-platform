@@ -1,5 +1,5 @@
 
-run = "cd backend && npm run dev & cd frontend && npm run dev"
+run = "cd backend && npm run dev"
 modules = ["nodejs-20:v8-20230920-bd784b9"]
 hidden = [".config", "package-lock.json"]
 
