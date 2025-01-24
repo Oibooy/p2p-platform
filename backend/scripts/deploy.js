@@ -12,7 +12,7 @@ async function main() {
   const MTTEscrow = await hre.ethers.getContractFactory("MTTEscrow");
   const mttEscrow = await MTTEscrow.deploy(commissionWalletAddress);
   await mttEscrow.waitForDeployment();
-  
+
   console.log("MTTEscrow deployed to:", await mttEscrow.getAddress());
   console.log("Commission wallet address:", commissionWalletAddress);
 }
