@@ -25,8 +25,9 @@ const tronWeb = new TronWeb({
     fullNode: process.env.TRON_FULL_NODE || process.env.TRON_API_URL
 });
 
-// Настройка повторных попыток подключения
-tronWeb.setStatusCheck(true);
+// Проверка состояния подключения
+let retries = 0;
+const MAX_RETRIES = 3;
 
 (async () => {
   try {
@@ -35,7 +36,13 @@ tronWeb.setStatusCheck(true);
     const nodeName = nodeInfo?.nodeName || 'Unknown Node';
     logger.info(`Connected to Tron node: ${nodeName}`);
   } catch (error) {
-    logger.error(`Failed to connect to Tron node: ${error.message}`);
+    if (retries < MAX_RETRIES) {
+      retries++;
+      logger.warn(`Failed to connect to Tron node, retrying (${retries}/${MAX_RETRIES}): ${error.message}`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return;
+    }
+    logger.error(`Failed to connect to Tron node after ${MAX_RETRIES} attempts: ${error.message}`);
     throw new Error('Tron node connection failed');
   }
 })();
