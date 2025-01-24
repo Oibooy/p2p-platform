@@ -8,13 +8,13 @@ if (!process.env.TRON_API_URL) {
   throw new Error('TRON_API_URL is not defined in .env');
 }
 
-if (!process.env.ESCROW_PRIVATE_KEY) {
-  logger.warn('ESCROW_PRIVATE_KEY is not defined. Transactions requiring private key may fail.');
+if (!process.env.TRON_PRIVATE_KEY) {
+  logger.warn('TRON_PRIVATE_KEY is not defined. Transactions requiring private key may fail.');
 }
 
 const tronWeb = new TronWeb({
   fullHost: process.env.TRON_API_URL,
-  privateKey: process.env.ESCROW_PRIVATE_KEY || '',
+  privateKey: process.env.TRON_PRIVATE_KEY || '',
 });
 
 (async () => {
