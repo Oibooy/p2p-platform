@@ -1,5 +1,10 @@
 {
   "devDependencies": {
     "eslint-plugin-tailwindcss": "^3.17.5"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "hardhat": "^2.22.18"
   }
 }
