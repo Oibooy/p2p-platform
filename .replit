@@ -1,8 +1,11 @@
-modules = ["nodejs-20", "web"]
-run = "nodemon src/app.js"
+
+run = "cd backend && npm run dev & cd frontend && npm run dev"
+modules = ["nodejs-20:v8-20230920-bd784b9"]
+hidden = [".config", "package-lock.json"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "node src/app.js"]
+run = ["sh", "-c", "cd backend && node src/app.js"]
+deploymentTarget = "cloudrun"
