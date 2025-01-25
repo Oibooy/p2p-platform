@@ -2,13 +2,28 @@
 const Message = require('../models/Message');
 const Deal = require('../models/Deal');
 const logger = require('../utils/logger');
-const { notifyUser } = require('../utils/notifications');
+const { sendNotification } = require('../utils/notifications');
 
-// Получение сообщений сделки
+// Получение сообщений для конкретной сделки
 exports.getDealMessages = async (req, res) => {
   try {
     const { dealId } = req.params;
-    const messages = await Message.getDealMessages(dealId);
+    const userId = req.user.id;
+
+    const deal = await Deal.findById(dealId);
+    if (!deal) {
+      return res.status(404).json({ error: 'Сделка не найдена' });
+    }
+
+    // Проверка прав доступа
+    if (deal.buyer.toString() !== userId && deal.seller.toString() !== userId) {
+      return res.status(403).json({ error: 'Нет доступа к сообщениям этой сделки' });
+    }
+
+    const messages = await Message.find({ deal: dealId })
+      .sort({ createdAt: 1 })
+      .populate('sender', 'username');
+
     res.json(messages);
   } catch (error) {
     logger.error('Error in getDealMessages:', error);
@@ -16,10 +31,11 @@ exports.getDealMessages = async (req, res) => {
   }
 };
 
-// Создание нового сообщения
-exports.createMessage = async (req, res) => {
+// Отправка нового сообщения
+exports.sendMessage = async (req, res) => {
   try {
-    const { dealId, content } = req.body;
+    const { dealId } = req.params;
+    const { content } = req.body;
     const senderId = req.user.id;
 
     const deal = await Deal.findById(dealId);
@@ -27,47 +43,47 @@ exports.createMessage = async (req, res) => {
       return res.status(404).json({ error: 'Сделка не найдена' });
     }
 
-    const message = await Message.createMessage(dealId, senderId, content);
+    if (deal.buyer.toString() !== senderId && deal.seller.toString() !== senderId) {
+      return res.status(403).json({ error: 'Нет прав для отправки сообщения' });
+    }
 
-    // Уведомление другого участника сделки
-    const recipientId = deal.buyer.equals(senderId) ? deal.seller : deal.buyer;
-    await notifyUser(recipientId, 'new_message', {
-      dealId,
-      messageId: message._id
+    const message = await Message.create({
+      deal: dealId,
+      sender: senderId,
+      content
     });
 
+    // Отправка уведомления получателю
+    const recipientId = deal.buyer.toString() === senderId ? deal.seller : deal.buyer;
+    await sendNotification(recipientId, 'new_message', { dealId, messageId: message._id });
+
+    await message.populate('sender', 'username');
     res.status(201).json(message);
   } catch (error) {
-    logger.error('Error in createMessage:', error);
-    res.status(500).json({ error: 'Ошибка при создании сообщения' });
+    logger.error('Error in sendMessage:', error);
+    res.status(500).json({ error: 'Ошибка при отправке сообщения' });
   }
 };
 
-// Модерация сообщения
-exports.moderateMessage = async (req, res) => {
+// Удаление сообщения
+exports.deleteMessage = async (req, res) => {
   try {
-    const { id } = req.params;
-    const message = await Message.findById(id);
-    
+    const { messageId } = req.params;
+    const userId = req.user.id;
+
+    const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ error: 'Сообщение не найдено' });
     }
 
-    await message.moderate();
-    res.json(message);
-  } catch (error) {
-    logger.error('Error in moderateMessage:', error);
-    res.status(500).json({ error: 'Ошибка при модерации сообщения' });
-  }
-};
+    if (message.sender.toString() !== userId) {
+      return res.status(403).json({ error: 'Нет прав для удаления сообщения' });
+    }
 
-// Получение непромодерированных сообщений
-exports.getUnmoderatedMessages = async (req, res) => {
-  try {
-    const messages = await Message.getUnmoderatedMessages();
-    res.json(messages);
+    await message.remove();
+    res.json({ message: 'Сообщение удалено' });
   } catch (error) {
-    logger.error('Error in getUnmoderatedMessages:', error);
-    res.status(500).json({ error: 'Ошибка при получении непромодерированных сообщений' });
+    logger.error('Error in deleteMessage:', error);
+    res.status(500).json({ error: 'Ошибка при удалении сообщения' });
   }
 };

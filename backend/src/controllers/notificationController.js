@@ -9,7 +9,6 @@ exports.getUserNotifications = async (req, res) => {
     const notifications = await Notification.find({ user: userId })
       .sort({ createdAt: -1 })
       .limit(50);
-    
     res.json(notifications);
   } catch (error) {
     logger.error('Error in getUserNotifications:', error);
@@ -17,22 +16,22 @@ exports.getUserNotifications = async (req, res) => {
   }
 };
 
-// Отметить уведомление как прочитанное
+// Пометить уведомление как прочитанное
 exports.markAsRead = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { notificationId } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findById(id);
+    const notification = await Notification.findOne({
+      _id: notificationId,
+      user: userId
+    });
+
     if (!notification) {
       return res.status(404).json({ error: 'Уведомление не найдено' });
     }
 
-    if (notification.user.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для этого действия' });
-    }
-
-    notification.isRead = true;
+    notification.read = true;
     await notification.save();
 
     res.json(notification);
@@ -42,16 +41,16 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// Отметить все уведомления как прочитанные
+// Пометить все уведомления как прочитанные
 exports.markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
     await Notification.updateMany(
-      { user: userId, isRead: false },
-      { $set: { isRead: true } }
+      { user: userId, read: false },
+      { $set: { read: true } }
     );
-    
-    res.json({ message: 'Все уведомления отмечены как прочитанные' });
+
+    res.json({ message: 'Все уведомления помечены как прочитанные' });
   } catch (error) {
     logger.error('Error in markAllAsRead:', error);
     res.status(500).json({ error: 'Ошибка при обновлении уведомлений' });
@@ -61,20 +60,19 @@ exports.markAllAsRead = async (req, res) => {
 // Удаление уведомления
 exports.deleteNotification = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { notificationId } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findById(id);
+    const notification = await Notification.findOneAndDelete({
+      _id: notificationId,
+      user: userId
+    });
+
     if (!notification) {
       return res.status(404).json({ error: 'Уведомление не найдено' });
     }
 
-    if (notification.user.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для удаления уведомления' });
-    }
-
-    await notification.remove();
-    res.json({ message: 'Уведомление успешно удалено' });
+    res.json({ message: 'Уведомление удалено' });
   } catch (error) {
     logger.error('Error in deleteNotification:', error);
     res.status(500).json({ error: 'Ошибка при удалении уведомления' });
