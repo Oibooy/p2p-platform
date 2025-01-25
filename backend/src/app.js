@@ -77,6 +77,26 @@ async function connectToDatabase() {
     });
     logger.info('MongoDB connected');
 
+    // Initialize default roles after successful connection
+    const Role = require('./models/Role');
+    const initializeRoles = async () => {
+      try {
+        const roles = ['user', 'moderator', 'admin'];
+        for (const roleName of roles) {
+          await Role.findOneAndUpdate(
+            { name: roleName },
+            { name: roleName },
+            { upsert: true }
+          );
+        }
+        console.log('Default roles initialized');
+      } catch (error) {
+        console.error('Error initializing roles:', error);
+      }
+    };
+    await initializeRoles();
+
+
     process.on('SIGINT', async () => {
       await mongoose.disconnect();
       logger.info('MongoDB disconnected');
