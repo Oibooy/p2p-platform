@@ -9,68 +9,53 @@ const MTT_CONTRACT_ADDRESS = process.env.MTT_CONTRACT_ADDRESS;
 const MTT_ESCROW_ADDRESS = process.env.MTT_ESCROW_ADDRESS;
 const TRON_ESCROW_ADDRESS = process.env.TRON_ESCROW_ADDRESS;
 
-async function depositFunds(dealId, token, amount, from, to) {
+async function createDeal(token, seller, amount, deadline) {
   try {
     if (token === 'USDT') {
       const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
-      const tx = await contract.deposit(dealId, to, amount).send({
+      const tx = await contract.createDeal(seller, amount, deadline).send({
         feeLimit: 100000000,
       });
-      logger.info('USDT deposit successful:', tx);
+      logger.info('USDT deal created:', tx);
       return { success: true, tx };
     } else if (token === 'MTT') {
       const contract = new ethers.Contract(
-        MTT_CONTRACT_ADDRESS,
-        ['function approve(address spender, uint256 amount)', 'function transferFrom(address from, address to, uint256 amount)'],
-        mttWallet
-      );
-
-      // Approve escrow contract
-      const approveTx = await contract.approve(MTT_ESCROW_ADDRESS, amount);
-      await approveTx.wait();
-
-      // Deposit to escrow
-      const escrowContract = new ethers.Contract(
         MTT_ESCROW_ADDRESS,
-        ['function depositMTT(uint256 dealId, address to, uint256 amount)'],
+        ['function createDeal(address seller, uint256 deadline) payable'],
         mttWallet
       );
-      const tx = await escrowContract.depositMTT(dealId, to, amount);
+      const tx = await contract.createDeal(seller, deadline, { value: amount });
       const receipt = await tx.wait();
-
-      logger.info('MTT deposit successful:', receipt);
+      logger.info('MTT deal created:', receipt);
       return { success: true, tx: receipt };
     }
-
     throw new Error('Unsupported token type');
   } catch (error) {
-    logger.error(`Error in depositFunds: ${error.message}`);
+    logger.error(`Error in createDeal: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
-async function releaseFunds(dealId, token, amount, to) {
+async function releaseFunds(token, dealId) {
   try {
     if (token === 'USDT') {
       const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
-      const tx = await contract.release(dealId, to, amount).send({
+      const tx = await contract.releaseFunds(dealId).send({
         feeLimit: 100000000,
       });
-      logger.info('USDT release successful:', tx);
+      logger.info('USDT funds released:', tx);
       return { success: true, tx };
     } else if (token === 'MTT') {
       const contract = new ethers.Contract(
         MTT_ESCROW_ADDRESS,
-        ['function releaseMTT(uint256 dealId, address to, uint256 amount)'],
+        ['function releaseFunds(uint256 dealId)'],
         mttWallet
       );
-      const tx = await contract.releaseMTT(dealId, to, amount);
+      const tx = await contract.releaseFunds(dealId);
       const receipt = await tx.wait();
-
-      logger.info('MTT release successful:', receipt);
+      logger.info('MTT funds released:', receipt);
       return { success: true, tx: receipt };
     }
-
     throw new Error('Unsupported token type');
   } catch (error) {
     logger.error(`Error in releaseFunds: ${error.message}`);
@@ -78,4 +63,58 @@ async function releaseFunds(dealId, token, amount, to) {
   }
 }
 
-module.exports = { depositFunds, releaseFunds };
+async function refundFunds(token, dealId) {
+  try {
+    if (token === 'USDT') {
+      const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
+      const tx = await contract.refundFunds(dealId).send({
+        feeLimit: 100000000,
+      });
+      logger.info('USDT funds refunded:', tx);
+      return { success: true, tx };
+    } else if (token === 'MTT') {
+      const contract = new ethers.Contract(
+        MTT_ESCROW_ADDRESS,
+        ['function refundFunds(uint256 dealId)'],
+        mttWallet
+      );
+      const tx = await contract.refundFunds(dealId);
+      const receipt = await tx.wait();
+      logger.info('MTT funds refunded:', receipt);
+      return { success: true, tx: receipt };
+    }
+    throw new Error('Unsupported token type');
+  } catch (error) {
+    logger.error(`Error in refundFunds: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+}
+
+async function getDeal(token, dealId) {
+  try {
+    if (token === 'USDT') {
+      const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
+      const deal = await contract.deals(dealId).call();
+      return { success: true, deal };
+    } else if (token === 'MTT') {
+      const contract = new ethers.Contract(
+        MTT_ESCROW_ADDRESS,
+        ['function deals(uint256) view returns (address buyer, address seller, uint256 amount, uint256 deadline, bool isReleased, bool isRefunded)'],
+        mttWallet
+      );
+      const deal = await contract.deals(dealId);
+      return { success: true, deal };
+    }
+    throw new Error('Unsupported token type');
+  } catch (error) {
+    logger.error(`Error in getDeal: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports = {
+  createDeal,
+  releaseFunds,
+  refundFunds,
+  getDeal
+};
