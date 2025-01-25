@@ -1,4 +1,5 @@
-const TronWeb = require('tronweb');
+
+const TronWeb = require('tronweb').default;
 const dotenv = require('dotenv');
 const logger = require('./logger');
 
