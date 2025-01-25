@@ -171,3 +171,14 @@
 2025-01-25 03:10:10 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231383
 2025-01-25 03:10:10 [INFO]: Connected to Tron Network. Current block: 53914358
 2025-01-25 03:10:11 [INFO]: 10.84.6.55 - - [25/Jan/2025:03:10:11 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ara2f%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-25 03:12:14 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 03:12:14 [INFO]: Server running on port 5000
+2025-01-25 03:12:15 [INFO]: MongoDB connected
+2025-01-25 03:12:15 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231414
+2025-01-25 03:12:15 [INFO]: Connected to Tron Network. Current block: 53914399
+2025-01-25 03:12:17 [INFO]: 10.84.6.55 - - [25/Jan/2025:03:12:17 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ara2u%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-25 03:12:26 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 03:12:26 [INFO]: Server running on port 5000
+2025-01-25 03:12:26 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231418
+2025-01-25 03:12:27 [INFO]: MongoDB connected
+2025-01-25 03:12:27 [INFO]: Connected to Tron Network. Current block: 53914402
