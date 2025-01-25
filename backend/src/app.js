@@ -32,10 +32,12 @@ const server = http.createServer(app);
 app.use(helmet());
 app.use(cors());
 
+// Настройка доверия прокси
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 минут
   max: 100, // максимум 100 запросов за период
-  trustProxy: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Слишком много запросов с вашего IP, попробуйте позже.'
