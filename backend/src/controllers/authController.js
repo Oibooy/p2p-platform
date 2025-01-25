@@ -113,15 +113,23 @@ exports.loginUser = async (req, res) => {
       expiresIn: '15m',
     });
 
-    // Создание refresh token
-    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, {
-      expiresIn: '7d',
-    });
+    // Создание refresh token с уникальным идентификатором
+    const tokenId = crypto.randomBytes(32).toString('hex');
+    const refreshToken = jwt.sign(
+      { id: user._id, tokenId },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
 
-    // Сохранение refresh token в Redis
+    // Сохранение refresh token в Redis с дополнительной информацией
     await redisClient.set(
-      `refresh_token:${user._id}`,
-      refreshToken,
+      `refresh_token:${user._id}:${tokenId}`,
+      JSON.stringify({
+        refreshToken,
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        createdAt: new Date().toISOString()
+      }),
       'EX',
       7 * 24 * 60 * 60 // 7 days
     );

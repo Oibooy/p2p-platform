@@ -194,17 +194,50 @@ router.post('/refresh-token', async (req, res) => {
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
+    const { id, tokenId } = decoded;
 
-    if (!storedToken || storedToken !== refreshToken) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
+    const storedData = await redisClient.get(`refresh_token:${id}:${tokenId}`);
+    if (!storedData) {
+      return res.status(401).json({ error: 'Refresh token expired or revoked' });
     }
 
-    const accessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
+    const storedToken = JSON.parse(storedData);
+    if (storedToken.refreshToken !== refreshToken) {
+      // Возможная попытка повторного использования токена
+      await redisClient.del(`refresh_token:${id}:${tokenId}`);
+      return res.status(401).json({ error: 'Token reuse detected' });
+    }
+
+    // Создание нового access token
+    const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
       expiresIn: '15m',
     });
 
-    res.json({ accessToken });
+    // Создание нового refresh token
+    const newTokenId = crypto.randomBytes(32).toString('hex');
+    const newRefreshToken = jwt.sign(
+      { id, tokenId: newTokenId },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Удаление старого refresh token
+    await redisClient.del(`refresh_token:${id}:${tokenId}`);
+
+    // Сохранение нового refresh token
+    await redisClient.set(
+      `refresh_token:${id}:${newTokenId}`,
+      JSON.stringify({
+        refreshToken: newRefreshToken,
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        createdAt: new Date().toISOString()
+      }),
+      'EX',
+      7 * 24 * 60 * 60
+    );
+
+    res.json({ accessToken, refreshToken: newRefreshToken });
   } catch (error) {
     console.error('Refresh token error:', error);
     res.status(401).json({ error: 'Invalid refresh token' });
