@@ -14,10 +14,9 @@ function LoginPage() {
       if (response.data.token) {
         toast.success('Login successful!');
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         setError(null);
-        window.location.href = '/'; // Redirect to home page after successful login
-      } else {
-        throw new Error('No token received');
+        window.location.href = '/';
       }
     } catch (err) {
       console.error('Login error:', err);
