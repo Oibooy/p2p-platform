@@ -60,3 +60,14 @@
 2025-01-24 23:48:05 [INFO]: Connected to MTT Network: MTT, Chain ID: 6880, Block: 6228556
 2025-01-24 23:48:05 [INFO]: Connected to Tron node: Unknown Node
 2025-01-24 23:48:06 [INFO]: ::ffff:172.31.196.29 - - [24/Jan/2025:23:48:06 +0000] "GET / HTTP/1.1" 404 44 "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar43p%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-24 23:50:30 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-24 23:50:30 [INFO]: Server running on http://localhost:5000
+2025-01-24 23:50:30 [WARN]: Failed to connect to Tron node, retrying (1/3): Invalid value "undefined" for header "TRON-PRO-API-KEY"
+2025-01-24 23:50:31 [INFO]: MongoDB connected
+2025-01-24 23:50:31 [INFO]: Connected to MTT Network: MTT, Chain ID: 6880, Block: 6228590
+2025-01-24 23:50:33 [INFO]: ::ffff:172.31.196.29 - - [24/Jan/2025:23:50:33 +0000] "GET / HTTP/1.1" 404 44 "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar44o%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-24 23:50:39 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-24 23:50:39 [INFO]: Server running on http://localhost:5000
+2025-01-24 23:50:39 [WARN]: Failed to connect to Tron node, retrying (1/3): Invalid value "undefined" for header "TRON-PRO-API-KEY"
+2025-01-24 23:50:39 [INFO]: MongoDB connected
+2025-01-24 23:50:39 [INFO]: Connected to MTT Network: MTT, Chain ID: 6880, Block: 6228593
