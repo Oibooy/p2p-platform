@@ -11,16 +11,16 @@ async function main() {
   }
 
   try {
-    // Deploy contract
-    const contract = await tronWeb.contract(TronEscrowArtifact.abi);
-    const deployed = await contract.deploy({
+    // Create contract instance
+    const contract = await tronWeb.contract().new({
+      abi: TronEscrowArtifact.abi,
       bytecode: TronEscrowArtifact.bytecode,
       feeLimit: 1000000000,
       callValue: 0,
       parameters: [usdtAddress, commissionWalletAddress]
     });
 
-    console.log('TronEscrow deployed to:', deployed.address);
+    console.log('TronEscrow deployed to:', contract.address);
     console.log('USDT Token address:', usdtAddress);
     console.log('Commission wallet address:', commissionWalletAddress);
   } catch (error) {
