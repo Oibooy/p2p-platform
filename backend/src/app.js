@@ -32,14 +32,11 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: 'http://0.0.0.0:3000',
-  credentials: true
-}));
+app.use(cors());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', '*');
   next();
 });
 
@@ -109,5 +106,5 @@ app.use((req, res, next) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => logger.info(`Server running on port ${PORT}`));

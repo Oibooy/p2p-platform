@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://0.0.0.0:3001/api',
+  baseURL: window.location.hostname.includes('replit') ? `https://${window.location.hostname}/api` : 'http://0.0.0.0:3000/api',
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 5000
+  timeout: 10000
 });
 
 apiClient.interceptors.request.use((config) => {
