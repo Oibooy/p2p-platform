@@ -77,12 +77,7 @@ webSocketServer.on('connection', async (ws, req) => {
       return;
     }
     
-    if (!tokenValue) {
-      ws.close(4001, 'Некорректный формат токена');
-      return;
-    }
-    
-    const { userId } = jwt.verify(tokenValue, process.env.JWT_SECRET);
+    const { userId } = jwt.verify(token, process.env.JWT_SECRET);
     
     clients.set(userId, ws);
     logger.info(`Пользователь ${userId} подключился через WebSocket`);
