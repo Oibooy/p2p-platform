@@ -227,3 +227,15 @@
 2025-01-25 03:35:45 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231746
 2025-01-25 03:35:45 [INFO]: Connected to Tron Network. Current block: 53914851
 2025-01-25 03:35:45 [INFO]: [0mGET / [33m404[0m 2.954 ms - 44[0m
+2025-01-25 03:38:30 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 03:38:30 [INFO]: Server running on port 5000
+2025-01-25 03:38:30 [INFO]: MongoDB connected
+2025-01-25 03:38:30 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231787
+2025-01-25 03:38:31 [INFO]: Connected to Tron Network. Current block: 53914904
+2025-01-25 03:38:33 [INFO]: [0mGET / [33m404[0m 3.015 ms - 44[0m
+2025-01-25 03:38:37 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 03:38:37 [INFO]: Server running on port 5000
+2025-01-25 03:38:38 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231788
+2025-01-25 03:38:38 [INFO]: MongoDB connected
+2025-01-25 03:38:39 [INFO]: Connected to Tron Network. Current block: 53914907
+2025-01-25 03:38:39 [INFO]: [0mGET / [33m404[0m 2.989 ms - 44[0m
