@@ -1,12 +1,13 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://0.0.0.0:3000/api',
+  baseURL: 'http://0.0.0.0:3000/api',
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
-  withCredentials: true,
-  timeout: 10000
+  withCredentials: false,
+  timeout: 30000
 });
 
 apiClient.interceptors.request.use((config) => {
