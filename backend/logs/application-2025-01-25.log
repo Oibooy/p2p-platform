@@ -7,3 +7,9 @@
 2025-01-25 02:20:52 [INFO]: Обработчик истечения срока сделок запущен
 2025-01-25 02:20:52 [INFO]: Server running on http://localhost:5000
 2025-01-25 02:20:53 [ERROR]: Failed to connect to MTT Network: Unexpected Chain ID: 6880. Expected: 6880
+2025-01-25 02:24:07 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 02:24:07 [INFO]: Server running on http://localhost:5000
+2025-01-25 02:24:08 [INFO]: MongoDB connected
+2025-01-25 02:24:08 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6230765
+2025-01-25 02:24:08 [INFO]: Connected to Tron Network. Current block: 53913476
+2025-01-25 02:24:10 [INFO]: ::ffff:172.31.196.29 - - [25/Jan/2025:02:24:10 +0000] "GET / HTTP/1.1" 404 44 "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar8s6%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
