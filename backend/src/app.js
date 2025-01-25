@@ -53,8 +53,8 @@ app.use(morgan('combined', { stream: { write: (message) => logger.info(message.t
 async function connectToDatabase() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      //useNewUrlParser: true, // Removed deprecated option
+      //useUnifiedTopology: true, // Removed deprecated option
     });
     logger.info('MongoDB connected');
 
@@ -98,7 +98,4 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => logger.info(`Server running on http://localhost:${PORT}`));
-
-
-
+server.listen(PORT, '0.0.0.0', () => logger.info(`Server running on port ${process.env.PORT || 5000}`));
