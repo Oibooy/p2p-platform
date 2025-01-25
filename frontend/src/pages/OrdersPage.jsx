@@ -52,41 +52,53 @@ function OrdersPage() {
     });
 
   const OrderCard = ({ order }) => (
-    <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6">
+    <div className="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-gray-200/20">
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          {order.type === 'buy' ? '🔵' : '🔴'}
+          {order.type === 'buy' ? 
+            <span className="text-blue-500 text-2xl">⬇️</span> : 
+            <span className="text-red-500 text-2xl">⬆️</span>
+          }
           <span className="capitalize">{order.type} Order #{order.id}</span>
         </h2>
-        <span className={`px-3 py-1 rounded-full text-sm ${
-          order.status === 'active' ? 'bg-green-100 text-green-800' :
-          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-red-100 text-red-800'
+        <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+          order.status === 'active' ? 'bg-green-500/20 text-green-300' :
+          order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+          'bg-red-500/20 text-red-300'
         }`}>
           {order.status}
         </span>
       </div>
-      <div className="space-y-2 mb-4">
-        <p className="text-gray-600">Amount: <span className="font-medium">{order.amount}</span></p>
-        <p className="text-gray-600">Price: <span className="font-medium">{order.price} USDT</span></p>
-        <p className="text-gray-600 text-sm">Created: {new Date(order.createdAt).toLocaleDateString()}</p>
+      <div className="space-y-3 mb-6">
+        <p className="text-gray-300 flex justify-between">
+          <span>Amount:</span>
+          <span className="font-medium">{order.amount}</span>
+        </p>
+        <p className="text-gray-300 flex justify-between">
+          <span>Price:</span>
+          <span className="font-medium">{order.price} USDT</span>
+        </p>
+        <p className="text-gray-400 text-sm flex justify-between">
+          <span>Created:</span>
+          <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+        </p>
       </div>
-      <div className="flex space-x-2">
+      <div className="grid grid-cols-3 gap-3">
         <button
           onClick={() => navigate(`/orders/${order.id}`)}
-          className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
           View
         </button>
         <button
           onClick={() => navigate(`/orders/edit/${order.id}`)}
-          className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors"
+          className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors duration-200"
         >
           Edit
         </button>
         <button
           onClick={() => handleDelete(order.id)}
-          className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200"
         >
           Delete
         </button>
@@ -97,28 +109,30 @@ function OrdersPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Orders</h1>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+          Orders
+        </h1>
         <button
           onClick={() => navigate('/orders/create')}
-          className="w-full sm:w-auto bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+          className="w-full sm:w-auto bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-3 rounded-xl hover:opacity-90 transition-all duration-200 font-medium shadow-lg"
         >
           Create New Order
         </button>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="p-2 border rounded-lg"
+          className="p-3 rounded-lg bg-white/10 border border-gray-200/20 backdrop-blur-lg text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
         >
           <option value="all">All Status</option>
           <option value="active">Active</option>
@@ -129,7 +143,7 @@ function OrdersPage() {
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
-          className="p-2 border rounded-lg"
+          className="p-3 rounded-lg bg-white/10 border border-gray-200/20 backdrop-blur-lg text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -139,18 +153,18 @@ function OrdersPage() {
       </div>
 
       {error ? (
-        <div className="text-center p-4">
-          <p className="text-red-500 text-lg">{error}</p>
+        <div className="text-center p-8 bg-red-500/10 rounded-xl backdrop-blur-lg">
+          <p className="text-red-400 text-lg mb-4">{error}</p>
           <button
             onClick={loadOrders}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
           </button>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 text-lg">No orders found</p>
+        <div className="text-center py-12 bg-white/5 rounded-xl backdrop-blur-lg">
+          <p className="text-gray-400 text-lg">No orders found</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
