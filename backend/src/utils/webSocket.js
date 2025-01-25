@@ -61,14 +61,19 @@ function handleMessage(userId, message) {
 
 // Обработка подключений
 webSocketServer.on('connection', (ws, req) => {
-  const token = req.url.split('token=')[1];
+  const urlParams = new URLSearchParams(req.url.slice(1));
+  const token = urlParams.get('token');
+  
   if (!token) {
     ws.close(4001, 'Не указан токен');
     return;
   }
+  
+  // Проверяем формат Bearer token
+  const tokenValue = token.startsWith('Bearer ') ? token.slice(7) : token;
 
   try {
-    const { userId } = jwt.verify(token, process.env.JWT_SECRET);
+    const { userId } = jwt.verify(tokenValue, process.env.JWT_SECRET);
     clients.set(userId, ws);
     logger.info(`Пользователь ${userId} подключился через WebSocket`);
 
