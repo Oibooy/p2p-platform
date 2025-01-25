@@ -12,6 +12,8 @@ import ResendConfirmationPage from './pages/ResendConfirmationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute'; // Подключаем ProtectedRoute
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -23,8 +25,9 @@ function App() {
             <Routes>
               {/* Публичные маршруты */}
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/logout" element={<Logout />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route path="/confirm-email/:token" element={<ConfirmEmailPage />} />
               <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
               <Route path="/" element={<OrdersPage />} />
@@ -66,6 +69,3 @@ function App() {
 }
 
 export default App;
-
-
-

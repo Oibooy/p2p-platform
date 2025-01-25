@@ -7,6 +7,64 @@ const User = require('../models/User');
 const sendEmail = require('../utils/emailSender');
 const redisClient = require('../utils/redisClient');
 const router = express.Router();
+const crypto = require('crypto');
+
+// Запрос на сброс пароля
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 3600000; // 1 час
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpiry = resetTokenExpiry;
+    await user.save();
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    await sendEmail(
+      email,
+      'Password Reset Request',
+      `To reset your password, click the link: ${resetLink}\nThis link will expire in 1 hour.`
+    );
+
+    res.json({ message: 'Password reset link sent to email' });
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    res.status(500).json({ error: 'Error sending reset email' });
+  }
+});
+
+// Сброс пароля
+router.post('/reset-password/:token', async (req, res) => {
+  const { password } = req.body;
+  const { token } = req.params;
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    res.json({ message: 'Password has been reset' });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Error resetting password' });
+  }
+});
 
 const isEmailConfirmationEnabled = process.env.EMAIL_CONFIRMATION_ENABLED === 'true';
 

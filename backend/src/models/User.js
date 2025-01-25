@@ -18,6 +18,8 @@ const UserSchema = new mongoose.Schema(
       sms: { type: Boolean, default: false },
       push: { type: Boolean, default: true },
     },
+    resetPasswordToken: String,
+    resetPasswordExpiry: Date,
   },
   { timestamps: true } // Добавляет createdAt и updatedAt
 );
