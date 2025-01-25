@@ -457,3 +457,31 @@
 2025-01-25 04:27:31 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
 2025-01-25 04:27:36 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
 2025-01-25 04:27:42 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:48 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:53 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:59 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:04 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:10 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:16 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:21 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:27 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:32 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:28:37 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:28:37 [INFO]: Server running on port 5000
+2025-01-25 04:28:37 [INFO]: MongoDB connected
+2025-01-25 04:28:37 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232425
+2025-01-25 04:28:38 [INFO]: Connected to Tron Network. Current block: 53915866
+2025-01-25 04:28:39 [INFO]: [0mGET / [33m404[0m 2.939 ms - 44[0m
+2025-01-25 04:29:14 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:29:14 [INFO]: Server running on port 5000
+2025-01-25 04:29:15 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232434
+2025-01-25 04:29:15 [INFO]: MongoDB connected
+2025-01-25 04:29:15 [INFO]: Connected to Tron Network. Current block: 53915877
+2025-01-25 04:29:16 [INFO]: [0mGET / [33m404[0m 3.282 ms - 44[0m
+2025-01-25 04:31:29 [INFO]: MongoDB disconnected
+2025-01-25 04:32:30 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:32:30 [INFO]: Server running on port 5000
+2025-01-25 04:32:31 [INFO]: MongoDB connected
+2025-01-25 04:32:31 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232480
+2025-01-25 04:32:31 [INFO]: Connected to Tron Network. Current block: 53915940
+2025-01-25 04:32:33 [INFO]: [0mGET / [33m404[0m 2.890 ms - 44[0m
