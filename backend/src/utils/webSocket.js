@@ -64,14 +64,18 @@ function handleMessage(userId, message) {
 webSocketServer.on('connection', async (ws, req) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
-    const token = decodeURIComponent(url.searchParams.get('token') || '');
+    let token = url.searchParams.get('token');
     
     if (!token) {
       ws.close(4001, 'Не указан токен');
       return;
     }
     
-    const tokenValue = token.trim().replace(/^Bearer\s+/i, '');
+    token = decodeURIComponent(token).trim();
+    if (!token) {
+      ws.close(4001, 'Пустой токен');
+      return;
+    }
     
     if (!tokenValue) {
       ws.close(4001, 'Некорректный формат токена');

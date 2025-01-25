@@ -61,3 +61,20 @@ export const resendConfirmationEmail = async (email) => {
   const response = await apiClient.post('/auth/resend-confirmation', { email });
   return response.data;
 };
+
+// WebSocket connection
+export const connectWebSocket = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=${encodeURIComponent(token)}`;
+  
+  const ws = new WebSocket(wsUrl);
+  
+  ws.onclose = () => {
+    setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+  };
+  
+  return ws;
+};
