@@ -33,11 +33,17 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: '*',
-  credentials: false,
+  origin: ['http://0.0.0.0:3001', 'https://0.0.0.0:3001'],
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+});
 app.use(express.json());
 app.use(morgan('dev', { stream: { write: (message) => logger.info(message.trim()) } }));
 
