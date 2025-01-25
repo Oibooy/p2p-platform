@@ -413,3 +413,47 @@
 2025-01-25 04:23:11 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
 2025-01-25 04:23:16 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
 2025-01-25 04:23:22 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
+2025-01-25 04:23:28 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
+2025-01-25 04:23:33 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
+2025-01-25 04:23:39 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
+2025-01-25 04:23:44 [ERROR]: Ошибка аутентификации WebSocket: tokenValue is not defined
+2025-01-25 04:23:45 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:23:45 [INFO]: Server running on port 5000
+2025-01-25 04:23:46 [INFO]: MongoDB connected
+2025-01-25 04:23:46 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232356
+2025-01-25 04:23:46 [INFO]: Connected to Tron Network. Current block: 53915772
+2025-01-25 04:23:47 [INFO]: [0mGET / [33m404[0m 2.677 ms - 44[0m
+2025-01-25 04:23:52 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:23:58 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:24:18 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:24:18 [INFO]: Server running on port 5000
+2025-01-25 04:24:19 [INFO]: MongoDB connected
+2025-01-25 04:24:19 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232364
+2025-01-25 04:24:19 [INFO]: Connected to Tron Network. Current block: 53915783
+2025-01-25 04:24:20 [INFO]: [0mGET / [33m404[0m 7.212 ms - 44[0m
+2025-01-25 04:24:23 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:24:29 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:24:34 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:24:39 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:25:42 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:25:48 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:25:54 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:00 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:06 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:11 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:17 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:22 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:28 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:34 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:39 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:45 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:51 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:26:56 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:02 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:08 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:14 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:19 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:25 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:31 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:36 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:27:42 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
