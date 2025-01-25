@@ -14,14 +14,18 @@ function RegisterPage() {
 
   const onSubmit = async (data) => {
     try {
-      await apiClient.post('/auth/register', data); // Отправка данных на API
-      toast.success('Registration successful! Redirecting to login...');
-      setError(null); // Очистка ошибок
-      setTimeout(() => navigate('/login'), 3000); // Редирект через 3 секунды
+      const response = await apiClient.post('/auth/register', data);
+      if (response.data) {
+        toast.success('Registration successful! Redirecting to login...');
+        setError(null);
+        setTimeout(() => navigate('/login'), 3000);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Failed to register. Please try again.';
-      setError(errorMessage); // Устанавливаем ошибку
-      toast.error(errorMessage); // Отображаем уведомление
+      console.error('Registration error:', err);
+      const errorMessage = err.response?.data?.error || 
+        (err.response?.status === 400 ? 'User with this email already exists' : 'Failed to register. Please try again.');
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

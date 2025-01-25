@@ -1,16 +1,13 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-// Настраиваем базовый клиент
 const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
+  withCredentials: true
 });
 
-// Добавляем токен в заголовки, если он существует
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -21,7 +18,6 @@ apiClient.interceptors.request.use((config) => {
 
 export default apiClient;
 
-// Методы API
 export const fetchOrders = async () => {
   const response = await apiClient.get('/orders'); // Публичный маршрут
   return response.data;
@@ -62,19 +58,18 @@ export const resendConfirmationEmail = async (email) => {
   return response.data;
 };
 
-// WebSocket connection
 export const connectWebSocket = () => {
   const token = localStorage.getItem('token');
   if (!token) return null;
 
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=Bearer ${encodeURIComponent(token)}`;
-  
+
   const ws = new WebSocket(wsUrl);
-  
+
   ws.onclose = () => {
     setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
   };
-  
+
   return ws;
 };
