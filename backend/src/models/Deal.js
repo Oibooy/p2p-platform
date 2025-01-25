@@ -89,5 +89,44 @@ dealSchema.statics.getDealDetails = async function (dealId) {
   return this.findById(dealId).populate('buyer', 'username').populate('seller', 'username');
 };
 
+// Создание новой сделки
+dealSchema.statics.createDeal = async function (buyerId, sellerId, amount, deadline) {
+  return this.create({
+    buyer: buyerId,
+    seller: sellerId,
+    amount: amount,
+    deadline: deadline,
+    status: 'pending'
+  });
+};
+
+// Получение активных сделок пользователя
+dealSchema.statics.getUserActiveDeals = async function (userId) {
+  return this.find({
+    $or: [{ buyer: userId }, { seller: userId }],
+    status: { $in: ['pending', 'funded', 'disputed'] }
+  }).populate('buyer seller', 'username');
+};
+
+// Обновление статуса сделки
+dealSchema.methods.updateStatus = async function (newStatus) {
+  if (this.status === newStatus) return this;
+  
+  await this.addStatusToHistory(newStatus);
+  return this;
+};
+
+// Метод для проверки возможности действия
+dealSchema.methods.canPerformAction = function (action, userId) {
+  const actions = {
+    fund: () => this.status === 'pending' && this.buyer.toString() === userId.toString(),
+    complete: () => this.status === 'funded' && this.buyer.toString() === userId.toString(),
+    dispute: () => this.status === 'funded' && 
+      (this.buyer.toString() === userId.toString() || this.seller.toString() === userId.toString())
+  };
+  
+  return actions[action] ? actions[action]() : false;
+};
+
 module.exports = mongoose.model('Deal', dealSchema);
 
