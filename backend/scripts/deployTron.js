@@ -1,5 +1,6 @@
 
-const tronWeb = require('../src/utils/tronWeb');
+const { tronWeb } = require('../src/utils/tronWeb');
+const TronEscrowArtifact = require('../artifacts/contracts/TronEscrow.sol/TronEscrow.json');
 
 async function main() {
   const usdtAddress = process.env.USDT_TOKEN_ADDRESS;
@@ -10,15 +11,16 @@ async function main() {
   }
 
   try {
-    const TronEscrow = await tronWeb.contract().new({
-      abi: [/* ABI будет автоматически сгенерирован */],
-      bytecode: '/* Байткод будет автоматически сгенерирован */',
+    // Deploy contract
+    const contract = await tronWeb.contract(TronEscrowArtifact.abi);
+    const deployed = await contract.deploy({
+      bytecode: TronEscrowArtifact.bytecode,
       feeLimit: 1000000000,
       callValue: 0,
       parameters: [usdtAddress, commissionWalletAddress]
     });
 
-    console.log('TronEscrow deployed to:', TronEscrow.address);
+    console.log('TronEscrow deployed to:', deployed.address);
     console.log('USDT Token address:', usdtAddress);
     console.log('Commission wallet address:', commissionWalletAddress);
   } catch (error) {
