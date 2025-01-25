@@ -81,3 +81,22 @@
 2025-01-25 02:39:44 [INFO]: Connected to Tron Network. Current block: 53913777
 2025-01-25 02:39:44 [INFO]: Connected to Tron Network. Current block: 53913777
 2025-01-25 02:39:45 [INFO]: 10.84.7.16 - - [25/Jan/2025:02:39:45 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9on%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-25 02:47:23 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 02:47:23 [INFO]: Server running on port 5000
+2025-01-25 02:47:24 [INFO]: MongoDB connected
+2025-01-25 02:47:24 [INFO]: Connected to Tron Network. Current block: 53913922
+2025-01-25 02:47:25 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231091
+2025-01-25 02:47:26 [INFO]: 10.84.6.55 - - [25/Jan/2025:02:47:26 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9q3%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-25 02:47:56 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 02:47:56 [INFO]: Server running on port 5000
+2025-01-25 02:47:57 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231099
+2025-01-25 02:47:57 [INFO]: MongoDB connected
+2025-01-25 02:47:57 [INFO]: Connected to Tron Network. Current block: 53913932
+2025-01-25 02:47:59 [INFO]: 10.84.6.55 - - [25/Jan/2025:02:47:59 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9qg%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+2025-01-25 02:48:12 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 02:48:12 [INFO]: Server running on port 5000
+2025-01-25 02:48:13 [INFO]: MongoDB connected
+2025-01-25 02:48:13 [INFO]: Connected to Tron Network. Current block: 53913937
+2025-01-25 02:48:13 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6231104
+2025-01-25 02:48:13 [INFO]: Connected to Tron Network. Current block: 53913937
+2025-01-25 02:48:15 [INFO]: 10.84.6.55 - - [25/Jan/2025:02:48:15 +0000] "GET / HTTP/1.1" 304 - "https://fd06ccd8-8d5e-4752-83cb-2cd7ca51f910-00-140sz8byw2s6v.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9qm%3A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
