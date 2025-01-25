@@ -13,18 +13,18 @@ if (!process.env.TRON_PRIVATE_KEY) {
   logger.warn('TRON_PRIVATE_KEY is not defined. Transactions requiring private key may fail.');
 }
 
-const fullNode = new TronWeb.providers.HttpProvider(process.env.TRON_API_URL);
-const solidityNode = new TronWeb.providers.HttpProvider(process.env.TRON_SOLIDITY_NODE || process.env.TRON_API_URL);
-const eventServer = new TronWeb.providers.HttpProvider(process.env.TRON_EVENT_SERVER || process.env.TRON_API_URL);
+const fullNode = process.env.TRON_API_URL;
+const solidityNode = process.env.TRON_SOLIDITY_NODE || process.env.TRON_API_URL;
+const eventServer = process.env.TRON_EVENT_SERVER || process.env.TRON_API_URL;
+const privateKey = process.env.TRON_PRIVATE_KEY;
 
 const tronWeb = new TronWeb(
     fullNode,
     solidityNode,
     eventServer,
-    process.env.TRON_PRIVATE_KEY
+    privateKey
 );
 
-// Add API key if provided
 if (process.env.TRON_API_KEY) {
     tronWeb.setHeader({"TRON-PRO-API-KEY": process.env.TRON_API_KEY});
 }
