@@ -676,3 +676,12 @@
 2025-01-25 05:27:14 [INFO]: [0mPOST /api/auth/register [32m201[0m 271.252 ms - 43[0m
 2025-01-25 05:27:30 [INFO]: [0mPOST /api/auth/login [33m400[0m 106.681 ms - 38[0m
 2025-01-25 05:27:48 [INFO]: MongoDB disconnected
+2025-01-25 05:29:27 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 05:29:27 [INFO]: Server running on port 5000
+2025-01-25 05:29:27 [INFO]: MongoDB connected
+2025-01-25 05:29:27 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6233231
+2025-01-25 05:29:28 [INFO]: Connected to Tron Network. Current block: 53917033
+2025-01-25 05:29:29 [INFO]: [0mGET / [33m404[0m 3.227 ms - 44[0m
+2025-01-25 05:29:32 [INFO]: [0mGET /api/orders [33m401[0m 1.239 ms - 68[0m
+2025-01-25 05:29:32 [INFO]: [0mGET /api/orders [33m401[0m 0.659 ms - 68[0m
+2025-01-25 05:30:05 [INFO]: [0mPOST /api/auth/login [33m400[0m 103.152 ms - 38[0m
