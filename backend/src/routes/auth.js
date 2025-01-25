@@ -179,12 +179,16 @@ router.post(
     try {
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(404).json({ error: 'Invalid email or password.' });
+        return res.status(400).json({ error: 'Invalid email or password.' });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ error: 'Invalid email or password.' });
+      }
+
+      if (!user.isEmailConfirmed) {
+        return res.status(403).json({ error: 'Please verify your email before logging in.' });
       }
 
       if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {

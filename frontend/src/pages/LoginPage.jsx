@@ -10,14 +10,20 @@ function LoginPage() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await apiClient.post('/auth/login', data); // Авторизация через API
-      toast.success('Login successful!');
-      localStorage.setItem('token', response.data.token); // Сохраняем токен в локальное хранилище
-      setError(null); // Очистка ошибок
+      const response = await apiClient.post('/auth/login', data);
+      if (response.data.token) {
+        toast.success('Login successful!');
+        localStorage.setItem('token', response.data.token);
+        setError(null);
+        window.location.href = '/'; // Redirect to home page after successful login
+      } else {
+        throw new Error('No token received');
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Failed to login. Please try again.';
-      setError(errorMessage); // Устанавливаем ошибку
-      toast.error(errorMessage); // Уведомление об ошибке
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to login. Please check your credentials.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
