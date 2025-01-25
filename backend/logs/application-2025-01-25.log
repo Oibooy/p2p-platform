@@ -288,3 +288,18 @@
 2025-01-25 04:10:25 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232184
 2025-01-25 04:10:25 [INFO]: Connected to Tron Network. Current block: 53915515
 2025-01-25 04:10:25 [INFO]: [0mGET / [33m404[0m 3.258 ms - 44[0m
+2025-01-25 04:13:24 [INFO]: [0mGET / [33m404[0m 0.728 ms - 44[0m
+2025-01-25 04:13:37 [INFO]: Обработчик истечения срока сделок запущен
+2025-01-25 04:13:37 [INFO]: Server running on port 5000
+2025-01-25 04:13:37 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:13:37 [INFO]: MongoDB connected
+2025-01-25 04:13:38 [INFO]: Connected to Tron Network. Current block: 53915576
+2025-01-25 04:13:38 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6232218
+2025-01-25 04:13:39 [INFO]: [0mGET / [33m404[0m 2.624 ms - 44[0m
+2025-01-25 04:13:42 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:13:47 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:13:52 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:13:58 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:14:03 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:14:08 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
+2025-01-25 04:14:14 [ERROR]: Ошибка аутентификации WebSocket: jwt malformed
