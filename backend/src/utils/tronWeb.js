@@ -15,12 +15,7 @@ if (!process.env.TRON_PRIVATE_KEY) {
 
 const tronWeb = new TronWeb({
     fullHost: process.env.TRON_API_URL,
-    privateKey: process.env.TRON_PRIVATE_KEY || '',
-    headers: { "TRON-PRO-API-KEY": process.env.TRON_API_KEY }
+    privateKey: process.env.TRON_PRIVATE_KEY || ''
 });
-
-if (process.env.TRON_API_KEY) {
-    tronWeb.setHeader({"TRON-PRO-API-KEY": process.env.TRON_API_KEY});
-}
 
 module.exports = tronWeb;
