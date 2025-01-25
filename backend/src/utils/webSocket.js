@@ -1,3 +1,4 @@
+
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const logger = require('./logger');
@@ -60,7 +61,7 @@ function handleMessage(userId, message) {
 }
 
 // Обработка подключений
-webSocketServer.on('connection', (ws, req) => {
+webSocketServer.on('connection', async (ws, req) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
@@ -70,11 +71,9 @@ webSocketServer.on('connection', (ws, req) => {
       return;
     }
     
-    // Очищаем токен от возможных лишних символов
     const tokenValue = token.trim().replace('Bearer ', '');
-
-  try {
     const { userId } = jwt.verify(tokenValue, process.env.JWT_SECRET);
+    
     clients.set(userId, ws);
     logger.info(`Пользователь ${userId} подключился через WebSocket`);
 
@@ -114,4 +113,3 @@ function broadcast(type, payload) {
 }
 
 module.exports = { webSocketServer, notifyUser, broadcast };
-
