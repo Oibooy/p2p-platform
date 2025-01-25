@@ -61,4 +61,3 @@ export const resendConfirmationEmail = async (email) => {
   const response = await apiClient.post('/auth/resend-confirmation', { email });
   return response.data;
 };
-
