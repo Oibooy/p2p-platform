@@ -10,7 +10,18 @@ async function verifyToken(req, res, next) {
 
   if (!token) {
     console.log(`[${new Date().toISOString()}] Authorization header is missing`);
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    return res.status(401).json({ 
+      error: 'Access denied. No token provided.',
+      code: 'TOKEN_MISSING'
+    });
+  }
+
+  // Проверяем формат токена
+  if (!token.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      error: 'Invalid token format',
+      code: 'INVALID_TOKEN_FORMAT'
+    });
   }
 
   try {

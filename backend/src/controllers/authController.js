@@ -98,26 +98,38 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Проверка, существует ли пользователь
     const user = await User.findOne({ email }).populate('role');
     if (!user) {
       return res.status(404).json({ error: 'Неверный email или пароль' });
     }
 
-    // Проверка пароля
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(404).json({ error: 'Неверный email или пароль' });
     }
 
-    // Создание токена
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
+    // Создание access token
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '15m',
     });
+
+    // Создание refresh token
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: '7d',
+    });
+
+    // Сохранение refresh token в Redis
+    await redisClient.set(
+      `refresh_token:${user._id}`,
+      refreshToken,
+      'EX',
+      7 * 24 * 60 * 60 // 7 days
+    );
 
     res.status(200).json({
       message: 'Успешный вход',
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         username: user.username,

@@ -184,3 +184,29 @@ router.post('/logout', async (req, res) => {
 module.exports = router;
 
 
+// Обновление токена
+router.post('/refresh-token', async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token is required' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
+
+    if (!storedToken || storedToken !== refreshToken) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+
+    const accessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
+      expiresIn: '15m',
+    });
+
+    res.json({ accessToken });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(401).json({ error: 'Invalid refresh token' });
+  }
+});
