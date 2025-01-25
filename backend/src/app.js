@@ -27,6 +27,9 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy settings для корректной работы rate limit за прокси
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 app.use(cors());
