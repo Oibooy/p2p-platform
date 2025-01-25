@@ -192,7 +192,16 @@ router.post(
       }
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.status(200).json({ message: 'Login successful.', token });
+      res.status(200).json({ 
+        message: 'Login successful.',
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role.name
+        }
+      });
     } catch (error) {
       console.error('Login error:', error.message);
       res.status(500).json({ error: 'An unexpected error occurred.' });

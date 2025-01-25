@@ -17,6 +17,8 @@ function LoginPage() {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setError(null);
         window.location.href = '/';
+      } else {
+        throw new Error('Login failed');
       }
     } catch (err) {
       console.error('Login error:', err);
