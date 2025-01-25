@@ -1,16 +1,18 @@
+
 const tronWeb = require('../utils/tronWeb');
 const { wallet: mttWallet } = require('../utils/mttWeb');
 const logger = require('../utils/logger');
-const ethers = require('ethers'); // Added ethers.js import
+const ethers = require('ethers');
 
 const USDT_CONTRACT_ADDRESS = process.env.USDT_CONTRACT_ADDRESS;
 const MTT_CONTRACT_ADDRESS = process.env.MTT_CONTRACT_ADDRESS;
-const ESCROW_CONTRACT_ADDRESS = process.env.ESCROW_CONTRACT_ADDRESS;
+const MTT_ESCROW_ADDRESS = process.env.MTT_ESCROW_ADDRESS;
+const TRON_ESCROW_ADDRESS = process.env.TRON_ESCROW_ADDRESS;
 
 async function depositFunds(dealId, token, amount, from, to) {
   try {
     if (token === 'USDT') {
-      const contract = await tronWeb.contract().at(ESCROW_CONTRACT_ADDRESS);
+      const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
       const tx = await contract.deposit(dealId, to, amount).send({
         feeLimit: 100000000,
       });
@@ -24,12 +26,12 @@ async function depositFunds(dealId, token, amount, from, to) {
       );
 
       // Approve escrow contract
-      const approveTx = await contract.approve(ESCROW_CONTRACT_ADDRESS, amount);
+      const approveTx = await contract.approve(MTT_ESCROW_ADDRESS, amount);
       await approveTx.wait();
 
       // Deposit to escrow
       const escrowContract = new ethers.Contract(
-        ESCROW_CONTRACT_ADDRESS,
+        MTT_ESCROW_ADDRESS,
         ['function depositMTT(uint256 dealId, address to, uint256 amount)'],
         mttWallet
       );
@@ -50,7 +52,7 @@ async function depositFunds(dealId, token, amount, from, to) {
 async function releaseFunds(dealId, token, amount, to) {
   try {
     if (token === 'USDT') {
-      const contract = await tronWeb.contract().at(ESCROW_CONTRACT_ADDRESS);
+      const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
       const tx = await contract.release(dealId, to, amount).send({
         feeLimit: 100000000,
       });
@@ -58,7 +60,7 @@ async function releaseFunds(dealId, token, amount, to) {
       return { success: true, tx };
     } else if (token === 'MTT') {
       const contract = new ethers.Contract(
-        ESCROW_CONTRACT_ADDRESS,
+        MTT_ESCROW_ADDRESS,
         ['function releaseMTT(uint256 dealId, address to, uint256 amount)'],
         mttWallet
       );
