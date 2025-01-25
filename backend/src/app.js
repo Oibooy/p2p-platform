@@ -33,11 +33,15 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://0.0.0.0:3001', 'https://0.0.0.0:3001'],
-  credentials: true,
+  origin: true,
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With']
 }));
+
+// Enable pre-flight requests
+app.options('*', cors());
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin);
