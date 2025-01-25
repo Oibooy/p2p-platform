@@ -20,7 +20,8 @@ async function main() {
       parameters: [usdtAddress, commissionWalletAddress]
     });
 
-    console.log('TronEscrow deployed to:', contract.address);
+    const tronAddress = tronWeb.address.fromHex(contract.address);
+    console.log('TronEscrow deployed to:', tronAddress);
     console.log('USDT Token address:', usdtAddress);
     console.log('Commission wallet address:', commissionWalletAddress);
   } catch (error) {
