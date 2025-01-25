@@ -177,7 +177,7 @@ router.post(
     const { email, password } = req.body;
 
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email }).populate('role');
       if (!user) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
@@ -187,7 +187,14 @@ router.post(
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      await user.populate('role');
+      if (!user.role) {
+        const Role = require('../models/Role');
+        const userRole = await Role.findOne({ name: 'user' });
+        if (userRole) {
+          user.role = userRole;
+          await user.save();
+        }
+      }
       
       if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {
         return res.status(403).json({ error: 'Please confirm your email to log in.' });
