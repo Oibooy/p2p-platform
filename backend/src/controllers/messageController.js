@@ -4,7 +4,41 @@ const Deal = require('../models/Deal');
 const logger = require('../utils/logger');
 const { sendNotification } = require('../utils/notifications');
 
-// Получение сообщений для конкретной сделки
+// Отправка сообщения
+exports.sendMessage = async (req, res) => {
+  try {
+    const { dealId, content } = req.body;
+    const senderId = req.user.id;
+
+    const deal = await Deal.findById(dealId);
+    if (!deal) {
+      return res.status(404).json({ error: 'Сделка не найдена' });
+    }
+
+    // Проверяем, является ли пользователь участником сделки
+    if (deal.buyer.toString() !== senderId && deal.seller.toString() !== senderId) {
+      return res.status(403).json({ error: 'Нет прав для отправки сообщения' });
+    }
+
+    const message = await Message.create({
+      deal: dealId,
+      sender: senderId,
+      content,
+      readBy: [senderId]
+    });
+
+    // Определяем получателя уведомления
+    const recipientId = deal.buyer.toString() === senderId ? deal.seller : deal.buyer;
+    await sendNotification(recipientId, 'new_message', { dealId, messageId: message._id });
+
+    res.status(201).json(message);
+  } catch (error) {
+    logger.error('Error in sendMessage:', error);
+    res.status(500).json({ error: 'Ошибка при отправке сообщения' });
+  }
+};
+
+// Получение сообщений сделки
 exports.getDealMessages = async (req, res) => {
   try {
     const { dealId } = req.params;
@@ -15,14 +49,14 @@ exports.getDealMessages = async (req, res) => {
       return res.status(404).json({ error: 'Сделка не найдена' });
     }
 
-    // Проверка прав доступа
+    // Проверяем, является ли пользователь участником сделки
     if (deal.buyer.toString() !== userId && deal.seller.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет доступа к сообщениям этой сделки' });
+      return res.status(403).json({ error: 'Нет прав для просмотра сообщений' });
     }
 
     const messages = await Message.find({ deal: dealId })
-      .sort({ createdAt: 1 })
-      .populate('sender', 'username');
+      .populate('sender', 'username')
+      .sort({ createdAt: 1 });
 
     res.json(messages);
   } catch (error) {
@@ -31,59 +65,31 @@ exports.getDealMessages = async (req, res) => {
   }
 };
 
-// Отправка нового сообщения
-exports.sendMessage = async (req, res) => {
+// Отметить сообщения как прочитанные
+exports.markMessagesAsRead = async (req, res) => {
   try {
     const { dealId } = req.params;
-    const { content } = req.body;
-    const senderId = req.user.id;
+    const userId = req.user.id;
 
     const deal = await Deal.findById(dealId);
     if (!deal) {
       return res.status(404).json({ error: 'Сделка не найдена' });
     }
 
-    if (deal.buyer.toString() !== senderId && deal.seller.toString() !== senderId) {
-      return res.status(403).json({ error: 'Нет прав для отправки сообщения' });
-    }
+    // Обновляем все непрочитанные сообщения в сделке
+    await Message.updateMany(
+      {
+        deal: dealId,
+        readBy: { $ne: userId }
+      },
+      {
+        $addToSet: { readBy: userId }
+      }
+    );
 
-    const message = await Message.create({
-      deal: dealId,
-      sender: senderId,
-      content
-    });
-
-    // Отправка уведомления получателю
-    const recipientId = deal.buyer.toString() === senderId ? deal.seller : deal.buyer;
-    await sendNotification(recipientId, 'new_message', { dealId, messageId: message._id });
-
-    await message.populate('sender', 'username');
-    res.status(201).json(message);
+    res.json({ message: 'Сообщения отмечены как прочитанные' });
   } catch (error) {
-    logger.error('Error in sendMessage:', error);
-    res.status(500).json({ error: 'Ошибка при отправке сообщения' });
-  }
-};
-
-// Удаление сообщения
-exports.deleteMessage = async (req, res) => {
-  try {
-    const { messageId } = req.params;
-    const userId = req.user.id;
-
-    const message = await Message.findById(messageId);
-    if (!message) {
-      return res.status(404).json({ error: 'Сообщение не найдено' });
-    }
-
-    if (message.sender.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для удаления сообщения' });
-    }
-
-    await message.remove();
-    res.json({ message: 'Сообщение удалено' });
-  } catch (error) {
-    logger.error('Error in deleteMessage:', error);
-    res.status(500).json({ error: 'Ошибка при удалении сообщения' });
+    logger.error('Error in markMessagesAsRead:', error);
+    res.status(500).json({ error: 'Ошибка при обновлении статуса сообщений' });
   }
 };
