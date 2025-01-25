@@ -68,7 +68,7 @@ export const connectWebSocket = () => {
   if (!token) return null;
 
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=${encodeURIComponent(token)}`;
+  const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=Bearer ${encodeURIComponent(token)}`;
   
   const ws = new WebSocket(wsUrl);
   
