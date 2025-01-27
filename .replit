@@ -12,14 +12,15 @@ deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 3000
+externalPort = 3001
 
 [[ports]]
 localPort = 3001
-externalPort = 3000
+externalPort = 3002
 
 [[ports]]
 localPort = 5000
-externalPort = 3001
+externalPort = 80
 
 [[ports]]
 localPort = 5173
