@@ -178,9 +178,3 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 module.exports = server;
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/disputes', require('./routes/disputes'));
-app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/escrow', require('./routes/escrow'));
-app.use('/api/admin', require('./routes/admin'));

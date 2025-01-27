@@ -75,26 +75,17 @@ router.post('/', verifyToken, async (req, res) => {
     return res.status(400).json({ error: 'Amount must be positive' });
   }
   try {
-    const { type, amount, price } = req.body;
+    const { type, price } = req.body;
     const order = new Order({
       type,
       amount,
       price,
-      status: 'active'
-    });
-    const savedOrder = await order.save();
-    res.status(201).json({ order: savedOrder });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-  try {
-    const order = new Order({
-      ...req.body,
+      status: 'active',
       user: req.user._id
     });
-    await order.save();
-    sendWebSocketNotification(req.user.id, 'order_created', { orderId: order._id });
-    res.status(201).json(order);
+    const savedOrder = await order.save();
+    sendWebSocketNotification(req.user.id, 'order_created', { orderId: savedOrder._id });
+    res.status(201).json({ order: savedOrder });
   } catch (error) {
     console.error('Error creating order:', error.message);
     res.status(500).json({ error: error.message });
@@ -103,7 +94,7 @@ router.post('/', verifyToken, async (req, res) => {
 
 // Get order by ID
 router.get('/:id', async (req, res) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).json({ error: 'Invalid order ID' });
   }
   try {
@@ -111,7 +102,7 @@ router.get('/:id', async (req, res) => {
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    res.json(order);
+    res.status(200).json(order);
   } catch (error) {
     console.error('Error fetching order:', error.message);
     res.status(500).json({ error: error.message });
