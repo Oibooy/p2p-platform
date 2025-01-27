@@ -23,8 +23,11 @@ async function checkExpiredDeals() {
 
 // Запуск периодической проверки
 function startDealExpiryHandler(interval = 60000) { // Интервал по умолчанию: 60 секунд
-  setInterval(checkExpiredDeals, interval);
-  logger.info('Обработчик истечения срока сделок запущен');
+  // Only start if we're not in test environment
+  if (process.env.NODE_ENV !== 'test') {
+    setInterval(checkExpiredDeals, interval);
+    logger.info('Обработчик истечения срока сделок запущен');
+  }
 }
 
 module.exports = { startDealExpiryHandler };

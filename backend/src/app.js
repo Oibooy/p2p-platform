@@ -73,6 +73,9 @@ app.use('/api/escrow', verifyToken, escrowRoutes);
 async function connectToDatabase() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 30000
     });
     logger.info('MongoDB connected');
 
@@ -81,16 +84,17 @@ async function connectToDatabase() {
     const initializeRoles = async () => {
       try {
         const roles = ['user', 'moderator', 'admin'];
-        for (const roleName of roles) {
-          await Role.findOneAndUpdate(
+        await Promise.all(roles.map(roleName => 
+          Role.findOneAndUpdate(
             { name: roleName },
             { name: roleName },
-            { upsert: true }
-          );
-        }
-        console.log('Default roles initialized');
+            { upsert: true, maxTimeMS: 20000 }
+          )
+        ));
+        logger.info('Default roles initialized');
       } catch (error) {
-        console.error('Error initializing roles:', error);
+        logger.error('Error initializing roles:', error);
+        throw error;
       }
     };
     await initializeRoles();
