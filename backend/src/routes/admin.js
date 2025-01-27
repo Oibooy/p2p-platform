@@ -1,21 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
-
-router.get('/users', verifyToken, checkRole('admin'), async (req, res) => {
-  try {
-    const users = await User.find()
-      .select('-password')
-      .populate('role');
-    res.status(200).json({ users });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const AdminLog = require('../models/AdminLog');
-const { verifyToken, checkRole } = require('../middleware/authMiddleware');
-const adminLogger = require('../middleware/adminLogger');
 const { exportUsers, exportDeals } = require('../utils/exportService');
+const adminLogger = require('../middleware/adminLogger');
 
 // Применяем логгер ко всем админ роутам
 router.use(adminLogger);
@@ -34,7 +24,7 @@ router.get('/users', verifyToken, checkRole('admin'), async (req, res) => {
     const users = await User.find(filter)
       .skip(skip)
       .limit(parseInt(limit))
-      .select('-password'); // Исключение пароля из ответа
+      .select('-password');
 
     const total = await User.countDocuments(filter);
 
@@ -169,4 +159,3 @@ router.get('/logs', verifyToken, checkRole('admin'), async (req, res) => {
 });
 
 module.exports = router;
-
