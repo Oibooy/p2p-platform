@@ -193,12 +193,14 @@ router.post(
       }
 
       console.log('Checking password for user:', user.email);
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password validation details:', {
+      console.log('Password details:', {
         providedPassword: password,
         storedHashLength: user.password.length,
         storedHashStart: user.password.substring(0, 10)
       });
+      
+      // Используем bcrypt.compare для сравнения паролей
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       console.log('Password validation result:', isPasswordValid);
       
       if (!isPasswordValid) {
