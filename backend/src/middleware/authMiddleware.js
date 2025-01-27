@@ -40,7 +40,16 @@ async function verifyToken(req, res, next) {
 
     const decoded = jwt.verify(extractedToken, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
+    //Improved user lookup with error handling
+    let user;
+    try {
+        user = await User.findById(decoded.id);
+    } catch (dbError) {
+        console.error(`[${new Date().toISOString()}] Database error during user lookup:`, dbError);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -126,7 +135,3 @@ async function revokeToken(token, expirationTime) {
 }
 
 module.exports = { verifyToken, checkRole, checkRevokedToken, revokeToken };
-
-
-
-

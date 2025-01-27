@@ -66,8 +66,14 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(401).json({ error: 'User not authenticated properly' });
     }
 
+    // Verify user exists
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     const order = new Order({
-      user: req.user.id,
+      user: user._id,
       type,
       amount,
       price,
