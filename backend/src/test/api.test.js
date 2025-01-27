@@ -3,20 +3,108 @@ const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 let authToken;
 let testOrderId;
 let testDisputeId;
 let testReviewId;
 let testNotificationId;
+let resetToken;
 
 beforeAll(async () => {
-  // Create test user and generate token
+  await User.deleteMany({}); // Clear users collection
   authToken = jwt.sign({ userId: '65b3f7b8e32a37c1234567890' }, process.env.JWT_SECRET);
 });
 
 afterAll(async () => {
   await mongoose.connection.close();
+});
+
+// Auth Tests
+describe('Authentication Endpoints', () => {
+  const testUser = {
+    username: 'testuser',
+    email: 'test@example.com',
+    password: 'Test123!'
+  };
+
+  test('POST /auth/register should register new user', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send(testUser);
+    
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('message');
+    expect(res.body).toHaveProperty('userId');
+  });
+
+  test('POST /auth/register should fail with existing email', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send(testUser);
+    
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  test('POST /auth/login should authenticate user', async () => {
+    const res = await request(app)
+      .post('/auth/login')
+      .send({
+        email: testUser.email,
+        password: testUser.password
+      });
+    
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('accessToken');
+    expect(res.body).toHaveProperty('refreshToken');
+    expect(res.body).toHaveProperty('user');
+  });
+
+  test('POST /auth/login should fail with wrong password', async () => {
+    const res = await request(app)
+      .post('/auth/login')
+      .send({
+        email: testUser.email,
+        password: 'wrongpassword'
+      });
+    
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  test('POST /auth/forgot-password should send reset email', async () => {
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: testUser.email });
+    
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('message');
+
+    // Get user from database to get reset token
+    const user = await User.findOne({ email: testUser.email });
+    resetToken = user.resetPasswordToken;
+  });
+
+  test('POST /auth/reset-password/:token should reset password', async () => {
+    const res = await request(app)
+      .post(`/auth/reset-password/${resetToken}`)
+      .send({ password: 'NewPassword123!' });
+    
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('message');
+
+    // Verify login with new password works
+    const loginRes = await request(app)
+      .post('/auth/login')
+      .send({
+        email: testUser.email,
+        password: 'NewPassword123!'
+      });
+    
+    expect(loginRes.statusCode).toBe(200);
+  });
 });
 
 // Orders Tests
