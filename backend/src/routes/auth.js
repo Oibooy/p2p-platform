@@ -125,6 +125,9 @@ router.post(
       }
     } catch (error) {
       console.error('Registration error:', error.message);
+      if (error.code === 11000) {
+        return res.status(400).json({ error: 'Username or email already exists' });
+      }
       res.status(500).json({ error: 'An unexpected error occurred.' });
     }
   }
