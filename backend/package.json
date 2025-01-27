@@ -10,6 +10,7 @@
         "express-rate-limit": "^7.5.0",
         "express-validator": "^7.2.1",
         "helmet": "^8.0.0",
+        "json2csv": "^6.0.0-alpha.2",
         "jsonwebtoken": "^9.0.2",
         "lru-cache": "^11.0.2",
         "mongodb": "^6.12.0",
