@@ -35,3 +35,32 @@ export const TradeForm = () => {
     </div>
   );
 };
+import React from 'react';
+
+export default function TradeForm() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <form className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-2 border rounded-lg p-3">
+            <img src="/currency-icon.svg" alt="" className="w-6 h-6" />
+            <select className="w-full bg-transparent outline-none">
+              <option>USD</option>
+              <option>EUR</option>
+            </select>
+          </div>
+          <div className="flex items-center space-x-2 border rounded-lg p-3">
+            <input 
+              type="number" 
+              placeholder="Amount" 
+              className="w-full outline-none"
+            />
+          </div>
+          <button className="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
+            Search
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
