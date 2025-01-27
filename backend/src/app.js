@@ -75,29 +75,35 @@ async function connectToDatabase() {
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
-      socketTimeoutMS: 30000
+      socketTimeoutMS: 30000,
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
     logger.info('MongoDB connected');
 
     // Initialize default roles after successful connection
     const Role = require('./models/Role');
-    const initializeRoles = async () => {
+    const roles = ['user', 'moderator', 'admin'];
+    
+    for (const roleName of roles) {
       try {
-        const roles = ['user', 'moderator', 'admin'];
-        await Promise.all(roles.map(roleName => 
-          Role.findOneAndUpdate(
-            { name: roleName },
-            { name: roleName },
-            { upsert: true, maxTimeMS: 20000 }
-          )
-        ));
-        logger.info('Default roles initialized');
+        await Role.findOneAndUpdate(
+          { name: roleName },
+          { name: roleName },
+          { 
+            upsert: true,
+            new: true,
+            maxTimeMS: 20000,
+            session: null // Explicitly disable session for this operation
+          }
+        );
       } catch (error) {
-        logger.error('Error initializing roles:', error);
-        throw error;
+        logger.error(`Error initializing role ${roleName}:`, error);
+        // Continue with other roles even if one fails
+        continue;
       }
-    };
-    await initializeRoles();
+    }
+    logger.info('Default roles initialized');
 
 
     process.on('SIGINT', async () => {
