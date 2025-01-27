@@ -1,4 +1,3 @@
-
 const tronWeb = require('../utils/tronWeb');
 const { wallet: mttWallet } = require('../utils/mttWeb');
 const logger = require('../utils/logger');
@@ -112,9 +111,38 @@ async function getDeal(token, dealId) {
   }
 }
 
+async function initializeEscrow(dealId, amount, buyerAddress, sellerAddress) {
+  try {
+    const escrowContract = await tronWeb.contract().at(process.env.ESCROW_CONTRACT_ADDRESS);
+    const result = await escrowContract.createEscrow(
+      dealId, 
+      tronWeb.toSun(amount),
+      buyerAddress,
+      sellerAddress
+    ).send({
+      shouldPollResponse: true,
+      callValue: 0
+    });
+
+    await logTransaction(result, 'escrow_creation', { dealId, amount });
+    return {
+      txId: result,
+      escrowId: await escrowContract.getEscrowId(dealId).call()
+    };
+  } catch (error) {
+    throw new Error(`Failed to initialize escrow: ${error.message}`);
+  }
+}
+
+async function logTransaction(txId, type, metadata) {
+  // Здесь можно добавить логирование транзакций
+  console.log(`Transaction ${type}:`, { txId, ...metadata });
+}
+
 module.exports = {
   createDeal,
   releaseFunds,
   refundFunds,
-  getDeal
+  getDeal,
+  initializeEscrow
 };

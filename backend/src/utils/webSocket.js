@@ -1,4 +1,3 @@
-
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const logger = require('./logger');
@@ -65,21 +64,21 @@ webSocketServer.on('connection', async (ws, req) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     let token = url.searchParams.get('token');
-    
+
     if (!token) {
       ws.close(4001, 'Не указан токен');
       return;
     }
-    
+
     token = decodeURIComponent(token).trim();
     if (!token.startsWith('Bearer ')) {
       ws.close(4001, 'Некорректный формат токена');
       return;
     }
-    
+
     const tokenValue = token.split(' ')[1];
     const { id: userId } = jwt.verify(tokenValue, process.env.JWT_SECRET);
-    
+
     clients.set(userId, ws);
     logger.info(`Пользователь ${userId} подключился через WebSocket`);
 
@@ -118,4 +117,25 @@ function broadcast(type, payload) {
   });
 }
 
-module.exports = { webSocketServer, notifyUser, broadcast };
+// Add deal status notifications
+function sendWebSocketNotification(userId, type, data) {
+  const client = clients.get(userId);
+  if (client) {
+    sendMessage(client, type, { ...data, timestamp: new Date().toISOString() });
+  } else {
+    logger.warn(`Пользователь ${userId} недоступен для отправки уведомления о статусе сделки`);
+  }
+}
+
+function notifyDealUpdate(dealId, buyerId, sellerId, status, additionalData = {}) {
+  const notification = {
+    dealId,
+    status,
+    ...additionalData
+  };
+
+  sendWebSocketNotification(buyerId, 'deal_update', notification);
+  sendWebSocketNotification(sellerId, 'deal_update', notification);
+}
+
+module.exports = { webSocketServer, notifyUser, broadcast, sendWebSocketNotification, notifyDealUpdate };

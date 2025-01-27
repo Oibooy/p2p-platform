@@ -19,7 +19,7 @@ const dealSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'funded', 'completed', 'refunded', 'disputed', 'expired'],
+      enum: ['pending', 'active', 'completed', 'refunded', 'disputed', 'expired', 'cancelled'], //Added 'active' and 'cancelled'
       default: 'pending',
     },
     deadline: {
@@ -28,37 +28,40 @@ const dealSchema = new mongoose.Schema(
     },
     smartContractId: {
       type: String, required: false },
-    screenshot: { type: String, required: false }, // Скриншот перевода
+    screenshot: { type: String, required: false }, 
     history: [
       {
         status: {
           type: String,
-          enum: ['pending', 'funded', 'completed', 'refunded', 'disputed', 'expired'],
+          enum: ['pending', 'active', 'completed', 'refunded', 'disputed', 'expired', 'cancelled'], //Added 'active' and 'cancelled'
         },
         updatedAt: { type: Date, default: Date.now },
       },
     ],
+    completedAt: { type: Date },
+    disputeReason: { type: String },
+    chatEnabled: { type: Boolean, default: true }
   },
   {
-    timestamps: true, // Для автоматического создания createdAt и updatedAt
+    timestamps: true, 
   }
 );
 
-// Индексы для ускорения запросов
 dealSchema.index({ buyer: 1 });
 dealSchema.index({ seller: 1 });
 dealSchema.index({ status: 1 });
 dealSchema.index({ deadline: 1 });
 
-// Добавление статуса в историю с валидацией перехода статусов
+
 dealSchema.methods.addStatusToHistory = async function (newStatus) {
   const validTransitions = {
-    pending: ['funded', 'expired'],
-    funded: ['completed', 'refunded', 'disputed'],
+    pending: ['active', 'expired'], //updated
+    active: ['completed', 'refunded', 'disputed', 'cancelled'], //added
     completed: [],
     refunded: [],
     disputed: ['resolved'],
     expired: [],
+    cancelled: [] //added
   };
 
   if (!validTransitions[this.status].includes(newStatus)) {
@@ -70,26 +73,20 @@ dealSchema.methods.addStatusToHistory = async function (newStatus) {
   await this.save();
 };
 
-// Проверка истечения срока сделки и автоматическое обновление статуса
 dealSchema.methods.checkAndExpire = async function () {
   if (this.isExpired()) {
-    this.status = 'expired';
-    this.history.push({ status: 'expired' });
-    await this.save();
+    await this.updateStatus('expired');
   }
 };
 
-// Проверка истечения срока сделки
 dealSchema.methods.isExpired = function () {
   return Date.now() > new Date(this.deadline).getTime();
 };
 
-// Получение информации о сделке
 dealSchema.statics.getDealDetails = async function (dealId) {
   return this.findById(dealId).populate('buyer', 'username').populate('seller', 'username');
 };
 
-// Создание новой сделки
 dealSchema.statics.createDeal = async function (buyerId, sellerId, amount, deadline) {
   return this.create({
     buyer: buyerId,
@@ -100,33 +97,52 @@ dealSchema.statics.createDeal = async function (buyerId, sellerId, amount, deadl
   });
 };
 
-// Получение активных сделок пользователя
 dealSchema.statics.getUserActiveDeals = async function (userId) {
   return this.find({
     $or: [{ buyer: userId }, { seller: userId }],
-    status: { $in: ['pending', 'funded', 'disputed'] }
+    status: { $in: ['pending', 'active', 'disputed'] } //updated
   }).populate('buyer seller', 'username');
 };
 
-// Обновление статуса сделки
 dealSchema.methods.updateStatus = async function (newStatus) {
   if (this.status === newStatus) return this;
-  
+
   await this.addStatusToHistory(newStatus);
   return this;
 };
 
-// Метод для проверки возможности действия
 dealSchema.methods.canPerformAction = function (action, userId) {
   const actions = {
     fund: () => this.status === 'pending' && this.buyer.toString() === userId.toString(),
-    complete: () => this.status === 'funded' && this.buyer.toString() === userId.toString(),
-    dispute: () => this.status === 'funded' && 
-      (this.buyer.toString() === userId.toString() || this.seller.toString() === userId.toString())
+    complete: () => this.status === 'active' && this.seller.toString() === userId.toString(), //updated
+    dispute: () => this.status === 'active' && 
+      (this.buyer.toString() === userId.toString() || this.seller.toString() === userId.toString()), //updated
+    cancel: () => this.status === 'pending' && (this.buyer.toString() === userId.toString() || this.seller.toString() === userId.toString()) //added
   };
-  
+
   return actions[action] ? actions[action]() : false;
 };
 
-module.exports = mongoose.model('Deal', dealSchema);
+dealSchema.methods.activate = async function() {
+  await this.updateStatus('active');
+  return this;
+};
 
+dealSchema.methods.complete = async function() {
+  await this.updateStatus('completed');
+  this.completedAt = new Date();
+  return this.save();
+};
+
+dealSchema.methods.dispute = async function(reason) {
+  this.disputeReason = reason;
+  await this.updateStatus('disputed');
+  return this;
+};
+
+dealSchema.methods.cancel = async function() {
+  await this.updateStatus('cancelled');
+  return this;
+};
+
+module.exports = mongoose.model('Deal', dealSchema);
