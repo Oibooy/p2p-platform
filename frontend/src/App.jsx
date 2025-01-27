@@ -15,7 +15,7 @@ import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import { Hero } from './components/Hero';
+import Hero from './components/Hero';
 import { TradeForm } from './components/TradeForm';
 import { Features } from './components/Features';
 import ProfilePage from './pages/ProfilePage';
