@@ -30,7 +30,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    
+
     try {
       await sendEmail(
         email,
@@ -199,7 +199,12 @@ router.post(
     }
 
     try {
-      const user = await User.findOne({ email }).populate('role');
+      const user = await User.findOne({ 
+        $or: [
+          { email: email.toLowerCase() },
+          { username: email.toLowerCase() }
+        ]
+      }).populate('role');
       console.log('Login attempt:', { 
         email, 
         userFound: !!user,
@@ -207,7 +212,7 @@ router.post(
       });
 
       if (!user) {
-        return res.status(401).json({ error: 'Invalid email or password' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       console.log('Checking password for user:', user.email);
@@ -223,7 +228,7 @@ router.post(
 
       if (!isPasswordValid) {
         console.log('Password validation failed for user:', user.email);
-        return res.status(401).json({ error: 'Invalid email or password' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       if (!user.isActive) {

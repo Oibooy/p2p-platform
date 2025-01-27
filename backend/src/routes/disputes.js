@@ -1,5 +1,17 @@
 const express = require('express');
 const router = express.Router();
+
+router.get('/', verifyToken, async (req, res) => {
+  try {
+    const disputes = await Dispute.find()
+      .populate('order')
+      .populate('initiator')
+      .populate('defendant');
+    res.status(200).json({ disputes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 const Dispute = require('../models/Dispute');
 const Order = require('../models/Order');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
