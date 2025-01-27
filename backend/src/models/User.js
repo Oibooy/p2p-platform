@@ -26,7 +26,10 @@ const UserSchema = new mongoose.Schema(
 
 // Хэширование пароля перед сохранением
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  // Проверяем, что пароль был изменен и не является уже хэшированным
+  if (!this.isModified('password') || this.password.startsWith('$2b$') || this.password.startsWith('$2a$')) {
+    return next();
+  }
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
