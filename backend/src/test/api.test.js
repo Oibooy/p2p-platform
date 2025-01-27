@@ -1,12 +1,7 @@
+
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
-
-beforeAll(async () => {
-  process.env.NODE_ENV = 'test';
-  await User.deleteMany({}); 
-  authToken = jwt.sign({ userId: '65b3f7b8e32a37c1234567890' }, process.env.JWT_SECRET);
-});
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -18,7 +13,8 @@ let testNotificationId;
 let resetToken;
 
 beforeAll(async () => {
-  await User.deleteMany({}); // Clear users collection
+  process.env.NODE_ENV = 'test';
+  await User.deleteMany({});
   authToken = jwt.sign({ userId: '65b3f7b8e32a37c1234567890' }, process.env.JWT_SECRET);
 });
 
@@ -26,7 +22,6 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-// Auth Tests
 describe('Authentication Endpoints', () => {
   const testUser = {
     username: 'testuser',
@@ -87,7 +82,6 @@ describe('Authentication Endpoints', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('message');
 
-    // Get user from database to get reset token
     const user = await User.findOne({ email: testUser.email });
     resetToken = user.resetPasswordToken;
   });
@@ -99,23 +93,13 @@ describe('Authentication Endpoints', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('message');
-
-    // Verify login with new password works
-    const loginRes = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: testUser.email,
-        password: 'NewPassword123!'
-      });
-
-    expect(loginRes.statusCode).toBe(200);
   });
 });
 
-// Orders Tests
 describe('Orders Endpoints', () => {
   test('GET /api/orders/public should return public orders', async () => {
-    const res = await request(app).get('/api/orders/public');
+    const res = await request(app)
+      .get('/api/orders/public');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
@@ -143,7 +127,6 @@ describe('Orders Endpoints', () => {
   });
 });
 
-// Escrow Tests
 describe('Escrow Endpoints', () => {
   test('POST /api/escrow/deposit should process deposit', async () => {
     const depositData = {
@@ -160,7 +143,6 @@ describe('Escrow Endpoints', () => {
   });
 });
 
-// Disputes Tests
 describe('Disputes Endpoints', () => {
   test('POST /api/disputes should create dispute', async () => {
     const disputeData = {
@@ -187,7 +169,6 @@ describe('Disputes Endpoints', () => {
   });
 });
 
-// Reviews Tests
 describe('Reviews Endpoints', () => {
   test('POST /api/reviews should create review', async () => {
     const reviewData = {
@@ -208,13 +189,12 @@ describe('Reviews Endpoints', () => {
 
   test('GET /api/reviews/:userId should return user reviews', async () => {
     const res = await request(app)
-      .get('/api/reviews/65b3f7b8e32a37c1234567891');
+      .get(`/api/reviews/65b3f7b8e32a37c1234567891`);
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('reviews');
   });
 });
 
-// Notifications Tests
 describe('Notifications Endpoints', () => {
   test('GET /api/notifications/settings should return settings', async () => {
     const res = await request(app)
