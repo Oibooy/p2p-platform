@@ -5,7 +5,11 @@ const logger = require('../utils/logger');
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      retryWrites: true,
+      w: 'majority'
     });
     logger.info('MongoDB успешно подключена');
   } catch (err) {
