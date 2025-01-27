@@ -1,8 +1,8 @@
 
-import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { createContext, useContext, useState, useEffect } from 'react';
+import apiClient from '../api/apiClient';
 
-export const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -16,43 +16,41 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const login = async (credentials) => {
+    const response = await apiClient.post('/api/auth/login', credentials);
+    setUser(response.data.user);
+    return response.data;
+  };
+
+  const logout = async () => {
+    await apiClient.post('/api/auth/logout');
+    setUser(null);
+  };
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const response = await axios.get('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(response.data);
-      }
+      const response = await apiClient.get('/api/auth/me');
+      setUser(response.data);
     } catch (error) {
-      localStorage.removeItem('token');
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (credentials) => {
-    const response = await axios.post('/api/auth/login', credentials);
-    const { token, user } = response.data;
-    localStorage.setItem('token', token);
-    setUser(user);
-    return response.data;
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const value = {
+    user,
+    login,
+    logout,
+    loading,
+    checkAuth
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthContext;
