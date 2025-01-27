@@ -36,7 +36,8 @@ beforeAll(async () => {
   authToken = jwt.sign(
     { 
       userId: testUser._id,
-      type: 'access'
+      type: 'access',
+      roles: ['user']
     }, 
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
