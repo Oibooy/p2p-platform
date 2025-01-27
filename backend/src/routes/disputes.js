@@ -107,36 +107,3 @@ router.delete('/:id', verifyToken, checkRole('admin'), async (req, res) => {
 });
 
 module.exports = router;
-
-const express = require('express');
-const router = express.Router();
-const { verifyToken } = require('../middleware/authMiddleware');
-const Dispute = require('../models/Dispute');
-
-// Create dispute
-router.post('/', verifyToken, async (req, res) => {
-  try {
-    const dispute = new Dispute({
-      ...req.body,
-      creator: req.user._id
-    });
-    await dispute.save();
-    res.status(201).json(dispute);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get disputes
-router.get('/', verifyToken, async (req, res) => {
-  try {
-    const disputes = await Dispute.find({ 
-      $or: [{ creator: req.user._id }, { respondent: req.user._id }] 
-    });
-    res.json(disputes);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-module.exports = router;
