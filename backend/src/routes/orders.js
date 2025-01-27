@@ -70,6 +70,10 @@ router.get('/', verifyToken, async (req, res) => {
 
 // Create order
 router.post('/', verifyToken, async (req, res) => {
+  const { amount } = req.body;
+  if (amount <= 0) {
+    return res.status(400).json({ error: 'Amount must be positive' });
+  }
   try {
     const { type, amount, price } = req.body;
     const order = new Order({

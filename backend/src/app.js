@@ -69,6 +69,14 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/deals', dealsRoutes);
 app.use('/api/escrow', escrowRoutes);
 
+// Error handling for undefined routes
+app.use((req, res, next) => {
+  if (!res.headersSent) {
+    res.status(404).json({ error: 'Route not found' });
+  }
+  next();
+});
+
 // Database connection
 async function connectToDatabase() {
   try {
