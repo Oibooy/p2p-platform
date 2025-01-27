@@ -224,7 +224,14 @@ router.post(
 
       // Используем bcrypt.compare для сравнения паролей
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password validation result:', isPasswordValid);
+      console.log('Login attempt details:', {
+        email,
+        userFound: !!user,
+        passwordMatch: isPasswordValid,
+        userActive: user.isActive,
+        userRole: user.role?.name,
+        emailConfirmed: user.isEmailConfirmed
+      });
 
       if (!isPasswordValid) {
         console.log('Password validation failed for user:', user.email);
@@ -244,9 +251,10 @@ router.post(
         }
       }
 
-      if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {
-        return res.status(403).json({ error: 'Please confirm your email to log in.' });
-      }
+      // Temporarily disabled email confirmation check
+      // if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {
+      //   return res.status(403).json({ error: 'Please confirm your email to log in.' });
+      // }
 
       if (!process.env.JWT_SECRET) {
         console.error('JWT_SECRET is not defined');
