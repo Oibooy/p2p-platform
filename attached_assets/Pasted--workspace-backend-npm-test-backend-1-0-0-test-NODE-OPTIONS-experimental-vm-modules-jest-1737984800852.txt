@@ -1,0 +1,412 @@
+~/workspace/backend$ npm test
+
+> backend@1.0.0 test
+> NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+2025-01-27 13:31:32 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6277090
+2025-01-27 13:31:33 [INFO]: Connected to Tron Network. Current block: 53981573
+2025-01-27 13:31:33 [INFO]: POST /api/auth/register 400 349.432 ms - 36
+2025-01-27 13:31:33 [INFO]: MongoDB connected
+2025-01-27 13:31:33 [INFO]: POST /api/auth/register 400 52.266 ms - 36
+  console.log
+    Login attempt: { email: 'test@example.com', userFound: true, isEmailConfirmed: true }
+
+      at src/routes/auth.js:200:15
+
+  console.log
+    Checking password for user: test@example.com
+
+      at src/routes/auth.js:210:15
+
+  console.log
+    Password details: {
+      providedPassword: 'Test123!',
+      storedHashLength: 60,
+      storedHashStart: '$2b$10$kry'
+    }
+
+      at src/routes/auth.js:211:15
+
+  console.log
+    Password validation result: false
+
+      at src/routes/auth.js:219:15
+
+  console.log
+    Password validation failed for user: test@example.com
+
+      at src/routes/auth.js:222:17
+
+2025-01-27 13:31:33 [INFO]: POST /api/auth/login 401 199.599 ms - 37
+  console.log
+    Login attempt: { email: 'test@example.com', userFound: true, isEmailConfirmed: true }
+
+      at src/routes/auth.js:200:15
+
+  console.log
+    Checking password for user: test@example.com
+
+      at src/routes/auth.js:210:15
+
+  console.log
+    Password details: {
+      providedPassword: 'wrongpassword',
+      storedHashLength: 60,
+      storedHashStart: '$2b$10$kry'
+    }
+
+      at src/routes/auth.js:211:15
+
+  console.log
+    Password validation result: false
+
+      at src/routes/auth.js:219:15
+
+  console.log
+    Password validation failed for user: test@example.com
+
+      at src/routes/auth.js:222:17
+
+2025-01-27 13:31:34 [INFO]: POST /api/auth/login 401 173.824 ms - 37
+2025-01-27 13:31:34 [INFO]: Default roles initialized
+2025-01-27 13:31:36 [INFO]: POST /api/auth/forgot-password 200 2585.935 ms - 47
+2025-01-27 13:31:37 [INFO]: POST /api/auth/reset-password/dc7af08cbb40501018ec5124e3491b7bbf1b4dce8a67edde7d21cfd5e0eecf79 200 168.814 ms - 37
+  console.log
+    Connected to Redis
+
+      at Commander.<anonymous> (src/utils/redisClient.js:38:15)
+
+2025-01-27 13:31:37 [INFO]: POST /api/orders 404 394.286 ms - 27
+2025-01-27 13:31:37 [INFO]: GET /api/admin/users 404 149.886 ms - 27
+2025-01-27 13:31:37 [INFO]: POST /api/escrow/release 404 150.342 ms - 27
+2025-01-27 13:31:37 [INFO]: GET /api/orders/public 200 56.084 ms - 2
+2025-01-27 13:31:37 [INFO]: POST /api/orders 404 151.432 ms - 27
+2025-01-27 13:31:38 [INFO]: GET /api/orders/undefined 400 0.800 ms - 28
+2025-01-27 13:31:38 [INFO]: POST /api/escrow/deposit 404 150.124 ms - 27
+2025-01-27 13:31:38 [INFO]: POST /api/disputes 500 6.161 ms - 113
+  console.error
+    Error creating dispute: Cannot set headers after they are sent to the client
+
+      74 |     res.status(201).json(dispute);
+      75 |   } catch (err) {
+    > 76 |     console.error('Error creating dispute:', err.message);
+         |             ^
+      77 |     res.status(500).json({ error: 'Failed to create dispute' });
+      78 |   }
+      79 | });
+
+      at src/routes/disputes.js:76:13
+
+2025-01-27 13:31:38 [INFO]: GET /api/disputes 404 153.623 ms - 27
+2025-01-27 13:31:38 [INFO]: POST /api/reviews 500 6.157 ms - 227
+2025-01-27 13:31:38 [INFO]: GET /api/reviews/65b3f7b8e32a37c1234567891 404 0.702 ms - 44
+2025-01-27 13:31:38 [INFO]: GET /api/notifications/settings 404 53.113 ms - 26
+2025-01-27 13:31:38 [INFO]: PUT /api/notifications/settings 404 150.260 ms - 27
+ FAIL  src/test/api.test.js (8.94 s)
+  Authentication API
+    Registration
+      ✕ POST /api/auth/register - success (427 ms)
+      ✓ POST /api/auth/register - duplicate email (68 ms)
+    Authentication
+      ✕ POST /api/auth/login - success (217 ms)
+      ✓ POST /api/auth/login - wrong password (195 ms)
+    Password Reset
+      ✓ POST /api/auth/forgot-password (2658 ms)
+      ✓ POST /api/auth/reset-password/:token (182 ms)
+  Input Validation
+    ✕ POST /api/orders - invalid amount (408 ms)
+  Role Authorization
+    ✕ GET /api/admin/users - unauthorized access (163 ms)
+  Escrow Operations
+    ✕ POST /api/escrow/release - unauthorized release (164 ms)
+  Orders API
+    ✓ GET /api/orders/public (68 ms)
+    ✕ POST /api/orders - create order (166 ms)
+    ✕ GET /api/orders/:id - get specific order (15 ms)
+  Escrow API
+    ✕ POST /api/escrow/deposit (163 ms)
+  Disputes API
+    ✕ POST /api/disputes - create dispute (29 ms)
+    ✕ GET /api/disputes - get disputes list (171 ms)
+  Reviews API
+    ✕ POST /api/reviews - create review (27 ms)
+    ✕ GET /api/reviews/:userId - get user reviews (13 ms)
+  Notifications API
+    ✕ GET /api/notifications/settings (125 ms)
+    ✕ PUT /api/notifications/settings - update settings (165 ms)
+
+  ● Authentication API › Registration › POST /api/auth/register - success
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 400
+
+      89 |         .send(testData.user);
+      90 |
+    > 91 |       expect(res.statusCode).toBe(201);
+         |                              ^
+      92 |       expect(res.body).toHaveProperty('message');
+      93 |       expect(res.body).toHaveProperty('userId');
+      94 |     });
+
+      at Object.<anonymous> (src/test/api.test.js:91:30)
+
+  ● Authentication API › Authentication › POST /api/auth/login - success
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      113 |         });
+      114 |
+    > 115 |       expect(res.statusCode).toBe(200);
+          |                              ^
+      116 |       expect(res.body).toHaveProperty('accessToken');
+      117 |       expect(res.body).toHaveProperty('refreshToken');
+      118 |       expect(res.body).toHaveProperty('user');
+
+      at Object.<anonymous> (src/test/api.test.js:115:30)
+
+  ● Input Validation › POST /api/orders - invalid amount
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      167 |       .set('Authorization', `Bearer ${authToken}`)
+      168 |       .send(invalidOrder);
+    > 169 |     expect(res.statusCode).toBe(400);
+          |                            ^
+      170 |   });
+      171 | });
+      172 |
+
+      at Object.<anonymous> (src/test/api.test.js:169:28)
+
+  ● Role Authorization › GET /api/admin/users - unauthorized access
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      177 |       .get('/api/admin/users')
+      178 |       .set('Authorization', `Bearer ${authToken}`);
+    > 179 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      180 |   });
+      181 | });
+      182 |
+
+      at Object.<anonymous> (src/test/api.test.js:179:28)
+
+  ● Escrow Operations › POST /api/escrow/release - unauthorized release
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      188 |       .set('Authorization', `Bearer ${authToken}`)
+      189 |       .send({ dealId: testOrderId });
+    > 190 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      191 |   });
+      192 | });
+      193 |
+
+      at Object.<anonymous> (src/test/api.test.js:190:28)
+
+  ● Orders API › POST /api/orders - create order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      207 |       .send(testData.order);
+      208 |
+    > 209 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      210 |     testOrderId = res.body.order._id;
+      211 |   });
+      212 |
+
+      at Object.<anonymous> (src/test/api.test.js:209:28)
+
+  ● Orders API › GET /api/orders/:id - get specific order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+      214 |     const res = await request(app)
+      215 |       .get(`/api/orders/${testOrderId}`);
+    > 216 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      217 |   });
+      218 | });
+      219 |
+
+      at Object.<anonymous> (src/test/api.test.js:216:28)
+
+  ● Escrow API › POST /api/escrow/deposit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      231 |       .send(depositData);
+      232 |
+    > 233 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      234 |   });
+      235 | });
+      236 |
+
+      at Object.<anonymous> (src/test/api.test.js:233:28)
+
+  ● Disputes API › POST /api/disputes - create dispute
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      248 |       .send(disputeData);
+      249 |
+    > 250 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      251 |     testDisputeId = res.body._id;
+      252 |   });
+      253 |
+
+      at Object.<anonymous> (src/test/api.test.js:250:28)
+
+  ● Disputes API › GET /api/disputes - get disputes list
+
+    Cannot set headers after they are sent to the client
+
+      75 |   } catch (err) {
+      76 |     console.error('Error creating dispute:', err.message);
+    > 77 |     res.status(500).json({ error: 'Failed to create dispute' });
+         |                     ^
+      78 |   }
+      79 | });
+      80 |
+
+      at ServerResponse.header (node_modules/express/lib/response.js:794:10)
+      at ServerResponse.send (node_modules/express/lib/response.js:174:12)
+      at ServerResponse.json (node_modules/express/lib/response.js:278:15)
+      at src/routes/disputes.js:77:21
+
+  ● Disputes API › GET /api/disputes - get disputes list
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      257 |       .set('Authorization', `Bearer ${authToken}`);
+      258 |
+    > 259 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      260 |     expect(Array.isArray(res.body.disputes)).toBe(true);
+      261 |   });
+      262 | });
+
+      at Object.<anonymous> (src/test/api.test.js:259:28)
+
+  ● Reviews API › POST /api/reviews - create review
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      276 |       .send(reviewData);
+      277 |
+    > 278 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      279 |     testReviewId = res.body.review._id;
+      280 |   });
+      281 |
+
+      at Object.<anonymous> (src/test/api.test.js:278:28)
+
+  ● Reviews API › GET /api/reviews/:userId - get user reviews
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      283 |     const res = await request(app)
+      284 |       .get(`/api/reviews/65b3f7b8e32a37c1234567891`);
+    > 285 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      286 |     expect(res.body).toHaveProperty('reviews');
+      287 |   });
+      288 | });
+
+      at Object.<anonymous> (src/test/api.test.js:285:28)
+
+  ● Notifications API › GET /api/notifications/settings
+
+    Cannot set headers after they are sent to the client
+
+      54 |     res.status(201).json(review);
+      55 |   } catch (error) {
+    > 56 |     res.status(500).json({ error: 'Failed to create review' });
+         |                     ^
+      57 |   }
+      58 | });
+      59 |
+
+      at ServerResponse.header (node_modules/express/lib/response.js:794:10)
+      at ServerResponse.send (node_modules/express/lib/response.js:174:12)
+      at ServerResponse.json (node_modules/express/lib/response.js:278:15)
+      at src/routes/reviews.js:56:21
+
+  ● Notifications API › GET /api/notifications/settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      295 |       .set('Authorization', `Bearer ${authToken}`);
+      296 |
+    > 297 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      298 |     expect(res.body).toHaveProperty('notificationSettings');
+      299 |   });
+      300 |
+
+      at Object.<anonymous> (src/test/api.test.js:297:28)
+
+  ● Notifications API › PUT /api/notifications/settings - update settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      305 |       .send(testData.notification.settings);
+      306 |
+    > 307 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      308 |   });
+      309 | });
+
+      at Object.<anonymous> (src/test/api.test.js:307:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       14 failed, 5 passed, 19 total
+Snapshots:   0 total
+Time:        8.991 s
