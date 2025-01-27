@@ -1,0 +1,403 @@
+~/workspace/backend$ npm test
+
+> backend@1.0.0 test
+> NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+2025-01-27 14:03:51 [INFO]: Connected to Tron Network. Current block: 53982193
+  console.error
+    Registration error: E11000 duplicate key error collection: p2p_platform.users index: username_1 dup key: { username: "testuser" }
+
+      125 |       }
+      126 |     } catch (error) {
+    > 127 |       console.error('Registration error:', error.message);
+          |               ^
+      128 |       if (error.code === 11000) {
+      129 |         return res.status(400).json({ error: 'Username or email already exists' });
+      130 |       }
+
+      at src/routes/auth.js:127:15
+
+2025-01-27 14:03:51 [INFO]: POST /api/auth/register 400 265.172 ms - 44
+2025-01-27 14:03:51 [INFO]: MongoDB connected
+  console.error
+    Registration error: E11000 duplicate key error collection: p2p_platform.users index: username_1 dup key: { username: "testuser" }
+
+      125 |       }
+      126 |     } catch (error) {
+    > 127 |       console.error('Registration error:', error.message);
+          |               ^
+      128 |       if (error.code === 11000) {
+      129 |         return res.status(400).json({ error: 'Username or email already exists' });
+      130 |       }
+
+      at src/routes/auth.js:127:15
+
+2025-01-27 14:03:51 [INFO]: POST /api/auth/register 400 244.965 ms - 44
+  console.log
+    Login attempt: {
+      email: 'test1737986630043@example.com',
+      userFound: false,
+      isEmailConfirmed: undefined
+    }
+
+      at src/routes/auth.js:208:15
+
+2025-01-27 14:03:51 [INFO]: POST /api/auth/login 401 53.167 ms - 31
+  console.log
+    Login attempt: {
+      email: 'test1737986630043@example.com',
+      userFound: false,
+      isEmailConfirmed: undefined
+    }
+
+      at src/routes/auth.js:208:15
+
+2025-01-27 14:03:51 [INFO]: POST /api/auth/login 401 71.416 ms - 31
+2025-01-27 14:03:51 [INFO]: POST /api/auth/forgot-password 404 49.486 ms - 26
+2025-01-27 14:03:52 [INFO]: POST /api/auth/reset-password/undefined 400 55.679 ms - 42
+2025-01-27 14:03:52 [INFO]: Default roles initialized
+2025-01-27 14:03:52 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6277479
+  console.log
+    Connected to Redis
+
+      at Commander.<anonymous> (src/utils/redisClient.js:38:15)
+
+2025-01-27 14:03:52 [INFO]: POST /api/orders 404 393.611 ms - 27
+2025-01-27 14:03:52 [INFO]: GET /api/admin/users 404 148.974 ms - 27
+2025-01-27 14:03:52 [INFO]: POST /api/escrow/release 404 151.169 ms - 27
+2025-01-27 14:03:52 [INFO]: GET /api/orders/public 200 51.781 ms - 2
+2025-01-27 14:03:53 [INFO]: POST /api/orders 404 150.344 ms - 27
+2025-01-27 14:03:53 [INFO]: GET /api/orders/undefined 400 0.817 ms - 28
+2025-01-27 14:03:53 [INFO]: POST /api/escrow/deposit 404 150.020 ms - 27
+2025-01-27 14:03:53 [INFO]: POST /api/disputes 404 150.227 ms - 27
+2025-01-27 14:03:53 [INFO]: GET /api/disputes 404 149.679 ms - 27
+2025-01-27 14:03:53 [INFO]: POST /api/reviews 404 148.220 ms - 27
+2025-01-27 14:03:53 [INFO]: GET /api/reviews/65b3f7b8e32a37c1234567891 404 0.520 ms - 44
+2025-01-27 14:03:53 [INFO]: GET /api/notifications/settings 404 151.071 ms - 27
+2025-01-27 14:03:54 [INFO]: PUT /api/notifications/settings 404 148.423 ms - 27
+ FAIL  src/test/api.test.js (7.178 s)
+  ● Authentication API › Registration › POST /api/auth/register - success
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 400
+
+       96 |         .send(testData.user);
+       97 |
+    >  98 |       expect(res.statusCode).toBe(201);
+          |                              ^
+       99 |       expect(res.body).toHaveProperty('message');
+      100 |       expect(res.body).toHaveProperty('userId');
+      101 |     });
+
+      at Object.<anonymous> (src/test/api.test.js:98:30)
+
+  ● Authentication API › Authentication › POST /api/auth/login - success
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      120 |         });
+      121 |
+    > 122 |       expect(res.statusCode).toBe(200);
+          |                              ^
+      123 |       expect(res.body).toHaveProperty('accessToken');
+      124 |       expect(res.body).toHaveProperty('refreshToken');
+      125 |       expect(res.body).toHaveProperty('user');
+
+      at Object.<anonymous> (src/test/api.test.js:122:30)
+
+  ● Authentication API › Password Reset › POST /api/auth/forgot-password
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      145 |         .send({ email: testData.user.email });
+      146 |
+    > 147 |       expect(res.statusCode).toBe(200);
+          |                              ^
+      148 |       expect(res.body).toHaveProperty('message');
+      149 |
+      150 |       const user = await User.findOne({ email: testData.user.email });
+
+      at Object.<anonymous> (src/test/api.test.js:147:30)
+
+  ● Authentication API › Password Reset › POST /api/auth/reset-password/:token
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+      157 |         .send({ password: 'NewPassword123!' });
+      158 |
+    > 159 |       expect(res.statusCode).toBe(200);
+          |                              ^
+      160 |       expect(res.body).toHaveProperty('message');
+      161 |     });
+      162 |   });
+
+      at Object.<anonymous> (src/test/api.test.js:159:30)
+
+  ● Input Validation › POST /api/orders - invalid amount
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      174 |       .set('Authorization', `Bearer ${authToken}`)
+      175 |       .send(invalidOrder);
+    > 176 |     expect(res.statusCode).toBe(400);
+          |                            ^
+      177 |   });
+      178 | });
+      179 |
+
+      at Object.<anonymous> (src/test/api.test.js:176:28)
+
+  ● Role Authorization › GET /api/admin/users - unauthorized access
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      184 |       .get('/api/admin/users')
+      185 |       .set('Authorization', `Bearer ${authToken}`);
+    > 186 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      187 |   });
+      188 | });
+      189 |
+
+      at Object.<anonymous> (src/test/api.test.js:186:28)
+
+  ● Escrow Operations › POST /api/escrow/release - unauthorized release
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      195 |       .set('Authorization', `Bearer ${authToken}`)
+      196 |       .send({ dealId: testOrderId });
+    > 197 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      198 |   });
+      199 | });
+      200 |
+
+      at Object.<anonymous> (src/test/api.test.js:197:28)
+
+  ● Orders API › POST /api/orders - create order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      214 |       .send(testData.order);
+      215 |
+    > 216 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      217 |     testOrderId = res.body.order._id;
+      218 |   });
+      219 |
+
+      at Object.<anonymous> (src/test/api.test.js:216:28)
+
+  ● Orders API › GET /api/orders/:id - get specific order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+      221 |     const res = await request(app)
+      222 |       .get(`/api/orders/${testOrderId}`);
+    > 223 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      224 |   });
+      225 | });
+      226 |
+
+      at Object.<anonymous> (src/test/api.test.js:223:28)
+
+  ● Escrow API › POST /api/escrow/deposit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      238 |       .send(depositData);
+      239 |
+    > 240 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      241 |   });
+      242 | });
+      243 |
+
+      at Object.<anonymous> (src/test/api.test.js:240:28)
+
+  ● Disputes API › POST /api/disputes - create dispute
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      255 |       .send(disputeData);
+      256 |
+    > 257 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      258 |     testDisputeId = res.body._id;
+      259 |   });
+      260 |
+
+      at Object.<anonymous> (src/test/api.test.js:257:28)
+
+  ● Disputes API › GET /api/disputes - get disputes list
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      264 |       .set('Authorization', `Bearer ${authToken}`);
+      265 |
+    > 266 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      267 |     expect(Array.isArray(res.body.disputes)).toBe(true);
+      268 |   });
+      269 | });
+
+      at Object.<anonymous> (src/test/api.test.js:266:28)
+
+  ● Reviews API › POST /api/reviews - create review
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      283 |       .send(reviewData);
+      284 |
+    > 285 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      286 |     testReviewId = res.body.review._id;
+      287 |   });
+      288 |
+
+      at Object.<anonymous> (src/test/api.test.js:285:28)
+
+  ● Reviews API › GET /api/reviews/:userId - get user reviews
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      290 |     const res = await request(app)
+      291 |       .get(`/api/reviews/65b3f7b8e32a37c1234567891`);
+    > 292 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      293 |     expect(res.body).toHaveProperty('reviews');
+      294 |   });
+      295 | });
+
+      at Object.<anonymous> (src/test/api.test.js:292:28)
+
+  ● Notifications API › GET /api/notifications/settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      302 |       .set('Authorization', `Bearer ${authToken}`);
+      303 |
+    > 304 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      305 |     expect(res.body).toHaveProperty('notificationSettings');
+      306 |   });
+      307 |
+
+      at Object.<anonymous> (src/test/api.test.js:304:28)
+
+  ● Notifications API › PUT /api/notifications/settings - update settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      312 |       .send(testData.notification.settings);
+      313 |
+    > 314 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      315 |   });
+      316 | });
+
+      at Object.<anonymous> (src/test/api.test.js:314:28)
+
+
+  ● Test suite failed to run
+
+    ReferenceError: tronWeb is not defined
+
+      53 |   await Promise.all([
+      54 |     new Promise(resolve => setTimeout(resolve, 500)),
+    > 55 |     tronWeb.fullNode.instance.destroy(),
+         |     ^
+      56 |     tronWeb.solidityNode.instance.destroy(),
+      57 |     tronWeb.eventServer.instance.destroy()
+      58 |   ]);
+
+      at Object.<anonymous> (src/test/api.test.js:55:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       16 failed, 3 passed, 19 total
+Snapshots:   0 total
+Time:        7.212 s
+Ran all test suites.
+
+Jest has detected the following 1 open handle potentially keeping Jest from exiting:
+
+  ●  TLSWRAP
+
+      23 | async function testConnection() {
+      24 |   try {
+    > 25 |     const block = await tronWeb.trx.getCurrentBlock();
+         |                                     ^
+      26 |     logger.info(`Connected to Tron Network. Current block: ${block.block_header.raw_data.number}`);
+      27 |     return true;
+      28 |   } catch (error) {
+
+      at RedirectableRequest.Object.<anonymous>.RedirectableRequest._performRequest (node_modules/follow-redirects/index.js:337:24)
+      at new RedirectableRequest (node_modules/follow-redirects/index.js:111:8)
+      at Object.request (node_modules/follow-redirects/index.js:543:14)
+      at dispatchHttpRequest (node_modules/axios/lib/adapters/http.js:464:21)
+      at node_modules/axios/lib/adapters/http.js:152:5
+      at wrapAsync (node_modules/axios/lib/adapters/http.js:132:10)
+      at http (node_modules/axios/lib/adapters/http.js:170:10)
+      at Axios.dispatchRequest (node_modules/axios/lib/core/dispatchRequest.js:51:10)
+      at Axios._request (node_modules/axios/lib/core/Axios.js:178:33)
+      at Axios.request (node_modules/axios/lib/core/Axios.js:40:25)
+      at Function.wrap [as request] (node_modules/axios/lib/helpers/bind.js:5:15)
+      at HttpProvider.request (node_modules/tronweb/src/lib/providers/HttpProvider.ts:58:14)
+      at Trx.getCurrentBlock (node_modules/tronweb/src/lib/trx.ts:81:38)
+      at testConnection (src/utils/tronWeb.js:25:37)
+      at Object.<anonymous> (src/utils/tronWeb.js:60:1)
+      at Object.<anonymous> (src/services/escrowService.js:1:119)
+      at Object.<anonymous> (src/routes/escrow.js:5:53)
+      at Object.<anonymous> (src/app.js:22:22)
+      at Object.<anonymous> (src/test/api.test.js:2:13)
+
+^C
