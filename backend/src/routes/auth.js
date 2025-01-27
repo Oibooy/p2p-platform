@@ -97,9 +97,18 @@ router.post(
     const { username, email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ email }).lean();
+      const existingUser = await User.findOne({ 
+        email: email.toLowerCase() 
+      }).lean();
+
       if (existingUser) {
         return res.status(400).json({ error: 'Email is already in use.' });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
