@@ -235,8 +235,33 @@ router.post(
         return res.status(500).json({ error: 'Server configuration error' });
       }
       
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+      // Создаем уникальный tokenId для refresh токена
+      const tokenId = crypto.randomBytes(32).toString('hex');
+      
+      const token = jwt.sign(
+        { userId: user._id, type: 'access' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+      
+      const refreshToken = jwt.sign(
+        { userId: user._id, tokenId, type: 'refresh' },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Сохраняем refresh token в Redis
+      await redisClient.set(
+        `refresh_token:${user._id}:${tokenId}`,
+        JSON.stringify({
+          refreshToken,
+          userAgent: req.headers['user-agent'],
+          ip: req.ip,
+          createdAt: new Date().toISOString()
+        }),
+        'EX',
+        7 * 24 * 60 * 60 // 7 дней
+      );
       
       res.status(200).json({ 
         message: 'Login successful.',

@@ -29,9 +29,14 @@ function LoginPage() {
         navigate('/');
       }
     } catch (err) {
+      console.error('Login error:', err);
       const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       toast.error(errorMessage);
+      
+      if (err.response?.status === 403 && err.response?.data?.error?.includes('confirm your email')) {
+        navigate('/resend-confirmation');
+      }
     }
   };
 
