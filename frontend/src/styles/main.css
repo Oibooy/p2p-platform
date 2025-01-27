@@ -1,0 +1,55 @@
+
+/* Form Control */
+.form--control:focus {
+  color: hsl(var(--base));
+  background-color: var(--grey-color);
+  box-shadow: -9px 8px 12px -5px var(--input-shadow);
+  border-color: hsl(var(--base));
+  transition: 0.2s ease-in-out;
+}
+
+.form--control:disabled,
+.form--control[readonly] {
+  opacity: 1;
+}
+
+.form--control[type="file"] {
+  line-height: 46px;
+  padding: 0;
+  position: relative;
+}
+
+.form--control[type="file"]::file-selector-button {
+  border: 1px solid hsl(var(--black) / 0.08);
+  padding: 4px 6px;
+  border-radius: 0.2em;
+  background-color: hsl(var(--base)) !important;
+  transition: 0.2s linear;
+  line-height: 25px;
+  position: relative;
+  margin-left: 15px;
+  color: hsl(var(--body-color)) !important;
+}
+
+.form--control[type="file"]::file-selector-button:hover {
+  background-color: hsl(var(--base));
+  border: 1px solid hsl(var(--base));
+  color: hsl(var(--black));
+}
+
+/* Cookies Card */
+.cookies-card {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 20px;
+  background-color: hsl(var(--white));
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  max-width: 500px;
+}
