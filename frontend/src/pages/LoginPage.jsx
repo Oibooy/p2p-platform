@@ -11,9 +11,10 @@ function LoginPage() {
   const onSubmit = async (data) => {
     try {
       const response = await apiClient.post('/auth/login', data);
-      if (response.data.token) {
+      if (response.data.token && response.data.refreshToken) {
         toast.success('Login successful!');
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setError(null);
         window.location.href = '/';

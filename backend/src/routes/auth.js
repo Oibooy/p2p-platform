@@ -176,6 +176,10 @@ router.post(
 
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
     try {
       const user = await User.findOne({ email }).populate('role');
       if (!user) {
@@ -185,6 +189,10 @@ router.post(
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ error: 'Account is deactivated' });
       }
 
       if (!user.role) {
@@ -201,14 +209,18 @@ router.post(
       }
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+      
       res.status(200).json({ 
         message: 'Login successful.',
         token,
+        refreshToken,
         user: {
           id: user._id,
           username: user.username,
           email: user.email,
-          role: user.role.name
+          role: user.role.name,
+          isActive: user.isActive
         }
       });
     } catch (error) {
