@@ -89,13 +89,26 @@ async function connectToDatabase() {
     const Role = require('./models/Role');
     const roles = ['user', 'moderator', 'admin'];
     
+    const initializeRoles = async (roles, session) => {
+      for (const roleName of roles) {
+        const existingRole = await Role.findOne({ name: roleName }).session(session);
+        if (!existingRole) {
+          const role = new Role({ name: roleName });
+          await role.save({ session });
+        }
+      }
+    };
+
     try {
-      const session = await connection.startSession();
-      await initializeRoles(roles, session);
+      const session = await mongoose.startSession();
+      await session.withTransaction(async () => {
+        await initializeRoles(roles, session);
+      });
       await session.endSession();
     } catch (error) {
       console.error('Error initializing roles:', error);
     }
+    const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
         for (const roleName of roles) {
