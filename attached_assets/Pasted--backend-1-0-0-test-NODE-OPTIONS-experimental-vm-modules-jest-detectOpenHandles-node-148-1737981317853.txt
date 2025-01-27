@@ -1,0 +1,69 @@
+> backend@1.0.0 test
+> NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+(node:14814) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14814) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+2025-01-27 12:32:49 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6276407
+2025-01-27 12:32:49 [INFO]: Connected to Tron Network. Current block: 53980446
+2025-01-27 12:32:50 [INFO]: POST /api/auth/register 400 70.837 ms - 36
+2025-01-27 12:32:50 [INFO]: POST /api/auth/register 400 54.534 ms - 36
+  console.log
+    Login attempt: { email: 'test@example.com', userFound: true, isEmailConfirmed: true }
+
+      at src/routes/auth.js:200:15
+
+  console.log
+    Checking password for user: test@example.com
+
+      at src/routes/auth.js:210:15
+
+  console.log
+    Password details: {
+      providedPassword: 'Test123!',
+      storedHashLength: 60,
+      storedHashStart: '$2b$10$Ds6'
+    }
+
+      at src/routes/auth.js:211:15
+
+  console.log
+    Password validation result: false
+
+      at src/routes/auth.js:219:15
+
+  console.log
+    Password validation failed for user: test@example.com
+
+      at src/routes/auth.js:222:17
+
+2025-01-27 12:32:50 [INFO]: POST /api/auth/login 401 192.187 ms - 37
+2025-01-27 12:32:50 [INFO]: MongoDB connected
+  console.error
+    Error initializing roles: ReferenceError: initializeRoles is not defined
+        at connectToDatabase (/home/runner/workspace/backend/src/app.js:94:7)
+
+       95 |       await session.endSession();
+       96 |     } catch (error) {
+    >  97 |       console.error('Error initializing roles:', error);
+          |               ^
+       98 |     }
+       99 |     try {
+      100 |       await session.withTransaction(async () => {
+
+      at connectToDatabase (src/app.js:97:15)
+
+2025-01-27 12:32:50 [ERROR]: MongoDB connection error: session is not defined
+  ●  process.exit called with "1"
+
+      124 |   } catch (err) {
+      125 |     logger.error(`MongoDB connection error: ${err.message}`);
+    > 126 |     process.exit(1);
+          |             ^
+      127 |   }
+      128 | }
+      129 | connectToDatabase();
+
+      at connectToDatabase (src/app.js:126:13)
+
+ RUNS  src/test/api.test.js
