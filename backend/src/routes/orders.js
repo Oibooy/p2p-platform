@@ -86,8 +86,14 @@ router.post('/', verifyToken, async (req, res) => {
 
 // Получение конкретного ордера
 router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid order ID' });
+  }
+
   try {
-    const order = await Order.findById(req.params.id).populate('user', 'username');
+    const order = await Order.findById(id).populate('user', 'username');
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }

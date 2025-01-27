@@ -12,6 +12,10 @@ const crypto = require('crypto');
 // Запрос на сброс пароля
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -19,23 +23,31 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = Date.now() + 3600000; // 1 час
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
 
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    await sendEmail(
-      email,
-      'Password Reset Request',
-      `To reset your password, click the link: ${resetLink}\nThis link will expire in 1 hour.`
-    );
-
-    res.json({ message: 'Password reset link sent to email' });
+    
+    try {
+      await sendEmail(
+        email,
+        'Password Reset Request',
+        `To reset your password, click the link: ${resetLink}\nThis link will expire in 1 hour.`
+      );
+      res.json({ message: 'Password reset link sent to email' });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpiry = undefined;
+      await user.save();
+      res.status(500).json({ error: 'Error sending reset email' });
+    }
   } catch (error) {
     console.error('Password reset request error:', error);
-    res.status(500).json({ error: 'Error sending reset email' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
