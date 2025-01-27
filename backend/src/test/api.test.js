@@ -2,6 +2,12 @@
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
+
+beforeAll(async () => {
+  process.env.NODE_ENV = 'test';
+  await User.deleteMany({}); 
+  authToken = jwt.sign({ userId: '65b3f7b8e32a37c1234567890' }, process.env.JWT_SECRET);
+});
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 

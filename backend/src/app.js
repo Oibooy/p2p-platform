@@ -140,6 +140,12 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on http://0.0.0.0:${PORT}`);
-});
+
+// Запускаем сервер только если не в тестовом режиме
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = server;
