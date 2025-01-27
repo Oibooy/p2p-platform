@@ -58,7 +58,20 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // Create order
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', async (req, res) => {
+  try {
+    const { type, amount, price } = req.body;
+    const order = new Order({
+      type,
+      amount,
+      price,
+      status: 'active'
+    });
+    const savedOrder = await order.save();
+    res.status(201).json({ order: savedOrder });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
   try {
     const order = new Order({
       ...req.body,

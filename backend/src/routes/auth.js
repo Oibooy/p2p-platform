@@ -118,7 +118,10 @@ router.post(
         await sendEmail(email, 'Confirm Your Email', `Hello ${username},\n\nClick below to confirm your email:\n${confirmLink}`);
         res.status(201).json({ message: 'User registered. Please confirm your email.' });
       } else {
-        res.status(201).json({ message: 'User registered successfully.' });
+        res.status(201).json({ 
+          message: 'User registered successfully.',
+          userId: user._id
+        });
       }
     } catch (error) {
       console.error('Registration error:', error.message);

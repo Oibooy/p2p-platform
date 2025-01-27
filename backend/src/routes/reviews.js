@@ -16,7 +16,20 @@ router.get('/', async (req, res) => {
 });
 
 // Create a review
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', async (req, res) => {
+  try {
+    const { dealId, rating, comment, to } = req.body;
+    const review = new Review({
+      deal: dealId,
+      rating,
+      comment,
+      to
+    });
+    const savedReview = await review.save();
+    res.status(201).json({ review: savedReview });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
   try {
     const { orderId, rating, comment } = req.body;
     const order = await Order.findById(orderId);

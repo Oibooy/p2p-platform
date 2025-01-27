@@ -43,7 +43,18 @@ router.get('/:id', verifyToken, async (req, res) => {
 });
 
 // Создать арбитраж
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', async (req, res) => {
+  try {
+    const { order_id, reason } = req.body;
+    const dispute = new Dispute({
+      order: order_id,
+      reason
+    });
+    const savedDispute = await dispute.save();
+    res.status(201).json(savedDispute);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
   const { order_id, reason } = req.body;
   try {
     const order = await Order.findById(order_id);
