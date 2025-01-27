@@ -32,13 +32,10 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(helmet());
-app.use(cors());
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', '*');
-  next();
-});
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://0.0.0.0:5173',
+  credentials: true
+}));
 
 // Enable pre-flight requests
 app.options('*', cors());
@@ -127,4 +124,6 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => logger.info(`Server running on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Server running on http://0.0.0.0:${PORT}`);
+});
