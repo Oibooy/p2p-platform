@@ -1,0 +1,225 @@
+  ● Input Validation › POST /api/orders - invalid amount
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      178 |       .set('Authorization', `Bearer ${authToken}`)
+      179 |       .send(invalidOrder);
+    > 180 |     expect(res.statusCode).toBe(400);
+          |                            ^
+      181 |   });
+      182 | });
+      183 |
+
+      at Object.<anonymous> (src/test/api.test.js:180:28)
+
+  ● Role Authorization › GET /api/admin/users - unauthorized access
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      188 |       .get('/api/admin/users')
+      189 |       .set('Authorization', `Bearer ${authToken}`);
+    > 190 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      191 |   });
+      192 | });
+      193 |
+
+      at Object.<anonymous> (src/test/api.test.js:190:28)
+
+  ● Escrow Operations › POST /api/escrow/release - unauthorized release
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      199 |       .set('Authorization', `Bearer ${authToken}`)
+      200 |       .send({ dealId: testOrderId });
+    > 201 |     expect(res.statusCode).toBe(403);
+          |                            ^
+      202 |   });
+      203 | });
+      204 |
+
+      at Object.<anonymous> (src/test/api.test.js:201:28)
+
+  ● Orders API › GET /api/orders/public
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      208 |     const res = await request(app)
+      209 |       .get('/api/orders/public');
+    > 210 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      211 |     expect(Array.isArray(res.body)).toBe(true);
+      212 |   });
+      213 |
+
+      at Object.<anonymous> (src/test/api.test.js:210:28)
+
+  ● Orders API › POST /api/orders - create order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      218 |       .send(testData.order);
+      219 |
+    > 220 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      221 |     testOrderId = res.body.order._id;
+      222 |   });
+      223 |
+
+      at Object.<anonymous> (src/test/api.test.js:220:28)
+
+  ● Orders API › GET /api/orders/:id - get specific order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      225 |     const res = await request(app)
+      226 |       .get(`/api/orders/${testOrderId}`);
+    > 227 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      228 |   });
+      229 | });
+      230 |
+
+      at Object.<anonymous> (src/test/api.test.js:227:28)
+
+  ● Escrow API › POST /api/escrow/deposit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      242 |       .send(depositData);
+      243 |
+    > 244 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      245 |   });
+      246 | });
+      247 |
+
+      at Object.<anonymous> (src/test/api.test.js:244:28)
+
+  ● Disputes API › POST /api/disputes - create dispute
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      259 |       .send(disputeData);
+      260 |
+    > 261 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      262 |     testDisputeId = res.body._id;
+      263 |   });
+      264 |
+
+      at Object.<anonymous> (src/test/api.test.js:261:28)
+
+  ● Disputes API › GET /api/disputes - get disputes list
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      268 |       .set('Authorization', `Bearer ${authToken}`);
+      269 |
+    > 270 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      271 |     expect(Array.isArray(res.body.disputes)).toBe(true);
+      272 |   });
+      273 | });
+
+      at Object.<anonymous> (src/test/api.test.js:270:28)
+
+  ● Reviews API › POST /api/reviews - create review
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      287 |       .send(reviewData);
+      288 |
+    > 289 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      290 |     testReviewId = res.body.review._id;
+      291 |   });
+      292 |
+
+      at Object.<anonymous> (src/test/api.test.js:289:28)
+
+  ● Reviews API › GET /api/reviews/:userId - get user reviews
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      294 |     const res = await request(app)
+      295 |       .get(`/api/reviews/65b3f7b8e32a37c1234567891`);
+    > 296 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      297 |     expect(res.body).toHaveProperty('reviews');
+      298 |   });
+      299 | });
+
+      at Object.<anonymous> (src/test/api.test.js:296:28)
+
+  ● Notifications API › GET /api/notifications/settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      306 |       .set('Authorization', `Bearer ${authToken}`);
+      307 |
+    > 308 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      309 |     expect(res.body).toHaveProperty('notificationSettings');
+      310 |   });
+      311 |
+
+      at Object.<anonymous> (src/test/api.test.js:308:28)
+
+  ● Notifications API › PUT /api/notifications/settings - update settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      316 |       .send(testData.notification.settings);
+      317 |
+    > 318 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      319 |   });
+      320 | });
+
+      at Object.<anonymous> (src/test/api.test.js:318:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       13 failed, 6 passed, 19 total
+Snapshots:   0 total
+Time:        14.244 s
+Ran all test suites.
