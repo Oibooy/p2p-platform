@@ -225,8 +225,13 @@ router.post(
         return res.status(403).json({ error: 'Please confirm your email to log in.' });
       }
 
+      if (!process.env.JWT_SECRET) {
+        console.error('JWT_SECRET is not defined');
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
+      
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
       
       res.status(200).json({ 
         message: 'Login successful.',
