@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import apiClient from '../api/apiClient';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -16,9 +16,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const login = async (credentials) => {
+    const response = await apiClient.post('/api/auth/login', credentials);
+    setUser(response.data.user);
+    return response.data;
+  };
+
+  const logout = async () => {
+    await apiClient.post('/api/auth/logout');
+    setUser(null);
+  };
 
   const checkAuth = async () => {
     try {
@@ -31,22 +38,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (credentials) => {
-    const response = await apiClient.post('/api/auth/login', credentials);
-    setUser(response.data.user);
-    return response.data;
-  };
-
-  const logout = async () => {
-    await apiClient.post('/api/auth/logout');
-    setUser(null);
-  };
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   const value = {
     user,
-    loading,
     login,
     logout,
+    loading,
     checkAuth
   };
 
