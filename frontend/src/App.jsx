@@ -12,6 +12,7 @@ import ResendConfirmationPage from './pages/ResendConfirmationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
