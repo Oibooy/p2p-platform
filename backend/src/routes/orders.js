@@ -45,11 +45,11 @@ router.get('/', verifyToken, async (req, res) => {
 
     const sortOptions = { [sortBy]: order === 'desc' ? -1 : 1 };
     const orders = await Order.find(filter).sort(sortOptions).populate('user', 'username');
-    
+
     if (!orders) {
       return res.status(404).json({ error: 'Orders not found' });
     }
-    
+
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error.message);
@@ -57,54 +57,40 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// Создание нового ордера
+// Create order
 router.post('/', verifyToken, async (req, res) => {
-  const { type, amount, price, expiresAt } = req.body;
-
   try {
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ error: 'User not authenticated properly' });
-    }
-
     const order = new Order({
-      user: req.user._id,
-      type,
-      amount,
-      price,
-      expiresAt: expiresAt || new Date(Date.now() + 15 * 60 * 1000),
+      ...req.body,
+      user: req.user._id
     });
-
     await order.save();
     sendWebSocketNotification(req.user.id, 'order_created', { orderId: order._id });
-
-    res.status(201).json({ message: 'Order created successfully.', order });
+    res.status(201).json(order);
   } catch (error) {
     console.error('Error creating order:', error.message);
-    res.status(500).json({ error: 'Failed to create order.' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Получение конкретного ордера
+// Get order by ID
 router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).json({ error: 'Invalid order ID' });
   }
-
   try {
-    const order = await Order.findById(id).populate('user', 'username');
+    const order = await Order.findById(req.params.id).populate('user', 'username');
     if (!order) {
-      return res.status(404).json({ error: 'Order not found.' });
+      return res.status(404).json({ error: 'Order not found' });
     }
     res.json(order);
   } catch (error) {
     console.error('Error fetching order:', error.message);
-    res.status(500).json({ error: 'Failed to fetch order.' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Завершение ордера
+// Complete order
 router.patch('/:id/complete', verifyToken, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -120,7 +106,6 @@ router.patch('/:id/complete', verifyToken, async (req, res) => {
     await order.save();
 
     sendWebSocketNotification(order.user, 'order_completed', { orderId: order._id });
-
     res.status(200).json({ message: 'Order completed successfully.', order });
   } catch (error) {
     console.error('Error completing order:', error.message);
@@ -128,7 +113,7 @@ router.patch('/:id/complete', verifyToken, async (req, res) => {
   }
 });
 
-// Удаление ордера
+// Delete order
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -148,7 +133,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Маршрут для обработки истёкших ордеров
+// Handle expired orders
 router.patch('/:id/expire', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -168,44 +153,6 @@ router.patch('/:id/expire', async (req, res) => {
   } catch (error) {
     console.error('Error expiring order:', error.message);
     res.status(500).json({ error: 'Failed to expire order.' });
-  }
-});
-
-module.exports = router;
-
-
-const express = require('express');
-const router = express.Router();
-const { verifyToken } = require('../middleware/authMiddleware');
-const Order = require('../models/Order');
-
-// Create order
-router.post('/', verifyToken, async (req, res) => {
-  try {
-    const order = new Order({
-      ...req.body,
-      creator: req.user._id
-    });
-    await order.save();
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get order by ID
-router.get('/:id', async (req, res) => {
-  if (!req.params.id) {
-    return res.status(400).json({ error: 'Order ID required' });
-  }
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 
