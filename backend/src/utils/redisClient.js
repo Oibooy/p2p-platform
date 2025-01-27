@@ -4,10 +4,15 @@ const Redis = require('redis');
 let client = null;
 
 const createClient = () => {
+  if (!process.env.REDIS_URL) {
+    console.warn('REDIS_URL not configured, Redis features will be disabled');
+    return null;
+  }
+  
   return Redis.createClient({
-    url: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
+    url: process.env.REDIS_URL,
     socket: {
-      tls: true,
+      tls: process.env.REDIS_URL.includes('rediss://'),
       connectTimeout: 10000,
       reconnectStrategy: (retries) => {
         console.log(`Redis reconnection attempt ${retries}`);
