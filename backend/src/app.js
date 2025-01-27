@@ -30,11 +30,6 @@ const server = http.createServer(app);
 // Trust proxy settings для корректной работы rate limit за прокси
 app.set('trust proxy', 1);
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-});
-
 // Middleware
 app.use(helmet());
 app.use(cors({
