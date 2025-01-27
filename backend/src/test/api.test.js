@@ -45,10 +45,17 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await new Promise(resolve => setTimeout(resolve, 500)); // Даем время на закрытие соединений
   if (global.redisClient) {
     await global.redisClient.quit();
   }
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  // Закрываем все открытые соединения
+  await Promise.all([
+    new Promise(resolve => setTimeout(resolve, 500)),
+    tronWeb.fullNode.instance.destroy(),
+    tronWeb.solidityNode.instance.destroy(),
+    tronWeb.eventServer.instance.destroy()
+  ]);
 });
 
 
