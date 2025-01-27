@@ -161,10 +161,13 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 // Запускаем сервер только если не в тестовом режиме или не отключен веб-интерфейс
-if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_WEB !== 'true') {
+if (process.env.NODE_ENV === 'test') {
+  // В тестовом режиме сервер запускается через supertest
+  module.exports = server;
+} else if (process.env.DISABLE_WEB !== 'true') {
   server.listen(PORT, '0.0.0.0', () => {
     logger.info(`Server running on http://0.0.0.0:${PORT}`);
-    console.log(`Server is listening on port ${PORT}`); // Additional logging
+    console.log(`Server is listening on port ${PORT}`);
   });
 }
 
