@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 function Header() {
   const { user, logout } = useAuth();
@@ -35,6 +36,7 @@ function Header() {
                 >
                   Create Order
                 </button>
+                <NotificationBell />
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition-colors"

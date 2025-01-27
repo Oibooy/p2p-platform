@@ -132,6 +132,25 @@ a:hover {
   color: var(--dark);
 }
 
+/* Notification Styles */
+.notification-btn {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-popup {
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.notification-item {
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: var(--grey-color);
+}
+
 /* Utility Classes */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
