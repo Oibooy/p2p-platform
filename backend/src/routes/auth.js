@@ -187,7 +187,7 @@ router.post(
         userFound: !!user,
         isEmailConfirmed: user?.isEmailConfirmed
       });
-      
+
       if (!user) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
@@ -198,11 +198,11 @@ router.post(
         storedHashLength: user.password.length,
         storedHashStart: user.password.substring(0, 10)
       });
-      
+
       // Используем bcrypt.compare для сравнения паролей
       const isPasswordValid = await bcrypt.compare(password, user.password);
       console.log('Password validation result:', isPasswordValid);
-      
+
       if (!isPasswordValid) {
         console.log('Password validation failed for user:', user.email);
         return res.status(401).json({ error: 'Invalid email or password' });
@@ -220,7 +220,7 @@ router.post(
           await user.save();
         }
       }
-      
+
       if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {
         return res.status(403).json({ error: 'Please confirm your email to log in.' });
       }
@@ -229,21 +229,21 @@ router.post(
         console.error('JWT_SECRET is not defined');
         return res.status(500).json({ error: 'Server configuration error' });
       }
-      
+
       if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
         console.error('JWT secrets are not properly configured');
         return res.status(500).json({ error: 'Server configuration error' });
       }
-      
+
       // Создаем уникальный tokenId для refresh токена
       const tokenId = crypto.randomBytes(32).toString('hex');
-      
+
       const token = jwt.sign(
         { userId: user._id, type: 'access' },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
       );
-      
+
       const refreshToken = jwt.sign(
         { userId: user._id, tokenId, type: 'refresh' },
         process.env.JWT_REFRESH_SECRET,
@@ -268,32 +268,48 @@ router.post(
           }
         });
       }
-      
+
       try {
         await redis.set(
           `refresh_token:${user._id}:${tokenId}`,
           JSON.stringify({
             refreshToken,
-          userAgent: req.headers['user-agent'],
-          ip: req.ip,
-          createdAt: new Date().toISOString()
-        }),
-        'EX',
-        7 * 24 * 60 * 60 // 7 дней
-      );
-      
-      res.status(200).json({ 
-        message: 'Login successful.',
-        token,
-        refreshToken,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          role: user.role.name,
-          isActive: user.isActive
-        }
-      });
+            userAgent: req.headers['user-agent'],
+            ip: req.ip,
+            createdAt: new Date().toISOString()
+          }),
+          'EX',
+          7 * 24 * 60 * 60 // 7 days
+        );
+
+        res.status(200).json({ 
+          message: 'Login successful.',
+          token,
+          refreshToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role.name,
+            isActive: user.isActive
+          }
+        });
+      } catch (error) {
+        console.error('Redis error:', error);
+        // Fall back to JWT-only response
+        res.status(200).json({ 
+          message: 'Login successful.',
+          token,
+          refreshToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role.name,
+            isActive: user.isActive
+          }
+        });
+      }
     } catch (error) {
       console.error('Login error:', error.message);
       res.status(500).json({ error: 'An unexpected error occurred.' });
