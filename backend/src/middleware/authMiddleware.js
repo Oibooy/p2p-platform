@@ -11,7 +11,7 @@ async function verifyToken(req, res, next) {
   if (!token) {
     console.log(`[${new Date().toISOString()}] Authorization header is missing`);
     return res.status(401).json({ 
-      error: 'Access denied. No token provided.',
+      error: 'Unauthorized access',
       code: 'TOKEN_MISSING'
     });
   }
@@ -39,7 +39,7 @@ async function verifyToken(req, res, next) {
     }
 
     const decoded = jwt.verify(extractedToken, process.env.JWT_SECRET);
-    
+
     if (decoded.type !== 'access') {
       return res.status(401).json({ 
         error: 'Invalid token type. Access token required.',

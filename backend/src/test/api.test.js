@@ -22,10 +22,10 @@ beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URI);
   await User.deleteMany({});
 
-  // Создаем тестового пользователя with correct ObjectId
+  // Создаем уникального тестового пользователя
   const testUser = new User({
-    username: 'testuser',
-    email: 'test@example.com',
+    username: 'testuser_' + Date.now(),
+    email: 'test_' + Date.now() + '@example.com',
     password: 'hashedpassword',
     isEmailConfirmed: true,
     isActive: true
@@ -51,11 +51,15 @@ afterAll(async () => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   // Закрываем все открытые соединения
   await Promise.all([
-    new Promise(resolve => setTimeout(resolve, 500)),
-    tronWeb.fullNode.instance.destroy(),
-    tronWeb.solidityNode.instance.destroy(),
-    tronWeb.eventServer.instance.destroy()
+    new Promise(resolve => setTimeout(resolve, 500))
   ]);
+  if (global.tronWeb) {
+    await Promise.all([
+      tronWeb.fullNode.instance.destroy(),
+      tronWeb.solidityNode.instance.destroy(),
+      tronWeb.eventServer.instance.destroy()
+    ]);
+  }
 });
 
 
