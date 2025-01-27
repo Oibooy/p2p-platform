@@ -7,6 +7,7 @@ const createClient = () => {
   return Redis.createClient({
     url: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
     socket: {
+      tls: true,
       connectTimeout: 10000,
       reconnectStrategy: (retries) => {
         console.log(`Redis reconnection attempt ${retries}`);
