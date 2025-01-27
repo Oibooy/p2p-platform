@@ -31,15 +31,21 @@ function CreateOrderPage() {
     
     setIsSubmitting(true);
     try {
-      const response = await apiClient.post('/orders', { 
-        type, 
-        amount: Number(amount), 
-        price: Number(price) 
+      const token = localStorage.getItem('token');
+      const response = await apiClient.post('/orders', {
+        type,
+        amount: Number(amount),
+        price: Number(price)
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       toast.success('Order created successfully!');
       setTimeout(() => navigate('/orders'), 2000);
     } catch (err) {
+      console.error('Create order error:', err);
       const errorMsg = err.response?.data?.error || 'Failed to create order. Please try again.';
       toast.error(errorMsg);
     } finally {

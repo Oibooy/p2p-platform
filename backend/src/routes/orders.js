@@ -62,8 +62,12 @@ router.post('/', verifyToken, async (req, res) => {
   const { type, amount, price, expiresAt } = req.body;
 
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'User not authenticated properly' });
+    }
+
     const order = new Order({
-      user: req.user.userId,
+      user: req.user.id,
       type,
       amount,
       price,
@@ -71,7 +75,7 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     await order.save();
-    sendWebSocketNotification(req.user.userId, 'order_created', { orderId: order._id });
+    sendWebSocketNotification(req.user.id, 'order_created', { orderId: order._id });
 
     res.status(201).json({ message: 'Order created successfully.', order });
   } catch (error) {
