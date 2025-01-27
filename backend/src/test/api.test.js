@@ -19,6 +19,7 @@ let resetToken;
 // Test setup and teardown
 beforeAll(async () => {
   process.env.NODE_ENV = 'test';
+  await mongoose.connect(process.env.MONGO_URI);
   await User.deleteMany({});
 
   // Создаем тестового пользователя with correct ObjectId
