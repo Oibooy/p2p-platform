@@ -3,7 +3,6 @@ const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
-const Notification = require('../models/Notification');
 
 const router = express.Router();
 
