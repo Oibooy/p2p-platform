@@ -7,19 +7,19 @@
   --body-font: "Inter", sans-serif;
 
   /* Colors */
-  --primary: #20b16c;
-  --primary-hover: #19814f;
-  --secondary: #f6465d;
-  --secondary-hover: #f20b2a;
-  --dark: #1c242c;
-  --light: #f5f7fa;
-  --gray: #81858c;
-  --border: #dfdfe1;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary: #f43f5e;
+  --secondary-hover: #e11d48;
+  --dark: #1e293b;
+  --light: #f8fafc;
+  --gray: #64748b;
+  --border: #e2e8f0;
 
   /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
-  --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 
   /* Spacing */
   --spacing-xs: 0.25rem;  
@@ -29,9 +29,9 @@
   --spacing-xl: 2rem;
 
   /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
   --radius-full: 9999px;
 }
 
