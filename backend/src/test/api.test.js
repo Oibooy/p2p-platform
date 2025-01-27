@@ -155,6 +155,42 @@ describe('Authentication API', () => {
   });
 });
 
+// Validation Tests
+describe('Input Validation', () => {
+  test('POST /api/orders - invalid amount', async () => {
+    const invalidOrder = {
+      ...testData.order,
+      amount: -100
+    };
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(invalidOrder);
+    expect(res.statusCode).toBe(400);
+  });
+});
+
+// Role Tests
+describe('Role Authorization', () => {
+  test('GET /api/admin/users - unauthorized access', async () => {
+    const res = await request(app)
+      .get('/api/admin/users')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.statusCode).toBe(403);
+  });
+});
+
+// Escrow Tests
+describe('Escrow Operations', () => {
+  test('POST /api/escrow/release - unauthorized release', async () => {
+    const res = await request(app)
+      .post('/api/escrow/release')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ dealId: testOrderId });
+    expect(res.statusCode).toBe(403);
+  });
+});
+
 // Orders API Tests
 describe('Orders API', () => {
   test('GET /api/orders/public', async () => {
