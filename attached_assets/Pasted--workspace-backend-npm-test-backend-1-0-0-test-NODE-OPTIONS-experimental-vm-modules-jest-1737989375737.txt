@@ -1,0 +1,141 @@
+~/workspace/backend$ npm test
+
+> backend@1.0.0 test
+> NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+2025-01-27 14:47:33 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6278015
+2025-01-27 14:47:33 [INFO]: Connected to Tron Network. Current block: 53983031
+2025-01-27 14:47:34 [INFO]: POST /api/auth/register 201 278.636 ms - 79
+2025-01-27 14:47:34 [INFO]: MongoDB connected
+2025-01-27 14:47:34 [INFO]: POST /api/auth/register 400 54.151 ms - 36
+  console.log
+    Login attempt: {
+      email: 'test1737989252492@example.com',
+      userFound: true,
+      isEmailConfirmed: true
+    }
+
+      at src/routes/auth.js:208:15
+
+  console.log
+    Checking password for user: test1737989252492@example.com
+
+      at src/routes/auth.js:218:15
+
+  console.log
+    Password details: {
+      providedPassword: 'Test123!',
+      storedHashLength: 60,
+      storedHashStart: '$2b$10$JtI'
+    }
+
+      at src/routes/auth.js:219:15
+
+  console.log
+    Password validation result: true
+
+      at src/routes/auth.js:227:15
+
+2025-01-27 14:47:34 [INFO]: Default roles initialized
+  console.log
+    Connected to Redis
+
+      at Commander.<anonymous> (src/utils/redisClient.js:38:15)
+
+2025-01-27 14:47:36 [INFO]: POST /api/auth/login 200 2564.581 ms - 697
+  console.log
+    Login attempt: {
+      email: 'test1737989252492@example.com',
+      userFound: true,
+      isEmailConfirmed: true
+    }
+
+      at src/routes/auth.js:208:15
+
+  console.log
+    Checking password for user: test1737989252492@example.com
+
+      at src/routes/auth.js:218:15
+
+  console.log
+    Password details: {
+      providedPassword: 'wrongpassword',
+      storedHashLength: 60,
+      storedHashStart: '$2b$10$JtI'
+    }
+
+      at src/routes/auth.js:219:15
+
+  console.log
+    Password validation result: false
+
+      at src/routes/auth.js:227:15
+
+  console.log
+    Password validation failed for user: test1737989252492@example.com
+
+      at src/routes/auth.js:230:17
+
+2025-01-27 14:47:36 [INFO]: POST /api/auth/login 401 174.400 ms - 31
+2025-01-27 14:47:40 [INFO]: POST /api/auth/forgot-password 200 3076.781 ms - 47
+2025-01-27 14:47:40 [INFO]: POST /api/auth/reset-password/8350fdff080ded7d41c698c4752f203b665954af39ab634cfdbc0318c63c1288 200 181.150 ms - 37
+2025-01-27 14:47:40 [INFO]: POST /api/orders 404 150.276 ms - 27
+2025-01-27 14:47:40 [INFO]: GET /api/admin/users 404 149.140 ms - 27
+2025-01-27 14:47:40 [INFO]: POST /api/escrow/release 404 148.977 ms - 27
+  console.log
+    [2025-01-27T14:47:40.864Z] Authorization header is missing
+
+      at verifyToken (src/middleware/authMiddleware.js:12:13)
+
+2025-01-27 14:47:40 [INFO]: GET /api/orders/public 401 2.250 ms - 54
+2025-01-27 14:47:41 [INFO]: POST /api/orders 404 149.250 ms - 27
+  console.log
+    [2025-01-27T14:47:41.043Z] Authorization header is missing
+
+      at verifyToken (src/middleware/authMiddleware.js:12:13)
+
+2025-01-27 14:47:41 [INFO]: GET /api/orders/undefined 401 1.464 ms - 54
+2025-01-27 14:47:41 [INFO]: POST /api/escrow/deposit 404 149.132 ms - 27
+2025-01-27 14:47:41 [INFO]: POST /api/disputes 404 150.093 ms - 27
+2025-01-27 14:47:41 [INFO]: GET /api/disputes 404 149.313 ms - 27
+2025-01-27 14:47:41 [INFO]: POST /api/reviews 404 148.366 ms - 27
+  console.log
+    [2025-01-27T14:47:41.724Z] Authorization header is missing
+
+      at verifyToken (src/middleware/authMiddleware.js:12:13)
+
+2025-01-27 14:47:41 [INFO]: GET /api/reviews/65b3f7b8e32a37c1234567891 401 1.258 ms - 54
+2025-01-27 14:47:41 [INFO]: GET /api/notifications/settings 404 150.572 ms - 27
+2025-01-27 14:47:42 [INFO]: PUT /api/notifications/settings 404 156.667 ms - 27
+ FAIL  src/test/api.test.js (13.21 s)
+  Authentication API
+    Registration
+      ✓ POST /api/auth/register - success (344 ms)
+      ✓ POST /api/auth/register - duplicate email (79 ms)
+    Authentication
+      ✓ POST /api/auth/login - success (2580 ms)
+      ✓ POST /api/auth/login - wrong password (190 ms)
+    Password Reset
+      ✓ POST /api/auth/forgot-password (3155 ms)
+      ✓ POST /api/auth/reset-password/:token (204 ms)
+  Input Validation
+    ✕ POST /api/orders - invalid amount (174 ms)
+  Role Authorization
+    ✕ GET /api/admin/users - unauthorized access (167 ms)
+  Escrow Operations
+    ✕ POST /api/escrow/release - unauthorized release (174 ms)
+  Orders API
+    ✕ GET /api/orders/public (15 ms)
+    ✕ POST /api/orders - create order (164 ms)
+    ✕ GET /api/orders/:id - get specific order (15 ms)
+  Escrow API
+    ✕ POST /api/escrow/deposit (165 ms)
+  Disputes API
+    ✕ POST /api/disputes - create dispute (165 ms)
+    ✕ GET /api/disputes - get disputes list (161 ms)
+  Reviews API
+    ✕ POST /api/reviews - create review (164 ms)
+    ✕ GET /api/reviews/:userId - get user reviews (20 ms)
+  Notifications API
+    ✕ GET /api/notifications/settings (171 ms)
+    ✕ PUT /api/notifications/settings - update settings (176 ms)
