@@ -1,0 +1,135 @@
+2025-01-27 06:54:11 [INFO]: Connected to Tron Network. Current block: 53973945
+Default roles initialized
+6:54:11 AM [vite] (client) Pre-transform error: /home/runner/workspace/frontend/src/components/Hero.jsx: Identifier 'React' has already been declared. (29:7)
+
+  27 |   );
+  28 | };
+> 29 | import React from 'react';
+     |        ^
+  30 |
+  31 | export default function Hero() {
+  32 |   return (
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/frontend/src/components/Hero.jsx:29:7
+  27 |    );
+  28 |  };
+  29 |  import React from 'react';
+     |         ^
+  30 |  
+  31 |  export default function Hero() {
+6:54:11 AM [vite] (client) Pre-transform error: /home/runner/workspace/frontend/src/components/TradeForm.jsx: Identifier 'React' has already been declared. (38:7)
+
+  36 |   );
+  37 | };
+> 38 | import React from 'react';
+     |        ^
+  39 |
+  40 | export default function TradeForm() {
+  41 |   return (
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/frontend/src/components/TradeForm.jsx:38:7
+  36 |    );
+  37 |  };
+  38 |  import React from 'react';
+     |         ^
+  39 |  
+  40 |  export default function TradeForm() {
+2025-01-27 06:54:12 [INFO]: GET / 404 2.566 ms - 44
+6:54:15 AM [vite] Internal server error: /home/runner/workspace/frontend/src/components/Hero.jsx: Identifier 'React' has already been declared. (29:7)
+
+  27 |   );
+  28 | };
+> 29 | import React from 'react';
+     |        ^
+  30 |
+  31 | export default function Hero() {
+  32 |   return (
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/frontend/src/components/Hero.jsx:29:7
+  27 |    );
+  28 |  };
+  29 |  import React from 'react';
+     |         ^
+  30 |  
+  31 |  export default function Hero() {
+      at constructor (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:360:19)
+      at JSXParserMixin.raise (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:3327:19)
+      at ScopeHandler.checkRedeclarationInScope (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1555:19)
+      at ScopeHandler.declareName (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1521:12)
+      at JSXParserMixin.declareNameFromIdentifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7476:16)
+      at JSXParserMixin.checkIdentifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7472:12)
+      at JSXParserMixin.checkLVal (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7413:12)
+      at JSXParserMixin.finishImportSpecifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13888:10)
+      at JSXParserMixin.parseImportSpecifierLocal (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13885:31)
+      at JSXParserMixin.maybeParseDefaultImportSpecifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13991:12)
+      at JSXParserMixin.parseImportSpecifiersAndAfter (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13862:29)
+      at JSXParserMixin.parseImport (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13858:17)
+      at JSXParserMixin.parseStatementContent (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12504:27)
+      at JSXParserMixin.parseStatementLike (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12396:17)
+      at JSXParserMixin.parseModuleItem (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12373:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12950:36)
+      at JSXParserMixin.parseBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12943:10)
+      at JSXParserMixin.parseProgram (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12270:10)
+      at JSXParserMixin.parseTopLevel (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12260:25)
+      at JSXParserMixin.parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:14110:10)
+      at parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:14144:38)
+      at parser (/home/runner/workspace/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+6:54:16 AM [vite] Internal server error: /home/runner/workspace/frontend/src/components/TradeForm.jsx: Identifier 'React' has already been declared. (38:7)
+
+  36 |   );
+  37 | };
+> 38 | import React from 'react';
+     |        ^
+  39 |
+  40 | export default function TradeForm() {
+  41 |   return (
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/frontend/src/components/TradeForm.jsx:38:7
+  36 |    );
+  37 |  };
+  38 |  import React from 'react';
+     |         ^
+  39 |  
+  40 |  export default function TradeForm() {
+      at constructor (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:360:19)
+      at JSXParserMixin.raise (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:3327:19)
+      at ScopeHandler.checkRedeclarationInScope (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1555:19)
+      at ScopeHandler.declareName (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1521:12)
+      at JSXParserMixin.declareNameFromIdentifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7476:16)
+      at JSXParserMixin.checkIdentifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7472:12)
+      at JSXParserMixin.checkLVal (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:7413:12)
+      at JSXParserMixin.finishImportSpecifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13888:10)
+      at JSXParserMixin.parseImportSpecifierLocal (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13885:31)
+      at JSXParserMixin.maybeParseDefaultImportSpecifier (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13991:12)
+      at JSXParserMixin.parseImportSpecifiersAndAfter (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13862:29)
+      at JSXParserMixin.parseImport (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:13858:17)
+      at JSXParserMixin.parseStatementContent (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12504:27)
+      at JSXParserMixin.parseStatementLike (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12396:17)
+      at JSXParserMixin.parseModuleItem (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12373:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12950:36)
+      at JSXParserMixin.parseBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12943:10)
+      at JSXParserMixin.parseProgram (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12270:10)
+      at JSXParserMixin.parseTopLevel (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12260:25)
+      at JSXParserMixin.parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:14110:10)
+      at parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:14144:38)
+      at parser (/home/runner/workspace/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (/home/runner/workspace/frontend/node_modules/gensync/index.js:261:32)
+      at /home/runner/workspace/frontend/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/runner/workspace/frontend/node_modules/gensync/index.js:223:11)
+      at /home/runner/workspace/frontend/node_modules/gensync/index.js:189:28
+      at /home/runner/workspace/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+      at /home/runner/workspace/frontend/node_modules/gensync/index.js:113:33
+      at step (/home/runner/workspace/frontend/node_modules/gensync/index.js:287:14)
+      at /home/runner/workspace/frontend/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/runner/workspace/frontend/node_modules/gensync/index.js:223:11)
