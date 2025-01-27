@@ -39,6 +39,6 @@
     "scripts": {
         "start": "node src/app.js",
         "dev": "nodemon src/app.js",
-        "test": "jest --detectOpenHandles"
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles"
     }
 }
