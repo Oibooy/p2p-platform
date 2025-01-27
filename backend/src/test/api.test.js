@@ -1,9 +1,10 @@
-
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { ObjectId } = require('mongodb');
+
 
 // Отключаем автоматическое открытие веб-интерфейса при тестах
 process.env.NODE_ENV = 'test';
@@ -19,10 +20,9 @@ let resetToken;
 beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   await User.deleteMany({});
-  
-  // Создаем тестового пользователя
+
+  // Создаем тестового пользователя with correct ObjectId
   const testUser = new User({
-    _id: '65b3f7b8e32a37c1234567890',
     username: 'testuser',
     email: 'test@example.com',
     password: 'hashedpassword',
@@ -30,7 +30,7 @@ beforeAll(async () => {
     isActive: true
   });
   await testUser.save();
-  
+
   // Создаем валидный токен для тестового пользователя
   authToken = jwt.sign(
     { 
@@ -43,8 +43,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
-});
+    await mongoose.disconnect();
+    await new Promise(resolve => setTimeout(resolve, 500)); // Даем время на закрытие соединений
+  });
+
 
 // Test Data
 const testData = {

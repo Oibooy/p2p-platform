@@ -89,7 +89,13 @@ async function connectToDatabase() {
     const Role = require('./models/Role');
     const roles = ['user', 'moderator', 'admin'];
     
-    const session = await connection.startSession();
+    try {
+      const session = await connection.startSession();
+      await initializeRoles(roles, session);
+      await session.endSession();
+    } catch (error) {
+      console.error('Error initializing roles:', error);
+    }
     try {
       await session.withTransaction(async () => {
         for (const roleName of roles) {
