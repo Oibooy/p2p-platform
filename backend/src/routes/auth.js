@@ -252,10 +252,28 @@ router.post(
 
       // Сохраняем refresh token в Redis
       const redis = await redisClient.getClient();
-      await redis.set(
-        `refresh_token:${user._id}:${tokenId}`,
-        JSON.stringify({
+      if (!redis) {
+        // Continue without Redis, using only JWT
+        console.warn('Redis unavailable, continuing with JWT only');
+        return res.status(200).json({ 
+          message: 'Login successful.',
+          token,
           refreshToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role.name,
+            isActive: user.isActive
+          }
+        });
+      }
+      
+      try {
+        await redis.set(
+          `refresh_token:${user._id}:${tokenId}`,
+          JSON.stringify({
+            refreshToken,
           userAgent: req.headers['user-agent'],
           ip: req.ip,
           createdAt: new Date().toISOString()
