@@ -43,9 +43,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await mongoose.disconnect();
-    await new Promise(resolve => setTimeout(resolve, 500)); // Даем время на закрытие соединений
-  });
+  await mongoose.disconnect();
+  await new Promise(resolve => setTimeout(resolve, 500)); // Даем время на закрытие соединений
+  if (global.redisClient) {
+    await global.redisClient.quit();
+  }
+});
 
 
 // Test Data
