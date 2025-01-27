@@ -1,0 +1,206 @@
+2025-01-27 11:34:22 [INFO]: GET /api/notifications/settings 404 148.366 ms - 27
+2025-01-27 11:34:22 [INFO]: PUT /api/notifications/settings 404 148.369 ms - 27
+ FAIL  src/test/api.test.js (8.365 s)
+  Authentication API
+    Registration
+      ✕ POST /api/auth/register - success (622 ms)
+      ✓ POST /api/auth/register - duplicate email (74 ms)
+    Authentication
+      ✓ POST /api/auth/login - success (548 ms)
+      ✓ POST /api/auth/login - wrong password (183 ms)
+    Password Reset
+      ✓ POST /api/auth/forgot-password (2628 ms)
+      ✓ POST /api/auth/reset-password/:token (199 ms)
+  Orders API
+    ✓ GET /api/orders/public (84 ms)
+    ✕ POST /api/orders - create order (177 ms)
+    ✕ GET /api/orders/:id - get specific order (25 ms)
+  Escrow API
+    ✕ POST /api/escrow/deposit (176 ms)
+  Disputes API
+    ✕ POST /api/disputes - create dispute (174 ms)
+    ✕ GET /api/disputes - get disputes list (175 ms)
+  Reviews API
+    ✕ POST /api/reviews - create review (171 ms)
+    ✕ GET /api/reviews/:userId - get user reviews (23 ms)
+  Notifications API
+    ✕ GET /api/notifications/settings (175 ms)
+    ✕ PUT /api/notifications/settings - update settings (179 ms)
+
+  ● Authentication API › Registration › POST /api/auth/register - success
+
+    expect(received).toHaveProperty(path)
+
+    Expected path: "userId"
+    Received path: []
+
+    Received value: {"message": "User registered successfully."}
+
+      65 |       expect(res.statusCode).toBe(201);
+      66 |       expect(res.body).toHaveProperty('message');
+    > 67 |       expect(res.body).toHaveProperty('userId');
+         |                        ^
+      68 |     });
+      69 |
+      70 |     test('POST /api/auth/register - duplicate email', async () => {
+
+      at Object.<anonymous> (src/test/api.test.js:67:24)
+
+  ● Orders API › POST /api/orders - create order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      145 |       .send(testData.order);
+      146 |
+    > 147 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      148 |     testOrderId = res.body.order._id;
+      149 |   });
+      150 |
+
+      at Object.<anonymous> (src/test/api.test.js:147:28)
+
+  ● Orders API › GET /api/orders/:id - get specific order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+      152 |     const res = await request(app)
+      153 |       .get(`/api/orders/${testOrderId}`);
+    > 154 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      155 |   });
+      156 | });
+      157 |
+
+      at Object.<anonymous> (src/test/api.test.js:154:28)
+
+  ● Escrow API › POST /api/escrow/deposit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      169 |       .send(depositData);
+      170 |
+    > 171 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      172 |   });
+      173 | });
+      174 |
+
+      at Object.<anonymous> (src/test/api.test.js:171:28)
+
+  ● Disputes API › POST /api/disputes - create dispute
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      186 |       .send(disputeData);
+      187 |
+    > 188 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      189 |     testDisputeId = res.body._id;
+      190 |   });
+      191 |
+
+      at Object.<anonymous> (src/test/api.test.js:188:28)
+
+  ● Disputes API › GET /api/disputes - get disputes list
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      195 |       .set('Authorization', `Bearer ${authToken}`);
+      196 |
+    > 197 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      198 |     expect(Array.isArray(res.body.disputes)).toBe(true);
+      199 |   });
+      200 | });
+
+      at Object.<anonymous> (src/test/api.test.js:197:28)
+
+  ● Reviews API › POST /api/reviews - create review
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 404
+
+      214 |       .send(reviewData);
+      215 |
+    > 216 |     expect(res.statusCode).toBe(201);
+          |                            ^
+      217 |     testReviewId = res.body.review._id;
+      218 |   });
+      219 |
+
+      at Object.<anonymous> (src/test/api.test.js:216:28)
+
+  ● Reviews API › GET /api/reviews/:userId - get user reviews
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      221 |     const res = await request(app)
+      222 |       .get(`/api/reviews/65b3f7b8e32a37c1234567891`);
+    > 223 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      224 |     expect(res.body).toHaveProperty('reviews');
+      225 |   });
+      226 | });
+
+      at Object.<anonymous> (src/test/api.test.js:223:28)
+
+  ● Notifications API › GET /api/notifications/settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      233 |       .set('Authorization', `Bearer ${authToken}`);
+      234 |
+    > 235 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      236 |     expect(res.body).toHaveProperty('notificationSettings');
+      237 |   });
+      238 |
+
+      at Object.<anonymous> (src/test/api.test.js:235:28)
+
+  ● Notifications API › PUT /api/notifications/settings - update settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      243 |       .send(testData.notification.settings);
+      244 |
+    > 245 |     expect(res.statusCode).toBe(200);
+          |                            ^
+      246 |   });
+      247 | });
+      248 |
+
+      at Object.<anonymous> (src/test/api.test.js:245:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       10 failed, 6 passed, 16 total
+Snapshots:   0 total
+Time:        8.406 s
+Ran all test suites.
