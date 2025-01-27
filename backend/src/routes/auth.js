@@ -339,15 +339,16 @@ router.post('/logout', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Отзыв токена в Redis с истечением срока действия
-    await new Promise((resolve, reject) => {
-      redisClient.set(token, 'revoked', 'EX', decoded.exp - Math.floor(Date.now() / 1000), (err) => {
-        if (err) {
-          console.error('Redis set error:', err.message);
-          return reject(err);
+    const client = await redisClient.getClient();
+    if (client) {
+      await client.set(
+        token,
+        'revoked',
+        {
+          EX: decoded.exp - Math.floor(Date.now() / 1000)
         }
-        resolve();
-      });
-    });
+      );
+    }
 
     res.status(200).json({ message: 'Logged out successfully.' });
   } catch (error) {
