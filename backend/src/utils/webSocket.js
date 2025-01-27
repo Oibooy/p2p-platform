@@ -62,7 +62,19 @@ function handleMessage(userId, message) {
 // Обработка подключений
 webSocketServer.on('connection', async (ws, req) => {
   try {
+    ws.isAlive = true;
     const url = new URL(req.url, `http://${req.headers.host}`);
+    
+    // Добавляем обработку ошибок соединения
+    ws.on('error', (error) => {
+      logger.error(`WebSocket error: ${error.message}`);
+      ws.terminate();
+    });
+    
+    // Добавляем heartbeat
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
     ws.isAlive = true;
     ws.on('pong', () => {
       ws.isAlive = true;

@@ -77,7 +77,16 @@ router.put('/settings', verifyToken, async (req, res) => {
 // Получение уведомлений пользователя
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const { page = 1, limit = 10, isRead } = req.query;
+    const { page = 1, limit = 10, isRead, type } = req.query;
+    const filter = { user: req.user.id };
+    
+    if (isRead !== undefined) {
+      filter.isRead = isRead === 'true';
+    }
+    
+    if (type) {
+      filter.type = type;
+    }
     const filter = { user: req.user.id };
     if (isRead !== undefined) {
       filter.isRead = isRead === 'true';
