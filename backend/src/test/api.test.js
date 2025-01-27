@@ -1,4 +1,3 @@
-
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
@@ -35,56 +34,56 @@ describe('Authentication Endpoints', () => {
     password: 'Test123!'
   };
 
-  test('POST /auth/register should register new user', async () => {
+  test('POST /api/auth/register should register new user', async () => {
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send(testUser);
-    
+
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('message');
     expect(res.body).toHaveProperty('userId');
   });
 
-  test('POST /auth/register should fail with existing email', async () => {
+  test('POST /api/auth/register should fail with existing email', async () => {
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send(testUser);
-    
+
     expect(res.statusCode).toBe(400);
     expect(res.body).toHaveProperty('error');
   });
 
-  test('POST /auth/login should authenticate user', async () => {
+  test('POST /api/auth/login should authenticate user', async () => {
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: testUser.email,
         password: testUser.password
       });
-    
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('accessToken');
     expect(res.body).toHaveProperty('refreshToken');
     expect(res.body).toHaveProperty('user');
   });
 
-  test('POST /auth/login should fail with wrong password', async () => {
+  test('POST /api/auth/login should fail with wrong password', async () => {
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: testUser.email,
         password: 'wrongpassword'
       });
-    
+
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty('error');
   });
 
-  test('POST /auth/forgot-password should send reset email', async () => {
+  test('POST /api/auth/forgot-password should send reset email', async () => {
     const res = await request(app)
-      .post('/auth/forgot-password')
+      .post('/api/auth/forgot-password')
       .send({ email: testUser.email });
-    
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('message');
 
@@ -93,96 +92,96 @@ describe('Authentication Endpoints', () => {
     resetToken = user.resetPasswordToken;
   });
 
-  test('POST /auth/reset-password/:token should reset password', async () => {
+  test('POST /api/auth/reset-password/:token should reset password', async () => {
     const res = await request(app)
-      .post(`/auth/reset-password/${resetToken}`)
+      .post(`/api/auth/reset-password/${resetToken}`)
       .send({ password: 'NewPassword123!' });
-    
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('message');
 
     // Verify login with new password works
     const loginRes = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: testUser.email,
         password: 'NewPassword123!'
       });
-    
+
     expect(loginRes.statusCode).toBe(200);
   });
 });
 
 // Orders Tests
 describe('Orders Endpoints', () => {
-  test('GET /orders/public should return public orders', async () => {
-    const res = await request(app).get('/orders/public');
+  test('GET /api/orders/public should return public orders', async () => {
+    const res = await request(app).get('/api/orders/public');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  test('POST /orders should create new order', async () => {
+  test('POST /api/orders should create new order', async () => {
     const orderData = {
       type: 'buy',
       amount: 100,
       price: 50000
     };
-    
+
     const res = await request(app)
-      .post('/orders')
+      .post('/api/orders')
       .set('Authorization', `Bearer ${authToken}`)
       .send(orderData);
-      
+
     expect(res.statusCode).toBe(201);
     testOrderId = res.body.order._id;
   });
 
-  test('GET /orders/:id should return specific order', async () => {
+  test('GET /api/orders/:id should return specific order', async () => {
     const res = await request(app)
-      .get(`/orders/${testOrderId}`);
+      .get(`/api/orders/${testOrderId}`);
     expect(res.statusCode).toBe(200);
   });
 });
 
 // Escrow Tests
 describe('Escrow Endpoints', () => {
-  test('POST /escrow/deposit should process deposit', async () => {
+  test('POST /api/escrow/deposit should process deposit', async () => {
     const depositData = {
       dealId: testOrderId,
       amount: 1000
     };
-    
+
     const res = await request(app)
-      .post('/escrow/deposit')
+      .post('/api/escrow/deposit')
       .set('Authorization', `Bearer ${authToken}`)
       .send(depositData);
-      
+
     expect(res.statusCode).toBe(200);
   });
 });
 
 // Disputes Tests
 describe('Disputes Endpoints', () => {
-  test('POST /disputes should create dispute', async () => {
+  test('POST /api/disputes should create dispute', async () => {
     const disputeData = {
       order_id: testOrderId,
       reason: 'Test dispute reason'
     };
-    
+
     const res = await request(app)
-      .post('/disputes')
+      .post('/api/disputes')
       .set('Authorization', `Bearer ${authToken}`)
       .send(disputeData);
-      
+
     expect(res.statusCode).toBe(201);
     testDisputeId = res.body._id;
   });
 
-  test('GET /disputes should return disputes list', async () => {
+  test('GET /api/disputes should return disputes list', async () => {
     const res = await request(app)
-      .get('/disputes')
+      .get('/api/disputes')
       .set('Authorization', `Bearer ${authToken}`);
-      
+
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.disputes)).toBe(true);
   });
@@ -190,26 +189,26 @@ describe('Disputes Endpoints', () => {
 
 // Reviews Tests
 describe('Reviews Endpoints', () => {
-  test('POST /reviews should create review', async () => {
+  test('POST /api/reviews should create review', async () => {
     const reviewData = {
       dealId: testOrderId,
       to: '65b3f7b8e32a37c1234567891',
       rating: 5,
       comment: 'Great service!'
     };
-    
+
     const res = await request(app)
-      .post('/reviews')
+      .post('/api/reviews')
       .set('Authorization', `Bearer ${authToken}`)
       .send(reviewData);
-      
+
     expect(res.statusCode).toBe(201);
     testReviewId = res.body.review._id;
   });
 
-  test('GET /reviews/:userId should return user reviews', async () => {
+  test('GET /api/reviews/:userId should return user reviews', async () => {
     const res = await request(app)
-      .get('/reviews/65b3f7b8e32a37c1234567891');
+      .get('/api/reviews/65b3f7b8e32a37c1234567891');
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('reviews');
   });
@@ -217,27 +216,27 @@ describe('Reviews Endpoints', () => {
 
 // Notifications Tests
 describe('Notifications Endpoints', () => {
-  test('GET /notifications/settings should return settings', async () => {
+  test('GET /api/notifications/settings should return settings', async () => {
     const res = await request(app)
-      .get('/notifications/settings')
+      .get('/api/notifications/settings')
       .set('Authorization', `Bearer ${authToken}`);
-      
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('notificationSettings');
   });
 
-  test('PUT /notifications/settings should update settings', async () => {
+  test('PUT /api/notifications/settings should update settings', async () => {
     const settingsData = {
       email: true,
       sms: false,
       push: true
     };
-    
+
     const res = await request(app)
-      .put('/notifications/settings')
+      .put('/api/notifications/settings')
       .set('Authorization', `Bearer ${authToken}`)
       .send(settingsData);
-      
+
     expect(res.statusCode).toBe(200);
   });
 });
