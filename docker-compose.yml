@@ -1,3 +1,4 @@
+
 version: '3.8'
 services:
   backend:
@@ -6,14 +7,8 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/p2p_platform
+      - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=supersecretkey
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo
-    ports:
-      - "27017:27017"
   redis:
     image: redis:alpine
     ports:
