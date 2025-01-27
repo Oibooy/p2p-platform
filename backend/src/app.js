@@ -72,38 +72,42 @@ app.use('/api/escrow', verifyToken, escrowRoutes);
 // Database connection
 async function connectToDatabase() {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    const connection = await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 30000,
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      autoCreate: true
     });
+
+    // Wait for connection to be ready
+    await new Promise(resolve => setTimeout(resolve, 1000));
     logger.info('MongoDB connected');
 
     // Initialize default roles after successful connection
     const Role = require('./models/Role');
     const roles = ['user', 'moderator', 'admin'];
     
-    for (const roleName of roles) {
-      try {
-        await Role.findOneAndUpdate(
-          { name: roleName },
-          { name: roleName },
-          { 
-            upsert: true,
-            new: true,
-            maxTimeMS: 20000,
-            session: null // Explicitly disable session for this operation
-          }
-        );
-      } catch (error) {
-        logger.error(`Error initializing role ${roleName}:`, error);
-        // Continue with other roles even if one fails
-        continue;
-      }
+    const session = await connection.startSession();
+    try {
+      await session.withTransaction(async () => {
+        for (const roleName of roles) {
+          await Role.findOneAndUpdate(
+            { name: roleName },
+            { name: roleName },
+            { 
+              upsert: true,
+              new: true,
+              session
+            }
+          );
+        }
+      });
+      logger.info('Default roles initialized');
+    } finally {
+      await session.endSession();
     }
-    logger.info('Default roles initialized');
 
 
     process.on('SIGINT', async () => {
