@@ -1,53 +1,49 @@
-import { createContext, useState, useEffect } from 'react';
 
-// Создаём контекст
+import { createContext, useState, useEffect } from 'react';
+import apiClient from '../api/apiClient';
+
 export const AuthContext = createContext();
 
-// Провайдер контекста
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null); // Хранение данных о пользователе
-  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Проверяем токен в localStorage при загрузке приложения
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Здесь можно добавить логику проверки токена на сервере
-      const userData = parseToken(token); // Пример: декодирование токена (если JWT)
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
-    setLoading(false); // Загрузка завершена
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await apiClient.get('/users/me');
+          setUser(response.data);
+          setIsAuthenticated(true);
+        } catch (error) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
-  const login = (token) => {
+  const login = async (token, refreshToken, userData) => {
     localStorage.setItem('token', token);
-    const userData = parseToken(token); // Декодирование токена
+    localStorage.setItem('refreshToken', refreshToken);
     setUser(userData);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     setUser(null);
     setIsAuthenticated(false);
   };
 
-  const parseToken = (token) => {
-    // Пример декодирования JWT. Можно использовать библиотеку jwt-decode
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload;
-    } catch (error) {
-      console.error('Failed to parse token', error);
-      return null;
-    }
-  };
-
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
