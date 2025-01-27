@@ -12,8 +12,8 @@ const { webSocketServer } = require('./utils/webSocket');
 const { startDealExpiryHandler } = require('./workers/dealExpiryHandler');
 
 const authRoutes = require('./routes/auth');
-const ordersRoutes = require('./routes/orders');
-const reviewsRoutes = require('./routes/reviews');
+const orderRoutes = require('./routes/orders');
+const reviewRoutes = require('./routes/reviews');
 const adminRoutes = require('./routes/admin');
 const disputesRoutes = require('./routes/disputes');
 const messagesRoutes = require('./routes/messages');
@@ -60,8 +60,8 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/orders', ordersRoutes);
-app.use('/api/reviews', reviewsRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', verifyToken, adminRoutes);
 app.use('/api/disputes', disputesRoutes);
 app.use('/api/messages', messagesRoutes);
@@ -86,7 +86,7 @@ async function connectToDatabase() {
     // Initialize default roles after successful connection
     const Role = require('./models/Role');
     const roles = ['user', 'moderator', 'admin'];
-    
+
     const initializeRoles = async (roles, session) => {
       for (const roleName of roles) {
         const existingRole = await Role.findOne({ name: roleName }).session(session);
@@ -113,7 +113,7 @@ async function connectToDatabase() {
           await Role.findOneAndUpdate(
             { name: roleName },
             { name: roleName },
-            { 
+            {
               upsert: true,
               new: true,
               session

@@ -74,7 +74,9 @@ router.post('/', async (req, res) => {
     res.status(201).json(dispute);
   } catch (err) {
     console.error('Error creating dispute:', err.message);
-    res.status(500).json({ error: 'Failed to create dispute' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to create dispute' });
+    }
   }
 });
 

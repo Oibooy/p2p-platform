@@ -56,7 +56,7 @@ afterAll(async () => {
 const testData = {
   user: {
     username: 'testuser',
-    email: 'test@example.com',
+    email: 'test' + Date.now() + '@example.com',
     password: 'Test123!'
   },
   order: {
