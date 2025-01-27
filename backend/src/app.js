@@ -76,8 +76,6 @@ async function connectToDatabase() {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 30000,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       autoCreate: true
     });
 
