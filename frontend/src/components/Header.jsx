@@ -1,10 +1,10 @@
-
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Added import for Link
 import { AuthContext } from '../context/AuthContext';
 
 function Header() {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, user, logout } = useContext(AuthContext); // Added 'user' to context
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -23,8 +23,13 @@ function Header() {
             Trading Platform
           </h1>
           <nav className="flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isAuthenticated && user && ( // Added user check
               <>
+                {user.role === 'admin' && ( // Added admin role check
+                  <Link to="/admin" className="text-white hover:text-gray-300 mr-4">
+                    Admin Panel
+                  </Link>
+                )}
                 <button
                   onClick={() => navigate('/orders/create')}
                   className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg transition-colors"
@@ -38,7 +43,8 @@ function Header() {
                   Logout
                 </button>
               </>
-            ) : (
+            )}
+            {!isAuthenticated && (
               <>
                 <button
                   onClick={() => navigate('/login')}

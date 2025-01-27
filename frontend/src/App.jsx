@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import ConfirmEmailPage from './pages/ConfirmEmailPage';
 import ResendConfirmationPage from './pages/ResendConfirmationPage';
 import NotFoundPage from './pages/NotFoundPage';
+import AdminPage from './pages/AdminPage';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute'; // Подключаем ProtectedRoute
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -59,7 +60,15 @@ function App() {
               />
 
               {/* Маршрут 404 */}
-              <Route path="*" element={<NotFoundPage />} />
+              <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
         </div>
