@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import OrdersPage from './pages/OrdersPage';
@@ -19,6 +18,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import { Hero } from './components/Hero';
 import { TradeForm } from './components/TradeForm';
 import { Features } from './components/Features';
+import ProfilePage from './pages/ProfilePage';
+import ReviewsPage from './pages/ReviewsPage';
 
 function App() {
   return (
@@ -73,6 +74,8 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/reviews/:userId" element={<ReviewsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
