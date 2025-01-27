@@ -164,6 +164,7 @@ const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_WEB !== 'true') {
   server.listen(PORT, '0.0.0.0', () => {
     logger.info(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`Server is listening on port ${PORT}`); // Additional logging
   });
 }
 
