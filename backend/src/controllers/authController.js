@@ -37,7 +37,7 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role: userRole._id,
-      isEmailConfirmed: false
+      isEmailConfirmed: true // Временно установим true для тестирования
     });
 
     await newUser.save();

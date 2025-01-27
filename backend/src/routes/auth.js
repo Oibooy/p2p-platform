@@ -182,6 +182,12 @@ router.post(
 
     try {
       const user = await User.findOne({ email }).populate('role');
+      console.log('Login attempt:', { 
+        email, 
+        userFound: !!user,
+        isEmailConfirmed: user?.isEmailConfirmed
+      });
+      
       if (!user) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
