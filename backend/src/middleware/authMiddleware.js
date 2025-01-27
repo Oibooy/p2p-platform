@@ -39,6 +39,13 @@ async function verifyToken(req, res, next) {
     }
 
     const decoded = jwt.verify(extractedToken, process.env.JWT_SECRET);
+    
+    if (decoded.type !== 'access') {
+      return res.status(401).json({ 
+        error: 'Invalid token type. Access token required.',
+        code: 'INVALID_TOKEN_TYPE'
+      });
+    }
 
     //Improved user lookup with error handling
     let user;
@@ -64,10 +71,27 @@ async function verifyToken(req, res, next) {
     console.error(`[${new Date().toISOString()}] Token verification failed:`, error.message);
 
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired. Please log in again.' });
+      return res.status(401).json({ 
+        error: 'Token expired. Please log in again.',
+        code: 'TOKEN_EXPIRED'
+      });
     }
-
-    return res.status(400).json({ error: 'Invalid token.' });
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        error: 'Invalid token signature',
+        code: 'INVALID_SIGNATURE'
+      });
+    }
+    if (error.name === 'NotBeforeError') {
+      return res.status(401).json({ 
+        error: 'Token not yet valid',
+        code: 'TOKEN_NOT_ACTIVE'
+      });
+    }
+    return res.status(401).json({ 
+      error: 'Invalid token',
+      code: 'INVALID_TOKEN'
+    });
   }
 }
 
@@ -135,3 +159,15 @@ async function revokeToken(token, expirationTime) {
 }
 
 module.exports = { verifyToken, checkRole, checkRevokedToken, revokeToken };
+const rateLimit = require('express-rate-limit');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { 
+    error: 'Too many auth attempts, please try again later',
+    code: 'RATE_LIMIT_EXCEEDED'
+  }
+});
+
+module.exports = { verifyToken, checkRole, checkRevokedToken, revokeToken, authLimiter };
