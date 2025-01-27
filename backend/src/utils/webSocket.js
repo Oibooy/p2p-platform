@@ -63,6 +63,20 @@ function handleMessage(userId, message) {
 webSocketServer.on('connection', async (ws, req) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+    ws.isAlive = true;
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
+    
+    // Ping every 30 seconds
+    const interval = setInterval(() => {
+      if (ws.isAlive === false) {
+        clearInterval(interval);
+        return ws.terminate();
+      }
+      ws.isAlive = false;
+      ws.ping();
+    }, 30000);
     let token = url.searchParams.get('token');
 
     if (!token) {

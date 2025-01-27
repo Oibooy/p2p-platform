@@ -114,6 +114,10 @@ async function getDeal(token, dealId) {
 async function initializeEscrow(dealId, amount, buyerAddress, sellerAddress) {
   try {
     const escrowContract = await tronWeb.contract().at(process.env.ESCROW_CONTRACT_ADDRESS);
+    const existingDeal = await getDeal('USDT', dealId);
+    if (existingDeal.success && existingDeal.deal.isReleased) {
+      throw new Error('Deal already completed');
+    }
     const result = await escrowContract.createEscrow(
       dealId, 
       tronWeb.toSun(amount),

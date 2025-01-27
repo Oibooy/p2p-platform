@@ -22,7 +22,7 @@ router.get('/unread-count', verifyToken, async (req, res) => {
 });
 
 
-// Получение текущих настроек уведомлений
+// Получение текущих настроек уведомлений (Improved to handle email, push, telegram)
 router.get('/settings', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -30,39 +30,29 @@ router.get('/settings', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     res.status(200).json({ 
-      notificationSettings: user.notificationSettings || {
-        email: true,
-        sms: false,
-        push: true
+      notificationSettings: {
+        email: user.emailNotifications || true, // Default to true if not set
+        push: user.pushNotifications || true,   // Default to true if not set
+        telegram: user.telegramNotifications || false // Default to false if not set
       }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-  try {
-    const user = await User.findById(req.user.id, 'notificationSettings');
-    if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-    res.status(200).json({ notificationSettings: user.notificationSettings });
-  } catch (error) {
-    console.error('Error fetching notification settings:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
 });
 
-// Обновление настроек уведомлений
+// Обновление настроек уведомлений (Improved to handle email, push, telegram)
 router.put('/settings', verifyToken, async (req, res) => {
   try {
-    const { email, sms, push } = req.body;
+    const { email, push, telegram } = req.body;
 
     // Проверка входных данных
     if (
       email !== undefined && typeof email !== 'boolean' ||
-      sms !== undefined && typeof sms !== 'boolean' ||
-      push !== undefined && typeof push !== 'boolean'
+      push !== undefined && typeof push !== 'boolean' ||
+      telegram !== undefined && typeof telegram !== 'boolean'
     ) {
-      return res.status(400).json({ error: 'Неверный формат данных. Ожидаются Boolean значения для email, sms, push.' });
+      return res.status(400).json({ error: 'Неверный формат данных. Ожидаются Boolean значения для email, push, telegram.' });
     }
 
     const user = await User.findById(req.user.id);
@@ -72,14 +62,12 @@ router.put('/settings', verifyToken, async (req, res) => {
     }
 
     // Обновление настроек
-    user.notificationSettings = {
-      email: email !== undefined ? email : user.notificationSettings.email,
-      sms: sms !== undefined ? sms : user.notificationSettings.sms,
-      push: push !== undefined ? push : user.notificationSettings.push,
-    };
+    user.emailNotifications = email !== undefined ? email : user.emailNotifications;
+    user.pushNotifications = push !== undefined ? push : user.pushNotifications;
+    user.telegramNotifications = telegram !== undefined ? telegram : user.telegramNotifications;
 
     await user.save();
-    res.status(200).json({ message: 'Настройки уведомлений обновлены', notificationSettings: user.notificationSettings });
+    res.status(200).json({ message: 'Настройки уведомлений обновлены', notificationSettings: {email: user.emailNotifications, push: user.pushNotifications, telegram: user.telegramNotifications} });
   } catch (error) {
     console.error('Error updating notification settings:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -165,14 +153,12 @@ router.post('/settings/reset', verifyToken, async (req, res) => {
     }
 
     // Сброс настроек к значениям по умолчанию
-    user.notificationSettings = {
-      email: true,
-      sms: false,
-      push: true,
-    };
+    user.emailNotifications = true;
+    user.pushNotifications = true;
+    user.telegramNotifications = false;
 
     await user.save();
-    res.status(200).json({ message: 'Настройки уведомлений сброшены к значениям по умолчанию', notificationSettings: user.notificationSettings });
+    res.status(200).json({ message: 'Настройки уведомлений сброшены к значениям по умолчанию', notificationSettings: {email: true, push: true, telegram: false} });
   } catch (error) {
     console.error('Error resetting notification settings:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -180,6 +166,3 @@ router.post('/settings/reset', verifyToken, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

@@ -55,25 +55,18 @@ router.get('/:id', verifyToken, async (req, res) => {
 });
 
 // Создать арбитраж
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
     const { order_id, reason } = req.body;
-    const dispute = new Dispute({
-      order: order_id,
-      reason
-    });
-    const savedDispute = await dispute.save();
-    res.status(201).json(savedDispute);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-  const { order_id, reason } = req.body;
-  try {
+    if (!reason || reason.length < 10) {
+      return res.status(400).json({ error: 'Dispute reason must be at least 10 characters long' });
+    }
     const order = await Order.findById(order_id);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    if (order.status !== 'open') {
-      return res.status(400).json({ error: 'Only open orders can be disputed.' });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    if (order.status !== 'active') {
+      return res.status(400).json({ error: 'Can only dispute active orders' });
     }
 
     const dispute = new Dispute({
