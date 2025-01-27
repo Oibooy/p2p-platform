@@ -58,7 +58,7 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // Create order
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
     const { type, amount, price } = req.body;
     const order = new Order({

@@ -19,7 +19,27 @@ let resetToken;
 beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   await User.deleteMany({});
-  authToken = jwt.sign({ userId: '65b3f7b8e32a37c1234567890' }, process.env.JWT_SECRET);
+  
+  // Создаем тестового пользователя
+  const testUser = new User({
+    _id: '65b3f7b8e32a37c1234567890',
+    username: 'testuser',
+    email: 'test@example.com',
+    password: 'hashedpassword',
+    isEmailConfirmed: true,
+    isActive: true
+  });
+  await testUser.save();
+  
+  // Создаем валидный токен для тестового пользователя
+  authToken = jwt.sign(
+    { 
+      userId: testUser._id,
+      type: 'access'
+    }, 
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
 });
 
 afterAll(async () => {
