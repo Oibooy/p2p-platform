@@ -1,10 +1,27 @@
 // routes/notifications.js - Маршруты для управления уведомлениями
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
+const Notification = require('../models/Notification');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 
 const router = express.Router();
+
+
+// Получение количества непрочитанных уведомлений
+router.get('/unread-count', verifyToken, async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({
+      user: req.user.id,
+      isRead: false
+    });
+    res.json({ count });
+  } catch (error) {
+    console.error('Error getting unread notifications count:', error);
+    res.status(500).json({ error: 'Failed to get unread notifications count' });
+  }
+});
+
 
 // Получение текущих настроек уведомлений
 router.get('/settings', verifyToken, async (req, res) => {
