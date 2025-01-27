@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-export function TradeForm() {
+export default function TradeForm() {
   const [tradeType, setTradeType] = useState('buy');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
