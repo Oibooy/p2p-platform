@@ -1,0 +1,51 @@
+~/workspace/backend$ npm test
+
+> backend@1.0.0 test
+> jest --detectOpenHandles
+
+(node:6784) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6784) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+2025-01-27 10:34:19 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6274968
+2025-01-27 10:34:20 [INFO]: POST /auth/register 404 2.869 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /auth/register 404 0.779 ms - 44
+2025-01-27 10:34:20 [INFO]: Connected to Tron Network. Current block: 53978172
+2025-01-27 10:34:20 [INFO]: POST /auth/login 404 0.761 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /auth/login 404 0.588 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /auth/forgot-password 404 0.479 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /auth/reset-password/undefined 404 0.562 ms - 44
+2025-01-27 10:34:20 [INFO]: GET /orders/public 404 0.600 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /orders 404 0.559 ms - 44
+2025-01-27 10:34:20 [INFO]: GET /orders/undefined 404 0.563 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /escrow/deposit 404 0.599 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /disputes 404 0.694 ms - 44
+2025-01-27 10:34:20 [INFO]: GET /disputes 404 0.500 ms - 44
+2025-01-27 10:34:20 [INFO]: POST /reviews 404 0.527 ms - 44
+2025-01-27 10:34:20 [INFO]: GET /reviews/65b3f7b8e32a37c1234567891 404 0.559 ms - 44
+2025-01-27 10:34:20 [INFO]: GET /notifications/settings 404 0.439 ms - 44
+2025-01-27 10:34:20 [INFO]: PUT /notifications/settings 404 0.573 ms - 44
+ FAIL  src/test/api.test.js
+  Authentication Endpoints
+    ✕ POST /auth/register should register new user (72 ms)
+    ✕ POST /auth/register should fail with existing email (38 ms)
+    ✕ POST /auth/login should authenticate user (23 ms)
+    ✕ POST /auth/login should fail with wrong password (37 ms)
+    ✕ POST /auth/forgot-password should send reset email (16 ms)
+    ✕ POST /auth/reset-password/:token should reset password (18 ms)
+  Orders Endpoints
+    ✕ GET /orders/public should return public orders (16 ms)
+    ✕ POST /orders should create new order (18 ms)
+    ✕ GET /orders/:id should return specific order (15 ms)
+  Escrow Endpoints
+    ✕ POST /escrow/deposit should process deposit (14 ms)
+  Disputes Endpoints
+    ✕ POST /disputes should create dispute (19 ms)
+    ✕ GET /disputes should return disputes list (18 ms)
+  Reviews Endpoints
+    ✕ POST /reviews should create review (15 ms)
+    ✕ GET /reviews/:userId should return user reviews (13 ms)
+  Notifications Endpoints
+    ✕ GET /notifications/settings should return settings (11 ms)
+    ✕ PUT /notifications/settings should update settings (20 ms)
+
+  ● Authentication Endpoints › POST /auth/register should register new user
