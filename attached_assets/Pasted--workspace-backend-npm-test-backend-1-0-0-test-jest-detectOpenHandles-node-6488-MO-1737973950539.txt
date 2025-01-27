@@ -1,0 +1,45 @@
+~/workspace/backend$ npm test
+
+> backend@1.0.0 test
+> jest --detectOpenHandles
+
+(node:6488) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6488) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+2025-01-27 10:31:03 [INFO]: Подключено к MTT Network: MTT, Chain ID: 6880, Block: 6274928
+ FAIL  src/test/api.test.js
+  ● Authentication Endpoints › POST /auth/register should register new user
+
+    TypeError: app.address is not a function
+
+      32 |   test('POST /auth/register should register new user', async () => {
+      33 |     const res = await request(app)
+    > 34 |       .post('/auth/register')
+         |        ^
+      35 |       .send(testUser);
+      36 |     
+      37 |     expect(res.statusCode).toBe(201);
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:46:22)
+      at new Test (node_modules/supertest/lib/test.js:34:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:43:18)
+      at Object.post (src/test/api.test.js:34:8)
+
+  ● Authentication Endpoints › POST /auth/register should fail with existing email
+
+    TypeError: app.address is not a function
+
+      42 |   test('POST /auth/register should fail with existing email', async () => {
+      43 |     const res = await request(app)
+    > 44 |       .post('/auth/register')
+         |        ^
+      45 |       .send(testUser);
+      46 |     
+      47 |     expect(res.statusCode).toBe(400);
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:46:22)
+      at new Test (node_modules/supertest/lib/test.js:34:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:43:18)
+      at Object.post (src/test/api.test.js:44:8)
+
+  ● Authentication Endpoints › POST /auth/login should authenticate user
