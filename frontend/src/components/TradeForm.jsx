@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function TradeForm() {
+export function TradeForm() {
   return (
     <div className="trade-form">
       <h2>Start Trading</h2>

@@ -11,7 +11,7 @@ const FeatureCard = ({ icon, title, description }) => (
   </div>
 );
 
-export const Features = () => {
+export function Features() {
   return (
     <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
