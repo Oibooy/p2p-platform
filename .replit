@@ -37,48 +37,24 @@ localPort = 5175
 localPort = 6379
 
 [[ports]]
-localPort = 33693
-externalPort = 3003
-
-[[ports]]
-localPort = 36443
-externalPort = 8000
-
-[[ports]]
-localPort = 36809
-externalPort = 8008
-
-[[ports]]
-localPort = 36943
-externalPort = 8080
-
-[[ports]]
-localPort = 40907
-externalPort = 6800
-
-[[ports]]
-localPort = 41169
-externalPort = 8099
-
-[[ports]]
-localPort = 41347
-externalPort = 4200
-
-[[ports]]
-localPort = 41361
-externalPort = 6000
-
-[[ports]]
-localPort = 43211
-externalPort = 8081
-
-[[ports]]
-localPort = 43897
+localPort = 36941
 externalPort = 3002
 
 [[ports]]
-localPort = 46867
-externalPort = 9000
+localPort = 39029
+externalPort = 3003
+
+[[ports]]
+localPort = 40189
+externalPort = 6000
+
+[[ports]]
+localPort = 42271
+externalPort = 4200
+
+[[ports]]
+localPort = 44023
+externalPort = 6800
 
 [workflows]
 runButton = "Dev"
