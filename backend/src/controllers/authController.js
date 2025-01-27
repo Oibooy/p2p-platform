@@ -46,10 +46,10 @@ exports.registerUser = async (req, res) => {
       isEmailConfirmed: true // Временно установим true для тестирования
     });
 
-    await newUser.save();
+    const savedUser = await newUser.save();
 
     // Генерация токена для подтверждения email
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${token}`;
 
     await sendEmail(email, 'Подтверждение регистрации', 
@@ -57,7 +57,7 @@ exports.registerUser = async (req, res) => {
 
     res.status(201).json({
       message: 'Регистрация успешна. Проверьте email для подтверждения.',
-      userId: newUser._id
+      userId: savedUser._id
     });
   } catch (error) {
     console.error('Ошибка регистрации:', error);
