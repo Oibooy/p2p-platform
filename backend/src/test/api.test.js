@@ -5,6 +5,10 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Отключаем автоматическое открытие веб-интерфейса при тестах
+process.env.NODE_ENV = 'test';
+process.env.DISABLE_WEB = 'true';
+
 let authToken;
 let testOrderId;
 let testDisputeId;
