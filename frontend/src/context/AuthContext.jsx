@@ -22,8 +22,8 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await apiClient.get('/api/auth/check');
-      setUser(response.data.user);
+      const response = await apiClient.get('/api/auth/me');
+      setUser(response.data);
     } catch (error) {
       setUser(null);
     } finally {
@@ -50,11 +50,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;
