@@ -210,8 +210,8 @@ router.post(
     try {
       const user = await User.findOne({ 
         $or: [
-          { email: email.toLowerCase() },
-          { username: email.toLowerCase() }
+          { email: { $regex: new RegExp('^' + email + '$', 'i') } },
+          { username: { $regex: new RegExp('^' + email + '$', 'i') } }
         ]
       }).populate('role');
       console.log('Login attempt:', { 
