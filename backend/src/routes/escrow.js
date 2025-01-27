@@ -116,6 +116,23 @@ router.post('/refund', verifyToken, async (req, res) => {
   }
 });
 
+router.post('/release', verifyToken, async (req, res) => {
+  try {
+    const { dealId } = req.body;
+    const deal = await Deal.findById(dealId);
+    if (!deal) {
+      return res.status(404).json({ error: 'Deal not found' });
+    }
+    if (deal.buyerId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to release this escrow' });
+    }
+    await deal.release();
+    res.status(200).json({ message: 'Funds released successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
 
 

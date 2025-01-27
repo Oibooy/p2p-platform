@@ -23,13 +23,19 @@ router.get('/unread-count', verifyToken, async (req, res) => {
 
 
 // Получение текущих настроек уведомлений
-router.get('/settings', async (req, res) => {
+router.get('/settings', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user?.id);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.status(200).json({ notificationSettings: user.notificationSettings || {} });
+    res.status(200).json({ 
+      notificationSettings: user.notificationSettings || {
+        email: true,
+        sms: false,
+        push: true
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

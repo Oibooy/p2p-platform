@@ -1,5 +1,16 @@
 const express = require('express');
 const router = express.Router();
+
+router.get('/users', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('-password')
+      .populate('role');
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 const User = require('../models/User');
 const AdminLog = require('../models/AdminLog');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
