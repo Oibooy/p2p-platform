@@ -7,15 +7,32 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commission, setCommission] = useState(0);
+  const [stats, setStats] = useState({ users: 0, activeDeals: 0, totalDeals: 0 });
+  const [filters, setFilters] = useState({ search: '', role: '', status: '' });
   const { user } = useAuth();
   
   useEffect(() => {
     loadUsers();
+    loadStats();
   }, []);
+
+  const loadStats = async () => {
+    try {
+      const response = await apiClient.get('/admin/stats');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const loadUsers = async () => {
     try {
-      const response = await apiClient.get('/admin/users');
+      const queryParams = new URLSearchParams();
+      if (filters.search) queryParams.append('search', filters.search);
+      if (filters.role) queryParams.append('role', filters.role);
+      if (filters.status) queryParams.append('status', filters.status);
+      
+      const response = await apiClient.get(`/admin/users?${queryParams}`);
       setUsers(response.data.users);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -53,6 +70,11 @@ export default function AdminPage() {
     }
   };
 
+  const handleFilterChange = (name, value) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+    loadUsers();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -65,6 +87,22 @@ export default function AdminPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-gray-500 text-sm">Total Users</h3>
+          <p className="text-3xl font-bold">{stats.users}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-gray-500 text-sm">Active Deals</h3>
+          <p className="text-3xl font-bold">{stats.activeDeals}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-gray-500 text-sm">Total Deals</h3>
+          <p className="text-3xl font-bold">{stats.totalDeals}</p>
+        </div>
+      </div>
+
       {/* Commission Settings */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Commission Settings</h2>
@@ -85,6 +123,38 @@ export default function AdminPage() {
             Update Commission
           </button>
         </form>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="flex flex-wrap gap-4">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            className="border rounded px-3 py-2"
+          />
+          <select
+            value={filters.role}
+            onChange={(e) => handleFilterChange('role', e.target.value)}
+            className="border rounded px-3 py-2"
+          >
+            <option value="">All Roles</option>
+            <option value="user">User</option>
+            <option value="moderator">Moderator</option>
+            <option value="admin">Admin</option>
+          </select>
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="border rounded px-3 py-2"
+          >
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
       </div>
 
       {/* Users Table */}
@@ -122,14 +192,11 @@ export default function AdminPage() {
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={user.isActive ? 'active' : 'inactive'}
-                      onChange={(e) => handleStatusChange(user._id, e.target.value)}
-                      className="text-sm border rounded px-2 py-1"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
