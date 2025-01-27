@@ -16,8 +16,16 @@ import ProtectedRoute from './components/ProtectedRoute'; // Подключае�
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
+import { Hero } from './components/Hero';
+import { TradeForm } from './components/TradeForm';
+import { Features } from './components/Features';
+
 function App() {
   return (
+    <>
+      <Hero />
+      <TradeForm />
+      <Features />
     <AuthProvider>
       <Router>
         <div>
