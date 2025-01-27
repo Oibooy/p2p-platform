@@ -20,7 +20,7 @@ const messagesRoutes = require('./routes/messages');
 const notificationsRoutes = require('./routes/notifications');
 const dealsRoutes = require('./routes/deals');
 const escrowRoutes = require('./routes/escrow');
-const { verifyToken } = require('./middleware/authMiddleware');
+const { verifyToken, checkRole } = require('./middleware/authMiddleware');
 
 
 dotenv.config();
