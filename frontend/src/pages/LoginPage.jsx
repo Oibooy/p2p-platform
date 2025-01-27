@@ -13,17 +13,8 @@ function LoginPage() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await apiClient.post('/auth/login', {
-        email: data.email,
-        password: data.password
-      });
-
-      if (response.data.token) {
-        await login(
-          response.data.token,
-          response.data.refreshToken,
-          response.data.user
-        );
+      const response = await login(data.email, data.password);
+      if (response) {
         toast.success('Login successful!');
         navigate('/');
       }

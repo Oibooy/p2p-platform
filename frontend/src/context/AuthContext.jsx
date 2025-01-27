@@ -18,18 +18,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      if (response.data) {
+      if (response.data && response.data.token) {
         setAuthData(response.data);
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('refreshToken', response.data.refreshToken);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        setUser(response.data.user); // Assuming response.data contains user data. Adapt as needed
+        setUser(response.data.user);
         return response.data;
       }
-      throw new Error('User not found');
+      throw new Error('Invalid login response');
     } catch (err) {
-      console.error('Login error:', err.response?.data?.error || err.message);
-      throw new Error(err.response?.data?.error || 'Failed to login. Please try again.');
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.error || 'Invalid email or password';
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
