@@ -251,7 +251,8 @@ router.post(
       );
 
       // Сохраняем refresh token в Redis
-      await redisClient.set(
+      const redis = await redisClient.getClient();
+      await redis.set(
         `refresh_token:${user._id}:${tokenId}`,
         JSON.stringify({
           refreshToken,
