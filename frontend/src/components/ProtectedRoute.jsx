@@ -1,16 +1,16 @@
+
 import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return <p>Loading...</p>; // Индикатор загрузки
+    return <p>Loading...</p>;
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
