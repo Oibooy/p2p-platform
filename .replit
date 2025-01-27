@@ -12,18 +12,34 @@ deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 3000
-externalPort = 3001
 
 [[ports]]
 localPort = 3001
-externalPort = 3002
 
 [[ports]]
 localPort = 5000
-externalPort = 80
 
 [[ports]]
 localPort = 5173
+externalPort = 5173
+
+[[ports]]
+localPort = 5174
+externalPort = 80
+
+[[ports]]
+localPort = 5175
 
 [[ports]]
 localPort = 6379
+
+[workflows]
+runButton = "Dev"
+
+[[workflows.workflow]]
+name = "Dev"
+author = 39107265
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm run start & cd frontend && npm run dev"
