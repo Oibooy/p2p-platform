@@ -1,4 +1,3 @@
-
 import { useState, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
@@ -33,7 +32,7 @@ function LoginPage() {
       const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       toast.error(errorMessage);
-      
+
       if (err.response?.status === 403 && err.response?.data?.error?.includes('confirm your email')) {
         navigate('/resend-confirmation');
       }
