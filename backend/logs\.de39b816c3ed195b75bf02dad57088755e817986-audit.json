@@ -11,9 +11,9 @@
             "hash": "f8e9db1870d9c74179cec86865249961a594c3a4de62c3a9c5f29ab3d386141c"
         },
         {
-            "date": 1737950153775,
+            "date": 1737950504601,
             "name": "logs/application-2025-01-27.log",
-            "hash": "bf4b5ae36fa18821a918a6da884b657047ba8f7bc3612ffdadff8040854a714f"
+            "hash": "defb205423ca29401fb62b46dd511c9d743642ef8850e0e60d625ce1361ace55"
         }
     ],
     "hashType": "sha256"
