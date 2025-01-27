@@ -22,7 +22,9 @@ exports.registerUser = async (req, res) => {
     }
 
     // Хэширование пароля
+    console.log('Hashing password for new user');
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Password hashed successfully');
 
     // Получение или создание роли пользователя
     let userRole = await Role.findOne({ name: 'user' });

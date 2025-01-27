@@ -192,8 +192,12 @@ router.post(
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
+      console.log('Checking password for user:', user.email);
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Password validation result:', isPasswordValid);
+      
       if (!isPasswordValid) {
+        console.log('Password validation failed for user:', user.email);
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
