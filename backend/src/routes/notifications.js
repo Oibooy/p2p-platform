@@ -87,7 +87,6 @@ router.get('/', verifyToken, async (req, res) => {
     if (type) {
       filter.type = type;
     }
-    const filter = { user: req.user.id };
     if (isRead !== undefined) {
       filter.isRead = isRead === 'true';
     }
