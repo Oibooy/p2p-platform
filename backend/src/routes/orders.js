@@ -62,18 +62,12 @@ router.post('/', verifyToken, async (req, res) => {
   const { type, amount, price, expiresAt } = req.body;
 
   try {
-    if (!req.user || !req.user.id) {
+    if (!req.user || !req.user._id) {
       return res.status(401).json({ error: 'User not authenticated properly' });
     }
 
-    // Verify user exists
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
     const order = new Order({
-      user: user._id,
+      user: req.user._id,
       type,
       amount,
       price,
