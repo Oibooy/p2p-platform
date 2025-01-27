@@ -58,16 +58,19 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Routes
+// Routes with authentication
 app.use('/api/auth', authRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/orders', verifyToken, orderRoutes);
+app.use('/api/reviews', verifyToken, reviewRoutes);
 app.use('/api/admin', verifyToken, adminRoutes);
-app.use('/api/disputes', disputesRoutes);
-app.use('/api/messages', messagesRoutes);
-app.use('/api/notifications', notificationsRoutes);
-app.use('/api/deals', dealsRoutes);
-app.use('/api/escrow', escrowRoutes);
+app.use('/api/disputes', verifyToken, disputesRoutes);
+app.use('/api/messages', verifyToken, messagesRoutes);
+app.use('/api/notifications', verifyToken, notificationsRoutes);
+app.use('/api/deals', verifyToken, dealsRoutes);
+app.use('/api/escrow', verifyToken, escrowRoutes);
+
+// Public routes
+app.use('/api/orders/public', orderRoutes);
 
 // Error handling for undefined routes
 app.use((req, res, next) => {

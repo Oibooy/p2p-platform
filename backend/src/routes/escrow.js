@@ -19,10 +19,20 @@ router.post('/deposit', verifyToken, async (req, res) => {
 router.post('/release', verifyToken, async (req, res) => {
   try {
     const { dealId } = req.body;
+    if (!dealId) {
+      return res.status(400).json({ error: 'Deal ID is required' });
+    }
+    const deal = await Deal.findById(dealId);
+    if (!deal) {
+      return res.status(404).json({ error: 'Deal not found' });
+    }
+    if (deal.seller !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
     const result = await releaseFunds(dealId, req.user.id);
     res.status(200).json(result);
   } catch (error) {
-    res.status(403).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

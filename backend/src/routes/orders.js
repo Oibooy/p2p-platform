@@ -94,7 +94,8 @@ router.post('/', verifyToken, async (req, res) => {
 
 // Get order by ID
 router.get('/:id', async (req, res) => {
-  if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+  const orderId = req.params.id;
+  if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
     return res.status(400).json({ error: 'Invalid order ID' });
   }
   try {
