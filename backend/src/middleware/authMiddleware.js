@@ -96,15 +96,18 @@ async function checkRevokedToken(req, res, next) {
  * Проверка, был ли токен отозван.
  */
 async function isTokenRevoked(token) {
-  return new Promise((resolve, reject) => {
-    redisClient.get(token, (err, result) => {
-      if (err) {
-        console.error(`[${new Date().toISOString()}] Redis error:`, err.message);
-        return reject(err);
-      }
-      resolve(result !== null); // Если токен найден в Redis, он отозван
-    });
-  });
+  try {
+    const client = await redisClient.getClient();
+    if (!client) {
+      console.warn('Redis client not available, skipping token revocation check');
+      return false;
+    }
+    const result = await client.get(token);
+    return result !== null;
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] Redis error:`, err.message);
+    return false;
+  }
 }
 
 /**
