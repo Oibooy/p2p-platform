@@ -8,6 +8,9 @@ const { depositFunds, releaseFunds, refundFunds } = require('../services/escrowS
 router.post('/deposit', verifyToken, async (req, res) => {
   try {
     const { dealId, amount } = req.body;
+    if (!dealId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid deposit parameters' });
+    }
     const result = await depositFunds(dealId, amount, req.user.id);
     res.status(200).json(result);
   } catch (error) {

@@ -70,9 +70,16 @@ router.get('/', verifyToken, async (req, res) => {
 
 // Create order
 router.post('/', verifyToken, async (req, res) => {
-  const { amount } = req.body;
-  if (amount <= 0) {
+  const { amount, type, price } = req.body;
+  
+  if (!amount || amount <= 0) {
     return res.status(400).json({ error: 'Amount must be positive' });
+  }
+  if (!type || !['buy', 'sell'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid order type' });
+  }
+  if (!price || price <= 0) {
+    return res.status(400).json({ error: 'Invalid price' });
   }
   try {
     const { type, price } = req.body;

@@ -25,7 +25,7 @@ router.get('/unread-count', verifyToken, async (req, res) => {
 // Получение текущих настроек уведомлений (Improved to handle email, push, telegram)
 router.get('/settings', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
