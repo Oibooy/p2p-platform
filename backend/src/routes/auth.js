@@ -257,7 +257,7 @@ router.post(
         console.warn('Redis unavailable, continuing with JWT only');
         return res.status(200).json({ 
           message: 'Login successful.',
-          token,
+          accessToken: token,
           refreshToken,
           user: {
             id: user._id,
@@ -284,7 +284,7 @@ router.post(
 
         res.status(200).json({ 
           message: 'Login successful.',
-          token,
+          accessToken: token,
           refreshToken,
           user: {
             id: user._id,
@@ -299,7 +299,7 @@ router.post(
         // Fall back to JWT-only response
         res.status(200).json({ 
           message: 'Login successful.',
-          token,
+          accessToken: token,
           refreshToken,
           user: {
             id: user._id,

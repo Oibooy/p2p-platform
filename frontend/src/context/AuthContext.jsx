@@ -1,4 +1,6 @@
+
 import React, { createContext, useState, useContext } from 'react';
+import { toast } from 'react-toastify';
 import apiClient from '../api/apiClient';
 
 const AuthContext = createContext(null);
@@ -13,24 +15,21 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [authData, setAuthData] = useState(null); // Added state for auth data
 
   const login = async (email, password) => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      if (response.data && response.data.token) {
-        setAuthData(response.data);
-        localStorage.setItem('token', response.data.token);
+      if (response.data && response.data.accessToken) {
+        localStorage.setItem('token', response.data.accessToken);
         localStorage.setItem('refreshToken', response.data.refreshToken);
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
         setUser(response.data.user);
         return response.data;
       }
       throw new Error('Invalid login response');
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.response?.data?.error || 'Invalid email or password';
-      toast.error(errorMessage);
+      const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
       throw new Error(errorMessage);
     }
   };
@@ -40,11 +39,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refreshToken');
     delete apiClient.defaults.headers.common['Authorization'];
     setUser(null);
-    setAuthData(null); // Clear auth data on logout
+  };
+
+  const value = {
+    user,
+    login,
+    logout,
+    isAuthenticated: !!user
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
