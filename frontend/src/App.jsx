@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import OrdersPage from './pages/OrdersPage';
@@ -12,24 +13,22 @@ import ResendConfirmationPage from './pages/ResendConfirmationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
 import Header from './components/Header';
-import ProtectedRoute from './components/ProtectedRoute'; // Подключаем ProtectedRoute
+import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
 import { Hero } from './components/Hero';
 import { TradeForm } from './components/TradeForm';
 import { Features } from './components/Features';
 
 function App() {
   return (
-    <>
-      <Hero />
-      <TradeForm />
-      <Features />
     <AuthProvider>
       <Router>
         <div>
           <Header />
+          <Hero />
+          <TradeForm />
+          <Features />
           <main className="p-4">
             <Routes>
               {/* Публичные маршруты */}
@@ -66,17 +65,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-              {/* Маршрут 404 */}
               <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute>
-                <AdminPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="*" element={<NotFoundPage />} />
+                path="/admin" 
+                element={
+                  <ProtectedRoute>
+                    <AdminPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
         </div>
