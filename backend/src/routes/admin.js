@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const AdminLog = require('../models/AdminLog');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
+const adminLogger = require('../middleware/adminLogger');
+const { exportUsers, exportDeals } = require('../utils/exportService');
+
+// Применяем логгер ко всем админ роутам
+router.use(adminLogger);
 
 // Получение списка пользователей
 router.get('/users', verifyToken, checkRole('admin'), async (req, res) => {
@@ -112,6 +118,42 @@ router.post('/commission', verifyToken, checkRole('admin'), async (req, res) => 
   } catch (error) {
     console.error('Error updating commission rate:', error);
     res.status(500).json({ error: 'Failed to update commission rate' });
+  }
+});
+
+// Экспорт данных
+router.get('/export/users', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const csv = await exportUsers();
+    res.header('Content-Type', 'text/csv');
+    res.attachment('users.csv');
+    res.send(csv);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to export users' });
+  }
+});
+
+router.get('/export/deals', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const csv = await exportDeals();
+    res.header('Content-Type', 'text/csv');
+    res.attachment('deals.csv');
+    res.send(csv);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to export deals' });
+  }
+});
+
+// Получение логов админ действий
+router.get('/logs', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const logs = await AdminLog.find()
+      .populate('admin', 'username email')
+      .sort({ timestamp: -1 })
+      .limit(100);
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch admin logs' });
   }
 });
 

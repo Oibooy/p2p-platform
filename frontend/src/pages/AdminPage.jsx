@@ -157,6 +157,51 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Export Buttons */}
+      <div className="flex gap-4 mb-8">
+        <a
+          href="/api/admin/export/users"
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          download
+        >
+          Export Users
+        </a>
+        <a
+          href="/api/admin/export/deals"
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          download
+        >
+          Export Deals
+        </a>
+      </div>
+
+      {/* Admin Logs */}
+      <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <h2 className="text-xl font-semibold p-6 border-b">Recent Admin Actions</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {adminLogs.map((log) => (
+                <tr key={log._id}>
+                  <td className="px-6 py-4">{log.admin.username}</td>
+                  <td className="px-6 py-4">{log.action}</td>
+                  <td className="px-6 py-4">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <h2 className="text-xl font-semibold p-6 border-b">User Management</h2>
