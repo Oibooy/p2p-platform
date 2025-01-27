@@ -129,3 +129,23 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 module.exports = router;
 
+const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/authMiddleware');
+const Review = require('../models/Review');
+
+// Create review
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const review = new Review({
+      ...req.body,
+      reviewer: req.user._id
+    });
+    await review.save();
+    res.status(201).json(review);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;

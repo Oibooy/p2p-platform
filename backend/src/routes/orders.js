@@ -174,3 +174,39 @@ router.patch('/:id/expire', async (req, res) => {
 module.exports = router;
 
 
+const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/authMiddleware');
+const Order = require('../models/Order');
+
+// Create order
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const order = new Order({
+      ...req.body,
+      creator: req.user._id
+    });
+    await order.save();
+    res.status(201).json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get order by ID
+router.get('/:id', async (req, res) => {
+  if (!req.params.id) {
+    return res.status(400).json({ error: 'Order ID required' });
+  }
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;

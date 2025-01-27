@@ -60,6 +60,10 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/disputes', require('./routes/disputes'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/escrow', require('./routes/escrow'));
 app.use('/api/orders', ordersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/admin', verifyToken, adminRoutes);
