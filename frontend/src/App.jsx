@@ -20,6 +20,9 @@ import { TradeForm } from './components/TradeForm';
 import { Features } from './components/Features';
 import ProfilePage from './pages/ProfilePage';
 import ReviewsPage from './pages/ReviewsPage';
+import './App.css';
+import './styles/main.css';
+import './styles/theme.css';
 
 function App() {
   return (
