@@ -1,28 +1,34 @@
-// authController.js - Контроллер для регистрации и авторизации
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const { sendEmail } = require('../utils/emailService');
 
-// Регистрация пользователя
 exports.registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Проверка, существует ли пользователь с таким email
-    const existingUser = await User.findOne({ email });
+    // Валидация входных данных
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
+    }
+
+    // Проверка существующего пользователя
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+      return res.status(400).json({
+        error: existingUser.email === email ? 'Email уже используется' : 'Имя пользователя уже занято'
+      });
     }
 
     // Хэширование пароля
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Поиск роли "user"
-    const userRole = await Role.findOne({ name: 'user' });
+    // Получение или создание роли пользователя
+    let userRole = await Role.findOne({ name: 'user' });
     if (!userRole) {
-      return res.status(500).json({ error: 'Роль "user" не найдена в базе данных' });
+      userRole = new Role({ name: 'user' });
+      await userRole.save();
     }
 
     // Создание пользователя
@@ -30,32 +36,72 @@ exports.registerUser = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: userRole._id, // Установка роли по умолчанию
+      role: userRole._id,
+      isEmailConfirmed: false
     });
 
     await newUser.save();
 
     // Генерация токена для подтверждения email
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${token}`;
 
-    // Отправка email для подтверждения
-    const confirmLink = `${process.env.CLIENT_URL}/confirm-email/${token}`;
-    await sendEmail(email, 'Подтверждение регистрации', `Подтвердите свою почту: ${confirmLink}`);
+    await sendEmail(email, 'Подтверждение регистрации', 
+      `Здравствуйте, ${username}!\n\nДля подтверждения регистрации перейдите по ссылке: ${confirmLink}`);
 
     res.status(201).json({
-      message: 'Пользователь успешно зарегистрирован. Проверьте email для подтверждения.',
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        role: userRole.name,
-      },
+      message: 'Регистрация успешна. Проверьте email для подтверждения.',
+      userId: newUser._id
     });
   } catch (error) {
-    console.error('Ошибка при регистрации пользователя:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Ошибка регистрации:', error);
+    res.status(500).json({ error: 'Ошибка сервера при регистрации' });
+  }
+};
+
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).populate('role');
+    if (!user) {
+      return res.status(401).json({ error: 'Неверный email или пароль' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Неверный email или пароль' });
+    }
+
+    if (!user.isEmailConfirmed) {
+      return res.status(403).json({ error: 'Пожалуйста, подтвердите email для входа' });
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user._id, role: user.role.name },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(200).json({
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role.name
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка входа:', error);
+    res.status(500).json({ error: 'Ошибка сервера при входе' });
   }
 };
 
@@ -93,64 +139,6 @@ exports.resendConfirmationEmail = async (req, res) => {
   }
 };
 
-// Авторизация пользователя
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email }).populate('role');
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Invalid email or password' });
-    }
-
-    // Создание access token
-    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '15m',
-    });
-
-    // Создание refresh token с уникальным идентификатором
-    const tokenId = crypto.randomBytes(32).toString('hex');
-    const refreshToken = jwt.sign(
-      { id: user._id, tokenId },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    // Сохранение refresh token в Redis с дополнительной информацией
-    await redisClient.set(
-      `refresh_token:${user._id}:${tokenId}`,
-      JSON.stringify({
-        refreshToken,
-        userAgent: req.headers['user-agent'],
-        ip: req.ip,
-        createdAt: new Date().toISOString()
-      }),
-      'EX',
-      7 * 24 * 60 * 60 // 7 days
-    );
-
-    res.status(200).json({
-      message: 'Успешный вход',
-      accessToken,
-      refreshToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role.name,
-      },
-    });
-  } catch (error) {
-    console.error('Ошибка при авторизации пользователя:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-};
-
 // Подтверждение email
 exports.confirmEmail = async (req, res) => {
   try {
@@ -171,7 +159,3 @@ exports.confirmEmail = async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 };
-
-
-
-
