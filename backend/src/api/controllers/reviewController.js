@@ -1,7 +1,7 @@
 
-const Review = require('../models/Review');
-const Deal = require('../models/Deal');
-const logger = require('../utils/logger');
+const Review = require('../../db/models/Review');
+const Deal = require('../../db/models/Deal');
+const logger = require('../../infrastructure/logger');
 
 // Создание нового отзыва
 exports.createReview = async (req, res) => {

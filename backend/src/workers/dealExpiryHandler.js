@@ -1,6 +1,6 @@
 // dealExpiryHandler.js - Обработка истечения срока сделок
-const Deal = require('../models/Deal');
-const logger = require('../utils/logger');
+const Deal = require('../db/models/Deal');
+const logger = require('../infrastructure/logger');
 
 // Периодическая проверка статуса сделок
 async function checkExpiredDeals() {

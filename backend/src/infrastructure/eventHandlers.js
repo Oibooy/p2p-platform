@@ -1,7 +1,7 @@
 const Deal = require('../db/models/Deal');
-const Notification = require('../db/models/Notification'); // Модель уведомлений
-const { sendWebSocketNotification } = require('./webSocket');tils/webSocket');
-const logger = require('../utils/logger'); // Специализированный логгер
+const Notification = require('../db/models/Notification');
+const { sendWebSocketNotification } = require('./webSocket');
+const logger = require('./logger');
 
 /**
  * Обработчик события DealCreated
