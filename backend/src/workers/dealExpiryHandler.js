@@ -31,4 +31,3 @@ function startDealExpiryHandler(interval = 60000) { // Интервал по у�
 }
 
 module.exports = { startDealExpiryHandler };
-

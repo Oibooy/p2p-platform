@@ -1,6 +1,6 @@
 const Order = require('../../db/models/Order');
 const logger = require('../../infrastructure/logger');
-const { sendWebSocketNotification } = require('../utils/webSocket');
+const { sendWebSocketNotification } = require('../../infrastructure/webSocket');
 
 exports.getAllOrders = async (req, res) => {
   const { 
