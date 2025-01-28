@@ -174,7 +174,29 @@ server.on('upgrade', (request, socket, head) => {
 startDealExpiryHandler();
 
 // Error handling middleware
-app.use(errorHandler);
+const performanceMonitor = require('./middleware/performanceMonitor');
+
+// Мониторинг производительности
+app.use(performanceMonitor);
+
+// Глобальная обработка ошибок
+app.use((err, req, res, next) => {
+  logger.error(`Error: ${err.message}\nStack: ${err.stack}`);
+  
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message });
+  }
+  
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+  
+  res.status(500).json({ 
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : err.message 
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 
