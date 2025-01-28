@@ -1,8 +1,8 @@
 
-const Dispute = require('../models/Dispute');
-const Order = require('../models/Order');
-const { sendEmail } = require('../utils/emailService');
-const logger = require('../utils/logger');
+const Dispute = require('../../db/models/Dispute');
+const Order = require('../../db/models/Order');
+const { sendEmail } = require('../../infrastructure/emailSender');
+const logger = require('../../infrastructure/logger');
 
 // Получение списка всех споров
 exports.getAllDisputes = async (req, res) => {
