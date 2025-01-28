@@ -1,9 +1,12 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const { verifyToken } = require('../middleware/authMiddleware');
-const Order = require('../models/Order');
-const { sendWebSocketNotification } = require('../utils/webSocket');
+const orderController = require('../controllers/orderController');
 const router = express.Router();
+
+router.get('/', verifyToken, orderController.getAllOrders);
+router.post('/', verifyToken, orderController.createOrder);
+router.get('/:id', orderController.getOrderById);
+router.delete('/:id', verifyToken, orderController.deleteOrder);
 
 router.get('/', verifyToken, async (req, res) => {
   try {
