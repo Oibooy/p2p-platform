@@ -29,6 +29,19 @@ async function createDeal(token, seller, amount, deadline) {
 
     // Мониторинг транзакции
     const txMonitor = new TransactionMonitor();
+    
+    // Настройка мониторинга
+    txMonitor.on('pending', (txHash) => {
+      logger.info(`Transaction ${txHash} is pending`);
+    });
+    
+    txMonitor.on('confirmed', (txHash) => {
+      logger.info(`Transaction ${txHash} has been confirmed`);
+    });
+
+    txMonitor.on('failed', (txHash, error) => {
+      logger.error(`Transaction ${txHash} failed: ${error}`);
+    });
 
     const MAX_RETRIES = 3;
     let attempt = 0;
