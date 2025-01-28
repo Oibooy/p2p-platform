@@ -29,12 +29,6 @@ async function createDeal(token, seller, amount, deadline) {
 
     // Мониторинг транзакции
     const txMonitor = new TransactionMonitor();
-    
-    // Проверка сети
-    const networkStatus = await checkNetworkStatus();
-    if (!networkStatus.isConnected) {
-      throw new Error('Blockchain network unavailable');
-    }
 
     const MAX_RETRIES = 3;
     let attempt = 0;
