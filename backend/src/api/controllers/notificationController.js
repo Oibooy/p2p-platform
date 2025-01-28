@@ -1,6 +1,6 @@
 
-const Notification = require('../models/Notification');
-const logger = require('../utils/logger');
+const Notification = require('../../db/models/Notification');
+const logger = require('../../infrastructure/logger');
 
 // Получение уведомлений пользователя
 exports.getUserNotifications = async (req, res) => {

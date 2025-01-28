@@ -1,6 +1,5 @@
-
-const Order = require('../models/Order');
-const logger = require('../utils/logger');
+const Order = require('../../db/models/Order');
+const logger = require('../../infrastructure/logger');
 const { sendWebSocketNotification } = require('../utils/webSocket');
 
 exports.getAllOrders = async (req, res) => {
@@ -54,7 +53,7 @@ exports.getAllOrders = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   const { amount, type, price, expirationHours = 24 } = req.body;
-  
+
   if (!amount || amount <= 0) {
     return res.status(400).json({ error: 'Amount must be positive' });
   }
@@ -80,7 +79,7 @@ exports.createOrder = async (req, res) => {
 
     const savedOrder = await order.save();
     await savedOrder.populate('user', 'username reputation');
-    
+
     sendWebSocketNotification(req.user._id, 'order_created', { 
       orderId: savedOrder._id,
       type: savedOrder.type,
@@ -99,7 +98,7 @@ exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('user', 'username reputation');
-    
+
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
