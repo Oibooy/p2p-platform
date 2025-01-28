@@ -6,21 +6,21 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const http = require('http');
-const logger = require('./utils/logger');
-const errorHandler = require('./middleware/errorHandler');
-const { webSocketServer } = require('./utils/webSocket');
-const { startDealExpiryHandler } = require('./workers/dealExpiryHandler');
+const logger = require('./infrastructure/logger');
+const errorHandler = require('./api/middleware/errorHandler');
+const { webSocketServer } = require('./infrastructure/webSocket');
+const { startDealExpiryHandler } = require('./core/jobs/dealExpiryHandler');
 
-const authRoutes = require('./routes/auth');
-const orderRoutes = require('./routes/orders');
-const reviewRoutes = require('./routes/reviews');
-const adminRoutes = require('./routes/admin');
-const disputesRoutes = require('./routes/disputes');
-const messagesRoutes = require('./routes/messages');
-const notificationsRoutes = require('./routes/notifications');
-const dealsRoutes = require('./routes/deals');
-const escrowRoutes = require('./routes/escrow');
-const { verifyToken, checkRole } = require('./middleware/authMiddleware');
+const authRoutes = require('./api/routes/auth');
+const orderRoutes = require('./api/routes/orders');
+const reviewRoutes = require('./api/routes/reviews');
+const adminRoutes = require('./api/routes/admin');
+const disputesRoutes = require('./api/routes/disputes');
+const messagesRoutes = require('./api/routes/messages');
+const notificationsRoutes = require('./api/routes/notifications');
+const dealsRoutes = require('./api/routes/deals');
+const escrowRoutes = require('./api/routes/escrow');
+const { verifyToken, checkRole } = require('./api/middleware/authMiddleware');
 
 
 dotenv.config();
