@@ -38,11 +38,19 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: true,
   crossOriginOpenerPolicy: true,
-  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginResourcePolicy: { policy: "same-site" },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: "deny" },
+  hsts: { maxAge: 31536000, includeSubDomains: true },
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true
 }));
 app.use(cors({
   origin: true,
@@ -63,12 +71,10 @@ app.use(express.json());
 app.use(morgan('dev', { stream: { write: (message) => logger.info(message.trim()) } }));
 
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
+// Добавляем rate limiter
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+app.use('/api/', apiLimiter);
+app.use('/api/auth', authLimiter);
 
 // Public routes first
 app.use('/api/auth', authRoutes);
@@ -179,22 +185,30 @@ const performanceMonitor = require('./middleware/performanceMonitor');
 // Мониторинг производительности
 app.use(performanceMonitor);
 
-// Глобальная обработка ошибок
-app.use((err, req, res, next) => {
-  logger.error(`Error: ${err.message}\nStack: ${err.stack}`);
-  
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({ error: err.message });
+// Глобальная обработка необработанных исключений
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
   }
-  
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ error: 'Unauthorized access' });
+});
+
+process.on('unhandledRejection', (error) => {
+  logger.error('Unhandled Rejection:', error);
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
   }
-  
-  res.status(500).json({ 
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message 
+});
+
+// Централизованная обработка ошибок
+app.use(errorHandler);
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    logger.info('Process terminated');
+    process.exit(0);
   });
 });
 
