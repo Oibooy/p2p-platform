@@ -49,9 +49,23 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Метод для проверки пароля
-UserSchema.methods.comparePassword = async function (password) {
-  return bcrypt.compare(password, this.password);
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
+
+// Метод для обновления рейтинга
+UserSchema.methods.updateRating = async function() {
+  const reviews = await mongoose.model('Review').find({ to: this._id });
+  if (reviews.length > 0) {
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    this.rating = (totalRating / reviews.length).toFixed(1);
+    await this.save();
+  } else {
+    this.rating = 0;
+    await this.save();
+  }
+};
+
 
 // Автоматический пересчёт рейтинга пользователя
 UserSchema.methods.recalculateRating = async function () {
@@ -70,6 +84,3 @@ UserSchema.methods.recalculateRating = async function () {
 };
 
 module.exports = mongoose.model('User', UserSchema);
-
-
-

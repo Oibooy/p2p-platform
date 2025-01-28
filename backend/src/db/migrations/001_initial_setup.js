@@ -43,6 +43,14 @@ async function up() {
   await Review.collection.createIndex({ from: 1, to: 1 });
   await Review.collection.createIndex({ rating: -1 });
   
+  // Индексы для Dispute
+  await Dispute.collection.createIndex({ dealId: 1 });
+  await Dispute.collection.createIndex({ status: 1 });
+  await Dispute.collection.createIndex({ createdAt: -1 });
+  
+  // Индексы для Role
+  await Role.collection.createIndex({ name: 1 }, { unique: true });
+  
   // Создание базовых ролей
   const roles = ['user', 'moderator', 'admin'];
   for (const roleName of roles) {

@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const dealHistorySchema = new mongoose.Schema({
@@ -23,7 +22,11 @@ const dealHistorySchema = new mongoose.Schema({
   },
   details: {
     type: Object
-  }
+  },
+  eventType: { type: String, required: true, enum: ['created', 'updated', 'completed', 'disputed', 'cancelled'] }
 });
+
+dealHistorySchema.index({ dealId: 1, eventType: 1 });
+dealHistorySchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('DealHistory', dealHistorySchema);
