@@ -1,4 +1,3 @@
-
 const Notification = require('../../db/models/Notification');
 const logger = require('../../infrastructure/logger');
 

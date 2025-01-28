@@ -1,9 +1,9 @@
 
-const Deal = require('../models/Deal');
-const Order = require('../models/Order');
-const User = require('../models/User');
-const logger = require('../utils/logger');
-const { sendNotification } = require('../utils/notifications');
+const Deal = require('../../db/models/Deal');
+const Order = require('../../db/models/Order');
+const User = require('../../db/models/User');
+const logger = require('../../infrastructure/logger');
+const { sendNotification } = require('../../infrastructure/notifications');
 
 // Создание новой сделки
 exports.createDeal = async (req, res) => {

@@ -1,8 +1,8 @@
 
-const Message = require('../models/Message');
-const Deal = require('../models/Deal');
-const logger = require('../utils/logger');
-const { sendNotification } = require('../utils/notifications');
+const Message = require('../../db/models/Message');
+const Deal = require('../../db/models/Deal');
+const logger = require('../../infrastructure/logger');
+const { sendNotification } = require('../../infrastructure/notifications');
 
 // Отправка сообщения
 exports.sendMessage = async (req, res) => {
