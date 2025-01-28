@@ -1,4 +1,3 @@
-
 const Message = require('../../db/models/Message');
 const Deal = require('../../db/models/Deal');
 const logger = require('../../infrastructure/logger');

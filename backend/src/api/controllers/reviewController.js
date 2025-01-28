@@ -1,4 +1,3 @@
-
 const Review = require('../../db/models/Review');
 const Deal = require('../../db/models/Deal');
 const logger = require('../../infrastructure/logger');
@@ -44,7 +43,7 @@ exports.getUserReviews = async (req, res) => {
     const reviews = await Review.find({ to: userId })
       .populate('from', 'username')
       .populate('dealId');
-    
+
     res.json(reviews);
   } catch (error) {
     logger.error('Error in getUserReviews:', error);
