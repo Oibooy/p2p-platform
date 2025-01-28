@@ -1,14 +1,15 @@
 // routes/messages.js - Маршруты для модерации чатов
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { isModerator } = require('../middleware/roleMiddleware');
+const messageController = require('../controllers/messageController');
+const { validateMessage } = require('../middleware/validation');
 const Message = require('../models/Message');
 const Deal = require('../models/Deal');
 
 const router = express.Router();
 
 // Получение всех сообщений сделки (только для модераторов)
-router.get('/deal/:dealId', verifyToken, isModerator, async (req, res) => {
+router.get('/deal/:dealId', verifyToken,  async (req, res) => {
   try {
     const messages = await Message.find({ deal: req.params.dealId }).populate('sender', 'username');
     if (!messages.length) {
@@ -22,7 +23,7 @@ router.get('/deal/:dealId', verifyToken, isModerator, async (req, res) => {
 });
 
 // Пометка сообщения как отмодерированного
-router.patch('/:id/moderate', verifyToken, isModerator, async (req, res) => {
+router.patch('/:id/moderate', verifyToken,  async (req, res) => {
   try {
     const message = await Message.findById(req.params.id);
     if (!message) {
@@ -40,7 +41,7 @@ router.patch('/:id/moderate', verifyToken, isModerator, async (req, res) => {
 });
 
 // Удаление сообщения (только для модераторов)
-router.delete('/:id', verifyToken, isModerator, async (req, res) => {
+router.delete('/:id', verifyToken,  async (req, res) => {
   try {
     const message = await Message.findByIdAndDelete(req.params.id);
     if (!message) {

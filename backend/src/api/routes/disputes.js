@@ -1,29 +1,15 @@
 const express = require('express');
-const router = express.Router();
-const { verifyToken, checkRole } = require('../middleware/authMiddleware');
-const Dispute = require('../models/Dispute');
-const Order = require('../models/Order');
+const { verifyToken } = require('../middleware/authMiddleware');
+const { isModerator } = require('../middleware/roleMiddleware');
+const disputeController = require('../controllers/disputeController');
+const { validateDispute } = require('../middleware/validation');
 
 // Получение списка споров (только для модераторов)
-router.get('/', verifyToken, checkRole('moderator'), async (req, res) => {
-  const { status, page = 1, limit = 10, sortBy = 'createdAt', order = 'desc' } = req.query;
-
+router.get('/', verifyToken, isModerator, async (req, res) => {
   try {
-    const filter = {};
-    if (status) filter.status = status;
-
-    const skip = (page - 1) * limit;
-    const disputes = await Dispute.find(filter)
-      .sort({ [sortBy]: order === 'desc' ? -1 : 1 })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .populate('order initiator moderator', 'username email');
-
-    const total = await Dispute.countDocuments(filter);
-
-    res.json({ disputes, total });
-  } catch (err) {
-    console.error('Error fetching disputes:', err.message);
+    const disputes = await disputeController.getAllDisputes(req.query);
+    res.json(disputes);
+  } catch (error) {
     res.status(500).json({ error: 'Failed to fetch disputes' });
   }
 });
@@ -31,73 +17,34 @@ router.get('/', verifyToken, checkRole('moderator'), async (req, res) => {
 // Получение конкретного спора
 router.get('/:id', verifyToken, async (req, res) => {
   try {
-    const dispute = await Dispute.findById(req.params.id)
-      .populate('order initiator moderator', 'username email');
+    const dispute = await disputeController.getDisputeById(req.params.id);
     if (!dispute) return res.status(404).json({ error: 'Dispute not found' });
-
     res.json(dispute);
-  } catch (err) {
-    console.error('Error fetching dispute:', err.message);
+  } catch (error) {
     res.status(500).json({ error: 'Failed to fetch dispute' });
   }
 });
 
 // Создать арбитраж
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', verifyToken, validateDispute, async (req, res) => {
   try {
-    const { order_id, reason } = req.body;
-    if (!reason || reason.length < 10) {
-      return res.status(400).json({ error: 'Dispute reason must be at least 10 characters long' });
-    }
-    const order = await Order.findById(order_id);
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    if (order.status !== 'active') {
-      return res.status(400).json({ error: 'Can only dispute active orders' });
-    }
-
-    const dispute = new Dispute({
-      order: order_id,
-      initiator: req.user._id,
-      reason,
-    });
-
-    await dispute.save();
+    const dispute = await disputeController.createDispute(req.body, req.user._id);
     res.status(201).json(dispute);
-  } catch (err) {
-    console.error('Error creating dispute:', err.message);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Failed to create dispute' });
-    }
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message || 'Failed to create dispute' });
   }
 });
 
 // Решить арбитраж
-router.patch('/:id/resolve', verifyToken, checkRole('moderator'), async (req, res) => {
-  const { resolution } = req.body;
+router.patch('/:id/resolve', verifyToken, isModerator, async (req, res) => {
   try {
-    const dispute = await Dispute.findById(req.params.id);
-    if (!dispute) return res.status(404).json({ error: 'Dispute not found' });
-
-    dispute.resolution = resolution;
-    dispute.status = 'resolved';
-    dispute.resolvedAt = new Date();
-    await dispute.save();
-
-    // Обновление статуса ордера
-    const order = await Order.findById(dispute.order);
-    if (order) {
-      order.status = resolution === 'refund' ? 'refunded' : 'completed';
-      await order.save();
-    }
-
+    const dispute = await disputeController.resolveDispute(req.params.id, req.body.resolution);
     res.json(dispute);
-  } catch (err) {
-    console.error('Error resolving dispute:', err.message);
-    res.status(500).json({ error: 'Failed to resolve dispute' });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message || 'Failed to resolve dispute' });
   }
 });
+
 
 // Удаление спора (например, администратором)
 router.delete('/:id', verifyToken, checkRole('admin'), async (req, res) => {

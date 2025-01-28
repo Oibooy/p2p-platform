@@ -4,6 +4,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const Order = require('../models/Order');
 const Review = require('../models/Review');
 const User = require('../models/User');
+const { validateReview } = require('../middleware/validation'); // Added this line
 
 // Get all reviews
 router.get('/', async (req, res) => {
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a review
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', verifyToken, validateReview, async (req, res) => { // Added validateReview middleware
   try {
     const review = await Review.create({
       ...req.body,
