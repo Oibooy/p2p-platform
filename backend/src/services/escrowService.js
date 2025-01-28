@@ -15,6 +15,15 @@ async function createDeal(token, seller, amount, deadline) {
       throw new Error('Missing required parameters');
     }
     
+    // Проверка сети
+    const networkStatus = await checkNetworkStatus();
+    if (!networkStatus.isConnected) {
+      throw new Error('Blockchain network unavailable');
+    }
+
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    
     // Проверка минимальной суммы
     const minAmount = token === 'USDT' ? 10 : 0.01;
     if (amount < minAmount) {

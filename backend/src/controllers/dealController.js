@@ -9,7 +9,19 @@ const { sendNotification } = require('../utils/notifications');
 exports.createDeal = async (req, res) => {
   try {
     const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ error: 'OrderId is required' });
+    }
     const userId = req.user.id;
+    
+    // Rate limiting check
+    const dealCount = await Deal.countDocuments({ 
+      buyer: userId,
+      createdAt: { $gt: new Date(Date.now() - 24*60*60*1000) }
+    });
+    if (dealCount >= 50) {
+      return res.status(429).json({ error: 'Daily deal limit exceeded' });
+    }
 
     const order = await Order.findById(orderId);
     if (!order) {
