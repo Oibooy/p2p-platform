@@ -14,6 +14,21 @@ async function createDeal(token, seller, amount, deadline) {
     if (!token || !seller || !amount || !deadline) {
       throw new Error('Missing required parameters');
     }
+
+    // Проверка состояния сети
+    const networkStatus = await checkNetworkStatus();
+    if (!networkStatus.isConnected) {
+      throw new Error('Network unavailable');
+    }
+
+    // Проверка баланса
+    const balance = await checkBalance(token);
+    if (balance < amount) {
+      throw new Error('Insufficient balance');
+    }
+
+    // Мониторинг транзакции
+    const txMonitor = new TransactionMonitor();
     
     // Проверка сети
     const networkStatus = await checkNetworkStatus();
