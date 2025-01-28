@@ -10,11 +10,7 @@ const TRON_ESCROW_ADDRESS = process.env.TRON_ESCROW_ADDRESS;
 
 async function createDeal(token, seller, amount, deadline) {
   try {
-    // Валидация входных данных
-    if (!token || !seller || !amount || !deadline) {
-      throw new Error('Missing required parameters');
-    }
-
+    // Бизнес-логика создания сделки
     // Проверка состояния сети
     const networkStatus = await checkNetworkStatus();
     if (!networkStatus.isConnected) {
@@ -46,11 +42,7 @@ async function createDeal(token, seller, amount, deadline) {
     const MAX_RETRIES = 3;
     let attempt = 0;
 
-    // Проверка минимальной суммы
-    const minAmount = token === 'USDT' ? 10 : 0.01;
-    if (amount < minAmount) {
-      throw new Error(`Minimum amount for ${token} is ${minAmount}`);
-    }
+
     if (token === 'USDT') {
       const contract = await tronWeb.contract().at(TRON_ESCROW_ADDRESS);
       const tx = await contract.createDeal(seller, amount, deadline).send({
