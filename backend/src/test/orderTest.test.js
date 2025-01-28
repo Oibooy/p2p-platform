@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const Order = require('../db/models/Order');
 const User = require('../models/User');
 
 let authToken;

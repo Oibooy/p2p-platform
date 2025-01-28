@@ -1,6 +1,6 @@
-const Deal = require('../models/Deal');
-const Notification = require('../models/Notification'); // Модель уведомлений
-const { sendWebSocketNotification } = require('../utils/webSocket');
+const Deal = require('../db/models/Deal');
+const Notification = require('../db/models/Notification'); // Модель уведомлений
+const { sendWebSocketNotification } = require('./webSocket');tils/webSocket');
 const logger = require('../utils/logger'); // Специализированный логгер
 
 /**
