@@ -29,12 +29,12 @@ async function createDeal(token, seller, amount, deadline) {
 
     // Мониторинг транзакции
     const txMonitor = new TransactionMonitor();
-    
+
     // Настройка мониторинга
     txMonitor.on('pending', (txHash) => {
       logger.info(`Transaction ${txHash} is pending`);
     });
-    
+
     txMonitor.on('confirmed', (txHash) => {
       logger.info(`Transaction ${txHash} has been confirmed`);
     });
@@ -45,7 +45,7 @@ async function createDeal(token, seller, amount, deadline) {
 
     const MAX_RETRIES = 3;
     let attempt = 0;
-    
+
     // Проверка минимальной суммы
     const minAmount = token === 'USDT' ? 10 : 0.01;
     if (amount < minAmount) {
@@ -184,10 +184,38 @@ async function logTransaction(txId, type, metadata) {
   console.log(`Transaction ${type}:`, { txId, ...metadata });
 }
 
+async function handleDeposit(dealId, amount) {
+  const startTime = process.hrtime();
+  try {
+    // Placeholder for existing code -  This would contain the actual deposit logic.
+    //  This needs to be implemented based on the specific requirements of the system.
+  } catch (error) {
+    logger.error('Escrow deposit failed', {
+      dealId,
+      amount,
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    throw error;
+  } finally {
+    const diff = process.hrtime(startTime);
+    const time = diff[0] * 1e3 + diff[1] * 1e-6;
+    if (time > 5000) {
+      logger.warn('Slow escrow deposit operation', {
+        dealId,
+        duration: time,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+}
+
 module.exports = {
   createDeal,
   releaseFunds,
   refundFunds,
   getDeal,
-  initializeEscrow
+  initializeEscrow,
+  handleDeposit
 };
