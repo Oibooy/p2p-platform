@@ -24,6 +24,9 @@ const OrderSchema = new mongoose.Schema({
 OrderSchema.index({ user: 1, status: 1 });
 OrderSchema.index({ type: 1, status: 1 });
 OrderSchema.index({ expiresAt: 1 });
+OrderSchema.index({ price: 1 });
+OrderSchema.index({ amount: 1 });
+OrderSchema.index({ price: 1, amount: 1 });
 
 // Создание нового ордера
 OrderSchema.statics.createOrder = async function(orderData) {
