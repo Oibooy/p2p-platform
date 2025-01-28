@@ -51,6 +51,11 @@ async function up() {
   // Индексы для Role
   await Role.collection.createIndex({ name: 1 }, { unique: true });
   
+  // Индексы для AdminLog
+  await AdminLog.collection.createIndex({ adminId: 1 });
+  await AdminLog.collection.createIndex({ action: 1 });
+  await AdminLog.collection.createIndex({ createdAt: -1 });
+  
   // Создание базовых ролей
   const roles = ['user', 'moderator', 'admin'];
   for (const roleName of roles) {

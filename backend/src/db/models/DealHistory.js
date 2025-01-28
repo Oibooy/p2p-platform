@@ -28,5 +28,6 @@ const dealHistorySchema = new mongoose.Schema({
 
 dealHistorySchema.index({ dealId: 1, eventType: 1 });
 dealHistorySchema.index({ createdAt: -1 });
+dealHistorySchema.index({ performer: 1 });
 
 module.exports = mongoose.model('DealHistory', dealHistorySchema);

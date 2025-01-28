@@ -14,6 +14,8 @@ const DisputeSchema = new mongoose.Schema({
 DisputeSchema.index({ order: 1 });
 DisputeSchema.index({ initiator: 1 });
 DisputeSchema.index({ status: 1 });
+DisputeSchema.index({ moderator: 1 });
+DisputeSchema.index({ createdAt: -1 });
 
 // Создание нового спора
 DisputeSchema.statics.createDispute = async function(orderId, initiatorId, reason) {
