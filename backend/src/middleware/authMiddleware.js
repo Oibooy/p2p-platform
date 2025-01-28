@@ -9,10 +9,24 @@ async function verifyToken(req, res, next) {
   const token = req.headers['authorization'];
 
   if (!token) {
-    console.log(`[${new Date().toISOString()}] Authorization header is missing`);
+    logger.warn(`Unauthorized access attempt from IP: ${req.ip}`);
     return res.status(401).json({ 
-      error: 'Unauthorized access',
-      code: 'TOKEN_MISSING'
+      status: 'error',
+      code: 'TOKEN_MISSING',
+      message: 'Authentication required'
+    });
+  }
+
+  // Rate limiting check
+  const requestCount = await redisClient.incr(`auth_requests:${req.ip}`);
+  await redisClient.expire(`auth_requests:${req.ip}`, 60 * 60); // 1 hour expiry
+
+  if (requestCount > 100) { // 100 requests per hour limit
+    logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+    return res.status(429).json({
+      status: 'error',
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests, please try again later'
     });
   }
 
