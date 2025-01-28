@@ -8,6 +8,7 @@ const Message = require('../models/Message');
 const Review = require('../models/Review');
 const Notification = require('../models/Notification');
 const Dispute = require('../models/Dispute');
+const DealHistory = require('../models/DealHistory');
 
 async function up() {
   // Создание индексов для всех коллекций
@@ -18,6 +19,12 @@ async function up() {
   await Review.createIndexes();
   await Notification.createIndexes();
   await Dispute.createIndexes();
+  await DealHistory.createIndexes();
+  
+  // Создание составных индексов
+  await Message.collection.createIndex({ sender: 1, recipient: 1, createdAt: -1 });
+  await Notification.collection.createIndex({ user: 1, read: 1, createdAt: -1 });
+  await DealHistory.collection.createIndex({ dealId: 1, createdAt: -1 });
   
   // Создание базовых ролей
   const roles = ['user', 'moderator', 'admin'];
@@ -31,6 +38,20 @@ async function up() {
       { upsert: true }
     );
   }
+
+  // Создание базовых настроек уведомлений
+  const defaultNotificationSettings = {
+    emailNotifications: true,
+    pushNotifications: true,
+    dealUpdates: true,
+    messageNotifications: true,
+    marketingEmails: false
+  };
+
+  await User.updateMany(
+    { notificationSettings: { $exists: false } },
+    { $set: { notificationSettings: defaultNotificationSettings } }
+  );
 }
 
 function getRolePermissions(role) {
@@ -55,9 +76,13 @@ async function down() {
   await Review.collection.dropIndexes();
   await Notification.collection.dropIndexes();
   await Dispute.collection.dropIndexes();
+  await DealHistory.collection.dropIndexes();
   
   // Удаление ролей
   await Role.deleteMany({});
+  
+  // Удаление настроек уведомлений
+  await User.updateMany({}, { $unset: { notificationSettings: "" } });
 }
 
 module.exports = { up, down };
