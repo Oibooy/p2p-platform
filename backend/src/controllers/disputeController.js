@@ -22,7 +22,19 @@ exports.getAllDisputes = async (req, res) => {
 exports.createDispute = async (req, res) => {
   try {
     const { orderId, reason } = req.body;
+    if (!orderId || !reason || reason.length < 10) {
+      return res.status(400).json({ error: 'Invalid input data' });
+    }
     const userId = req.user.id;
+
+    // Проверка лимитов
+    const disputeCount = await Dispute.countDocuments({
+      initiator: userId,
+      createdAt: { $gt: new Date(Date.now() - 24*60*60*1000) }
+    });
+    if (disputeCount >= 5) {
+      return res.status(429).json({ error: 'Daily dispute limit exceeded' });
+    }
 
     const order = await Order.findById(orderId);
     if (!order) {
