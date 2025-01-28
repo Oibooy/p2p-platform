@@ -1,10 +1,9 @@
-
-const User = require('../models/User');
+const User = require('../../db/models/User');
 
 const isModerator = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId).populate('role');
-    
+
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
@@ -23,7 +22,7 @@ const isModerator = async (req, res, next) => {
 const isAdmin = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId).populate('role');
-    
+
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
@@ -43,13 +42,13 @@ const hasRole = (roles) => {
   return async (req, res, next) => {
     try {
       const user = await User.findById(req.user.userId).populate('role');
-      
+
       if (!user) {
         return res.status(404).json({ error: 'Пользователь не найден' });
       }
 
       const allowedRoles = Array.isArray(roles) ? roles : [roles];
-      
+
       if (!allowedRoles.includes(user.role.name)) {
         return res.status(403).json({ 
           error: `Доступ запрещён. Требуется одна из ролей: ${allowedRoles.join(', ')}` 

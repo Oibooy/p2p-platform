@@ -4,6 +4,9 @@ const multer = require('multer');
 const path = require('path');
 const { verifyToken } = require('../middleware/authMiddleware');
 const Deal = require('../models/Deal');
+const dealController = require('../controllers/dealController'); // Added based on context
+const { validateDeal } = require('../middleware/validation'); // Added based on context
+
 
 const router = express.Router();
 
