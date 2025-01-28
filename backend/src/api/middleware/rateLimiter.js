@@ -1,6 +1,5 @@
-
 const rateLimit = require('express-rate-limit');
-const logger = require('../utils/logger');
+const logger = require('../../infrastructure/logger');
 
 const createRateLimiter = (windowMs, max, message) => {
   return rateLimit({

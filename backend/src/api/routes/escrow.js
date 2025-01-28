@@ -5,7 +5,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const { depositFunds, releaseFunds, refundFunds } = require('../services/escrowService');
 const { validateAmount } = require('../middleware/validation');
 const rateLimit = require('express-rate-limit');
-const logger = require('../utils/logger');
+const logger = require('../../infrastructure/logger');
 
 // Rate limiting
 const escrowLimiter = rateLimit({

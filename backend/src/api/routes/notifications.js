@@ -1,8 +1,8 @@
 // routes/notifications.js - Маршруты для управления уведомлениями
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
-const Notification = require('../models/Notification');
-const User = require('../models/User');
+const Notification = require('../../db/models/Notification');
+const User = require('../../db/models/User');
 
 const router = express.Router();
 

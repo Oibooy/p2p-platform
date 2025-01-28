@@ -9,7 +9,7 @@ const http = require('http');
 const logger = require('./infrastructure/logger');
 const errorHandler = require('./api/middleware/errorHandler');
 const { webSocketServer } = require('./infrastructure/webSocket');
-const { startDealExpiryHandler } = require('./core/jobs/dealExpiryHandler');
+const { startDealExpiryHandler } = require('./workers/dealExpiryHandler');
 
 const authRoutes = require('./api/routes/auth');
 const orderRoutes = require('./api/routes/orders');

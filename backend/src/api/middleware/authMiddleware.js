@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../../db/models/User'); // Импорт модели пользователя
-const redisClient = require('../utils/redisClient'); // Подключение Redis
+const redisClient = require('../../infrastructure/redisClient'); // Подключение Redis
 
 /**
  * Middleware для проверки токена.

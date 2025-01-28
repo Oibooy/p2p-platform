@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
-const User = require('../models/User');
-const AdminLog = require('../models/AdminLog');
-const { exportUsers, exportDeals } = require('../utils/exportService');
+const User = require('../../db/models/User');
+const AdminLog = require('../../db/models/AdminLog');
+const { exportUsers, exportDeals } = require('../../infrastructure/exportService');
 const adminLogger = require('../middleware/adminLogger');
 
 // Применяем логгер ко всем админ роутам

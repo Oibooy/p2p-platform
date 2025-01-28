@@ -2,9 +2,9 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
 const messageController = require('../controllers/messageController');
-const { validateMessage } = require('../middleware/validation');
-const Message = require('../models/Message');
-const Deal = require('../models/Deal');
+const { validateMessage } = require('../validators/validation');
+const Message = require('../../db/models/Message');
+const Deal = require('../../db/models/Deal');
 
 const router = express.Router();
 

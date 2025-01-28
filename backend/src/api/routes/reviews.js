@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
-const Order = require('../models/Order');
-const Review = require('../models/Review');
-const User = require('../models/User');
-const { validateReview } = require('../middleware/validation'); // Added this line
+const Order = require('../../db/models/Order');
+const Review = require('../../db/models/Review');
+const User = require('../../db/models/User');
+const { validateReview } = require('../validators/validation'); // Added this line
 
 // Get all reviews
 router.get('/', async (req, res) => {

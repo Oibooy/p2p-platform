@@ -1,5 +1,4 @@
-
-const logger = require('../utils/logger');
+const logger = require('../../infrastructure/logger');
 
 const performanceMonitor = (req, res, next) => {
   const start = process.hrtime();

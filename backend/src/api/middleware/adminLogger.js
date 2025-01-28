@@ -1,5 +1,4 @@
-
-const AdminLog = require('../models/AdminLog');
+const AdminLog = require('../../db/models/AdminLog');
 
 const adminLogger = async (req, res, next) => {
   const originalJson = res.json;

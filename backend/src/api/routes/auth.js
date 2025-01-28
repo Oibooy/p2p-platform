@@ -3,9 +3,9 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const User = require('../models/User');
-const sendEmail = require('../utils/emailSender');
-const redisClient = require('../utils/redisClient');
+const User = require('../../db/models/User');
+const sendEmail = require('../../infrastructure/emailSender');
+const redisClient = require('../../infrastructure/redisClient');
 const router = express.Router();
 const crypto = require('crypto');
 
