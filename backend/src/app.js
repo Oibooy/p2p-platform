@@ -100,6 +100,8 @@ app.use((req, res, next) => {
 });
 
 // Database connection
+const runMigrations = require('./db/migrations/migrationRunner');
+
 async function connectToDatabase() {
   try {
     const connection = await mongoose.connect(process.env.MONGO_URI, {
@@ -108,6 +110,7 @@ async function connectToDatabase() {
       socketTimeoutMS: 30000,
       autoCreate: true
     });
+    await runMigrations();
 
     // Wait for connection to be ready
     await new Promise(resolve => setTimeout(resolve, 1000));
