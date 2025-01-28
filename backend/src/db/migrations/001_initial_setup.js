@@ -22,9 +22,26 @@ async function up() {
   await DealHistory.createIndexes();
   
   // Создание составных индексов
+  // Индексы для Order
+  await Order.collection.createIndex({ user: 1, status: 1 });
+  await Order.collection.createIndex({ type: 1, status: 1 });
+  await Order.collection.createIndex({ expiresAt: 1 });
+  await Order.collection.createIndex({ price: 1 });
+  await Order.collection.createIndex({ amount: 1 });
+  
+  // Индексы для Deal и DealHistory
+  await Deal.collection.createIndex({ buyer: 1, seller: 1 });
+  await Deal.collection.createIndex({ status: 1 });
+  await DealHistory.collection.createIndex({ dealId: 1, createdAt: -1 });
+  
+  // Индексы для сообщений и уведомлений
   await Message.collection.createIndex({ sender: 1, recipient: 1, createdAt: -1 });
   await Notification.collection.createIndex({ user: 1, read: 1, createdAt: -1 });
-  await DealHistory.collection.createIndex({ dealId: 1, createdAt: -1 });
+  
+  // Индексы для Review
+  await Review.collection.createIndex({ dealId: 1 });
+  await Review.collection.createIndex({ from: 1, to: 1 });
+  await Review.collection.createIndex({ rating: -1 });
   
   // Создание базовых ролей
   const roles = ['user', 'moderator', 'admin'];
