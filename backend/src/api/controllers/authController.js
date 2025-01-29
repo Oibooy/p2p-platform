@@ -34,6 +34,12 @@ exports.registerUser = async (req, res) => {
       );
     }
 
+    logger.info({
+      event: 'user_registration_attempt',
+      email,
+      username
+    });
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 

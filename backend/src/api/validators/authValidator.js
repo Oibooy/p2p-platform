@@ -1,22 +1,40 @@
 
 const { body } = require('express-validator');
+const { ValidationError } = require('../../infrastructure/errors');
 
 const registerValidator = [
-  body('email').isEmail().withMessage('Invalid email format'),
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
   body('username')
-    .isLength({ min: 3 })
-    .withMessage('Username must be at least 3 characters long')
+    .isLength({ min: 3, max: 30 })
+    .withMessage('Username must be between 3 and 30 characters')
+    .matches(/^[A-Za-z0-9_]+$/)
+    .withMessage('Username can only contain letters, numbers and underscores'),
+  body('email')
+    .isEmail()
+    .withMessage('Invalid email format')
+    .normalizeEmail(),
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)/)
+    .withMessage('Password must contain both letters and numbers')
 ];
 
 const loginValidator = [
   body('email').isEmail().withMessage('Invalid email format'),
-  body('password').exists().withMessage('Password is required')
+  body('password').notEmpty().withMessage('Password is required')
+];
+
+const resetPasswordValidator = [
+  body('token').notEmpty().withMessage('Token is required'),
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)/)
+    .withMessage('Password must contain both letters and numbers')
 ];
 
 module.exports = {
   registerValidator,
-  loginValidator
+  loginValidator,
+  resetPasswordValidator
 };

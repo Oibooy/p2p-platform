@@ -11,14 +11,22 @@ class AppError extends Error {
 }
 
 const errorHandler = (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
+  const statusCode = err.statusCode || 500;
+  const status = err.status || 'error';
 
-  logger.error(`${req.method} ${req.url} - ${err.message}`, {
-    stackTrace: err.stack,
-    statusCode: err.statusCode,
-    path: req.path,
-    body: req.body,
+  // Структурированное логирование
+  logger.error({
+    event: 'error_occurred',
+    error: {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      statusCode,
+      path: req.path,
+      method: req.method,
+      body: req.body,
+      user: req.user ? req.user._id : null
+    },
     timestamp: new Date().toISOString()
   });
 
