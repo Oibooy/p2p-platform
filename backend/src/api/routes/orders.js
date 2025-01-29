@@ -1,22 +1,21 @@
 const express = require('express');
 const { verifyToken, validateRequest } = require('../middleware');
-const orderController = require('../controllers/orderController');
+const { getPublicOrders, getAllOrders, createOrder, getOrderById, deleteOrder} = require('../controllers/orderController');
 const { createOrderValidator, getOrdersValidator } = require('../validators/orderValidator');
-const { AppError } = require('../../infrastructure/errors');
 
 const router = express.Router();
 
 // Public routes
-router.get('/public', orderController.getPublicOrders);
+router.get('/public', getPublicOrders);
 
 // Protected routes - Order CRUD
 router.route('/')
-  .get(verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders)
-  .post(verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
+  .get(verifyToken, getOrdersValidator, validateRequest, getAllOrders)
+  .post(verifyToken, createOrderValidator, validateRequest, createOrder);
 
 router.route('/:id')
-  .get(verifyToken, orderController.getOrderById)
-  .delete(verifyToken, orderController.deleteOrder);
+  .get(verifyToken, getOrderById)
+  .delete(verifyToken, deleteOrder);
 
 // Protected routes - Order status management
 router.patch('/:id/complete', verifyToken, orderController.handleOrderComplete);
