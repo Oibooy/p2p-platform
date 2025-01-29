@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validateRequest } = require('../middleware');
 const { loginValidator, registerValidator } = require('../validators/authValidator');
-const User = require('../../db/models/User');
+const UserRepository = require("../../db/repositories/UserRepository");
 const sendEmail = require('../../infrastructure/emailSender');
 const redisClient = require('../../infrastructure/redisClient');
 const router = express.Router();
@@ -18,7 +18,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await UserRepository.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -58,7 +58,7 @@ router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
 
   try {
-    const user = await User.findOne({
+    const user = await UserRepository.findOne({
       resetPasswordToken: token,
       resetPasswordExpiry: { $gt: Date.now() }
     });
@@ -98,7 +98,7 @@ router.post(
     const { username, email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ 
+      const existingUser = await UserRepository.findOne({ 
         email: email.toLowerCase() 
       }).lean();
 
@@ -114,7 +114,7 @@ router.post(
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = new User({
+      const user = new UserRepository({
         username,
         email,
         password: hashedPassword,
@@ -170,7 +170,7 @@ router.post('/resend-confirmation', async (req, res) => {
   const { email } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await UserRepository.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -209,7 +209,7 @@ router.post(
     }
 
     try {
-      const user = await User.findOne({ 
+      const user = await UserRepository.findOne({ 
         $or: [
           { email: { $regex: new RegExp('^' + email + '$', 'i') } },
           { username: { $regex: new RegExp('^' + email + '$', 'i') } }
@@ -361,7 +361,7 @@ router.post(
 // Получение информации о текущем пользователе
 router.get('/me', async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await UserRepository.findById(req.user._id).select('-password');
     res.json(user);
   } catch (error) {
     console.error('Error fetching user data:', error.message);
