@@ -1,4 +1,3 @@
-
 const { validationResult } = require('express-validator');
 const { ValidationError } = require('../../infrastructure/errors');
 

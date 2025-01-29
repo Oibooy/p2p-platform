@@ -128,7 +128,7 @@ function checkRole(requiredRole) {
 async function checkRevokedToken(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    throw new AuthorizationError('Access denied. No token provided.');
   }
 
   const isRevoked = await isTokenRevoked(token);

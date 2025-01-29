@@ -15,7 +15,7 @@ const createRateLimiter = (windowMs, max, message) => {
     message: { error: message },
     handler: (req, res, next, options) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
-      res.status(429).json(options.message);
+      throw new RateLimitError('Too many requests, please try again later');
     }
   });
 };

@@ -1,21 +1,23 @@
 const User = require('../../db/models/User');
+const { ForbiddenError, NotFoundError } = require('../../infrastructure/errors'); // Assuming this is where custom errors are defined
+
 
 const isModerator = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId).populate('role');
 
     if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      throw new NotFoundError('Пользователь не найден');
     }
 
     if (user.role.name !== 'moderator' && user.role.name !== 'admin') {
-      return res.status(403).json({ error: 'Доступ запрещён. Требуется роль модератора.' });
+      throw new ForbiddenError('Доступ запрещён. Требуется роль модератора.');
     }
 
     next();
   } catch (error) {
     console.error('Ошибка в middleware модератора:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    next(error); // Pass the error to the error handling middleware
   }
 };
 
@@ -24,17 +26,17 @@ const isAdmin = async (req, res, next) => {
     const user = await User.findById(req.user.userId).populate('role');
 
     if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      throw new NotFoundError('Пользователь не найден');
     }
 
     if (user.role.name !== 'admin') {
-      return res.status(403).json({ error: 'Доступ запрещён. Требуется роль администратора.' });
+      throw new ForbiddenError('Доступ запрещён. Требуется роль администратора.');
     }
 
     next();
   } catch (error) {
     console.error('Ошибка в middleware администратора:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    next(error); // Pass the error to the error handling middleware
   }
 };
 
@@ -44,21 +46,19 @@ const hasRole = (roles) => {
       const user = await User.findById(req.user.userId).populate('role');
 
       if (!user) {
-        return res.status(404).json({ error: 'Пользователь не найден' });
+        throw new NotFoundError('Пользователь не найден');
       }
 
       const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
       if (!allowedRoles.includes(user.role.name)) {
-        return res.status(403).json({ 
-          error: `Доступ запрещён. Требуется одна из ролей: ${allowedRoles.join(', ')}` 
-        });
+        throw new ForbiddenError(`Доступ запрещён. Требуется одна из ролей: ${allowedRoles.join(', ')}`);
       }
 
       next();
     } catch (error) {
       console.error('Ошибка в middleware проверки роли:', error);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      next(error); // Pass the error to the error handling middleware
     }
   };
 };
