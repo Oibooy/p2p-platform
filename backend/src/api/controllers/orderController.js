@@ -122,7 +122,7 @@ exports.getPublicOrders = async (req, res, next) => {
 };
 
 exports.completeOrder = async (orderId, userId) => {
-  const order = await orderRepository.findById(orderId);
+  const order = await OrderRepository.findById(orderId);
   
   if (!order) {
     throw new AppError('Order not found', 404);
@@ -162,7 +162,7 @@ exports.handleOrderExpire = async (req, res, next) => {
 };
 
 exports.expireOrder = async (orderId) => {
-  const order = await orderRepository.findById(orderId);
+  const order = await OrderRepository.findById(orderId);
   
   if (!order) {
     throw new AppError('Order not found', 404);
@@ -202,20 +202,7 @@ exports.deleteOrder = async (req, res) => {
   }
 };
 
-exports.handleOrderComplete = async (req, res, next) => {
-  try {
-    const order = await exports.completeOrder(req.params.id, req.user._id);
-    res.status(200).json(order);
-  } catch (error) {
-    next(error instanceof AppError ? error : new AppError(error.message, 500));
-  }
-};
 
-exports.handleOrderExpire = async (req, res, next) => {
-  try {
-    const order = await exports.expireOrder(req.params.id);
-    res.status(200).json(order);
-  } catch (error) {
-    next(error instanceof AppError ? error : new AppError(error.message, 500));
-  }
-};
+  
+  
+  

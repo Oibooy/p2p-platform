@@ -46,6 +46,10 @@ class RateLimitError extends AppError {
 
 module.exports = {
   AppError,
+  OrderNotFoundError,
+  OrderStatusError,
   ValidationError,
-  AuthorizationError
+  AuthorizationError,
+  ForbiddenError,
+  RateLimitError
 };
