@@ -1,4 +1,3 @@
-
 const { verifyToken, checkRole, checkRevokedToken } = require('./authMiddleware');
 const { isModerator, isAdmin, hasRole } = require('./roleMiddleware');
 const { errorHandler } = require('./errorHandler');

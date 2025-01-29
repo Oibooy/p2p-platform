@@ -1,13 +1,11 @@
-
 const { AppError } = require('../../infrastructure/errors');
-
-const AdminLog = require('../../db/models/AdminLog');
+const AdminLogRepository = require('../../db/repositories/AdminLogRepository');
 
 const adminLogger = async (req, res, next) => {
   const originalJson = res.json;
   res.json = async function(data) {
     try {
-      await AdminLog.create({
+      await AdminLogRepository.create({
         admin: req.user._id,
         action: `${req.method} ${req.path}`,
         details: {

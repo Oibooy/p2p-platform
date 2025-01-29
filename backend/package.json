@@ -19,6 +19,7 @@
         "multer": "^1.4.4-lts.1",
         "node-cron": "^3.0.3",
         "nodemailer": "^6.9.16",
+        "rate-limit-redis": "^4.2.0",
         "redis": "^4.7.0",
         "tronweb": "^6.0.1",
         "winston": "^3.17.0",

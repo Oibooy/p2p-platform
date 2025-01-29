@@ -1,4 +1,3 @@
-
 const ReviewRepository = require('../../db/repositories/ReviewRepository');
 const DealRepository = require('../../db/repositories/DealRepository');
 const logger = require('../../infrastructure/logger');

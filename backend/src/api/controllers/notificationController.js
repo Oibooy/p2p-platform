@@ -1,4 +1,3 @@
-
 const NotificationRepository = require('../../db/repositories/NotificationRepository');
 const logger = require('../../infrastructure/logger');
 const { AppError } = require('../../infrastructure/errors');

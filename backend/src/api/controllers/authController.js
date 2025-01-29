@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const UserRepository = require('../../db/repositories/UserRepository');
-const Role = require('../../db/models/Role');
+const RoleRepository = require('../../db/repositories/RoleRepository');
 const { sendEmail } = require('../../infrastructure/emailSender');
 const logger = require('../../infrastructure/logger');
 const { AppError, ValidationError, AuthError } = require('../../infrastructure/errors');
@@ -43,8 +43,8 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const userRole = await Role.findOne({ name: 'user' }) || 
-                    await new Role({ name: 'user' }).save();
+    const userRole = await RoleRepository.findOne({ name: 'user' }) || 
+                    await new RoleRepository({ name: 'user' }).save();
 
     const newUser = await userRepository.create({
       username,

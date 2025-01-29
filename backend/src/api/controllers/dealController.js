@@ -1,4 +1,3 @@
-
 const DealRepository = require('../../db/repositories/DealRepository');
 const OrderRepository = require('../../db/repositories/OrderRepository');
 const UserRepository = require('../../db/repositories/UserRepository');

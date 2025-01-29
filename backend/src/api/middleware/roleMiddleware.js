@@ -1,10 +1,10 @@
-const User = require('../../db/models/User');
+const UserRepository = require('../../db/repositories/UserRepository');
 const { ForbiddenError, NotFoundError } = require('../../infrastructure/errors'); // Assuming this is where custom errors are defined
 
 
 const isModerator = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId).populate('role');
+    const user = await UserRepository.findById(req.user.userId).populate('role');
 
     if (!user) {
       throw new NotFoundError('Пользователь не найден');
@@ -23,7 +23,7 @@ const isModerator = async (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId).populate('role');
+    const user = await UserRepository.findById(req.user.userId).populate('role');
 
     if (!user) {
       throw new NotFoundError('Пользователь не найден');
@@ -43,7 +43,7 @@ const isAdmin = async (req, res, next) => {
 const hasRole = (roles) => {
   return async (req, res, next) => {
     try {
-      const user = await User.findById(req.user.userId).populate('role');
+      const user = await UserRepository.findById(req.user.userId).populate('role');
 
       if (!user) {
         throw new NotFoundError('Пользователь не найден');

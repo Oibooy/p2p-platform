@@ -1,7 +1,6 @@
 const rateLimit = require('express-rate-limit');
 const logger = require('../../infrastructure/logger');
-
-const RedisStore = require('rate-limit-redis');
+const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('../../infrastructure/redisClient');
 
 const createRateLimiter = (windowMs, max, message) => {
