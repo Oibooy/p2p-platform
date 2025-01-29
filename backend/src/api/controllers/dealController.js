@@ -15,10 +15,8 @@ exports.createDeal = async (req, res) => {
     const userId = req.user.id;
     
     // Rate limiting check
-    const dealCount = await Deal.countDocuments({ 
-      buyer: userId,
-      createdAt: { $gt: new Date(Date.now() - 24*60*60*1000) }
-    });
+    const dealRepository = new DealRepository();
+    const dealCount = await dealRepository.countRecentDeals(userId, 24);
     if (dealCount >= 50) {
       return res.status(429).json({ error: 'Daily deal limit exceeded' });
     }

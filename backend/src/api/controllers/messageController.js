@@ -34,7 +34,13 @@ exports.sendMessage = async (req, res) => {
 
     res.status(201).json(message);
   } catch (error) {
-    logger.error('Error in sendMessage:', error);
+    logger.error({
+      event: 'message_send_failed',
+      error: error.message,
+      dealId,
+      userId: senderId,
+      stack: error.stack
+    });
     res.status(500).json({ error: 'Ошибка при отправке сообщения' });
   }
 };

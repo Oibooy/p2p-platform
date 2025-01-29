@@ -20,3 +20,24 @@ module.exports = {
   createDisputeValidator,
   resolveDisputeValidator
 };
+const { body } = require('express-validator');
+
+const createDisputeValidator = [
+  body('orderId').notEmpty().isMongoId().withMessage('Valid order ID is required'),
+  body('reason')
+    .notEmpty()
+    .isString()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Reason must be between 10 and 500 characters')
+];
+
+const resolveDisputeValidator = [
+  body('resolution')
+    .isIn(['refund', 'complete'])
+    .withMessage('Invalid resolution type')
+];
+
+module.exports = {
+  createDisputeValidator,
+  resolveDisputeValidator
+};
