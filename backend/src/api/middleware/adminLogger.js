@@ -1,3 +1,6 @@
+
+const { AppError } = require('../../infrastructure/errors');
+
 const AdminLog = require('../../db/models/AdminLog');
 
 const adminLogger = async (req, res, next) => {
@@ -15,7 +18,7 @@ const adminLogger = async (req, res, next) => {
         }
       });
     } catch (error) {
-      console.error('Error logging admin action:', error);
+      throw new AppError('Failed to log admin action', 500);
     }
     return originalJson.call(this, data);
   };

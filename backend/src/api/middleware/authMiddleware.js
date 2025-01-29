@@ -40,8 +40,7 @@ async function verifyToken(req, res, next) {
 
   try {
     if (!token.startsWith('Bearer ')) {
-      console.log(`[${new Date().toISOString()}] Invalid token format: ${token}`);
-      return res.status(400).json({ error: 'Invalid token format.' });
+      throw new AuthorizationError('Invalid token format');
     }
 
     const extractedToken = token.split(' ')[1];
