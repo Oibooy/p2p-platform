@@ -23,9 +23,9 @@ router.patch('/:id/complete', verifyToken, async (req, res, next) => {
   }
 });
 
-router.patch('/:id/expire', async (req, res, next) => {
+router.patch('/:id/expire', verifyToken, async (req, res, next) => {
   try {
-    const order = await orderController.expireOrder(req.params.id);
+    const order = await orderController.expireOrder(req.params.id, req.user.userId);
     res.status(200).json(order);
   } catch (error) {
     next(error);
