@@ -96,6 +96,69 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+exports.getPublicOrders = async (req, res) => {
+  try {
+    const { type, sortBy = 'createdAt', order = 'desc', minPrice, maxPrice } = req.query;
+    const filter = { status: 'active' };
+    
+    if (type) filter.type = type;
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+    }
+
+    const orders = await orderRepository.find(filter, {
+      sort: { [sortBy]: order === 'desc' ? -1 : 1 },
+      populate: 'user'
+    });
+    
+    res.status(200).json(orders);
+  } catch (error) {
+    throw new AppError('Failed to fetch public orders', 500);
+  }
+};
+
+exports.completeOrder = async (orderId, userId) => {
+  const order = await orderRepository.findById(orderId);
+  
+  if (!order) {
+    throw new AppError('Order not found', 404);
+  }
+  
+  if (order.status !== 'open') {
+    throw new AppError('Order is not in an open state', 400);
+  }
+  
+  if (order.user.toString() !== userId) {
+    throw new AppError('Unauthorized to complete this order', 403);
+  }
+
+  order.status = 'closed';
+  await order.save();
+  
+  await sendWebSocketNotification(order.user, 'order_completed', { orderId: order._id });
+  return order;
+};
+
+exports.expireOrder = async (orderId) => {
+  const order = await orderRepository.findById(orderId);
+  
+  if (!order) {
+    throw new AppError('Order not found', 404);
+  }
+  
+  if (new Date() <= order.expiresAt) {
+    throw new AppError('Order has not expired yet', 400);
+  }
+
+  order.status = 'expired';
+  await order.save();
+  
+  await sendWebSocketNotification(order.user, 'order_expired', { orderId: order._id });
+  return order;
+};
+
 exports.deleteOrder = async (req, res) => {
   try {
     const orderRepository = new OrderRepository();
