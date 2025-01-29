@@ -1,20 +1,13 @@
-const Order = require('../../db/models/Order');
+const OrderRepository = require('../../db/repositories/OrderRepository');
+const { AppError, ValidationError } = require('../../infrastructure/errors');
 const logger = require('../../infrastructure/logger');
 const { sendWebSocketNotification } = require('../../infrastructure/webSocket');
 
 exports.getAllOrders = async (req, res) => {
-  const { 
-    type, 
-    status, 
-    sortBy = 'createdAt', 
-    order = 'desc', 
-    minPrice, 
-    maxPrice,
-    page = 1,
-    limit = 10 
-  } = req.query;
-
   try {
+    const { type, status, sortBy = 'createdAt', order = 'desc', minPrice, maxPrice, page = 1, limit = 10 } = req.query;
+    const orderRepository = new OrderRepository();
+
     const filter = {};
     if (type) filter.type = type;
     if (status) filter.status = status;
@@ -24,16 +17,14 @@ exports.getAllOrders = async (req, res) => {
       if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
 
-    const sortOptions = { [sortBy]: order === 'desc' ? -1 : 1 };
-    const skip = (page - 1) * limit;
-
     const [orders, total] = await Promise.all([
-      Order.find(filter)
-        .sort(sortOptions)
-        .populate('user', 'username reputation')
-        .skip(skip)
-        .limit(parseInt(limit)),
-      Order.countDocuments(filter)
+      orderRepository.findWithPagination(filter, {
+        sort: { [sortBy]: order === 'desc' ? -1 : 1 },
+        skip: (page - 1) * limit,
+        limit: parseInt(limit),
+        populate: 'user'
+      }),
+      orderRepository.count(filter)
     ]);
 
     res.status(200).json({
@@ -42,12 +33,12 @@ exports.getAllOrders = async (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(total / limit),
         totalOrders: total,
-        hasMore: skip + orders.length < total
+        hasMore: (page - 1) * limit + orders.length < total
       }
     });
   } catch (error) {
     logger.error('Error fetching orders:', error);
-    res.status(500).json({ error: 'Failed to fetch orders' });
+    throw new AppError('Failed to fetch orders', 500);
   }
 };
 
@@ -55,7 +46,7 @@ exports.createOrder = async (req, res) => {
   try {
     const { amount, type, price, expirationHours = 24 } = req.body;
     const orderRepository = new OrderRepository();
-    
+
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + expirationHours);
 
@@ -70,68 +61,60 @@ exports.createOrder = async (req, res) => {
 
     await order.populate('user', 'username reputation');
 
-  try {
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + expirationHours);
-
-    const order = new Order({
-      type,
-      amount,
-      price,
-      status: 'open',
-      user: req.user._id,
-      expiresAt
+    sendWebSocketNotification(req.user._id, 'order_created', {
+      orderId: order._id,
+      type: order.type,
+      amount: order.amount,
+      price: order.price
     });
 
-    const savedOrder = await order.save();
-    await savedOrder.populate('user', 'username reputation');
-
-    sendWebSocketNotification(req.user._id, 'order_created', { 
-      orderId: savedOrder._id,
-      type: savedOrder.type,
-      amount: savedOrder.amount,
-      price: savedOrder.price
-    });
-
-    res.status(201).json({ order: savedOrder });
+    res.status(201).json(order);
   } catch (error) {
     logger.error('Error creating order:', error);
-    res.status(500).json({ error: error.message });
+    if (error.name === 'ValidationError') {
+      throw new ValidationError(error.message);
+    }
+    throw new AppError('Failed to create order', 500);
   }
 };
 
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
-      .populate('user', 'username reputation');
+    const orderRepository = new OrderRepository();
+    const order = await orderRepository.findById(req.params.id, {
+      populate: 'user'
+    });
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      throw new AppError('Order not found', 404);
     }
+
     res.status(200).json(order);
   } catch (error) {
     logger.error('Error fetching order:', error);
-    res.status(500).json({ error: error.message });
+    throw new AppError(error.message, error.statusCode || 500);
   }
 };
 
 exports.deleteOrder = async (req, res) => {
   try {
-    const order = await Order.findOne({ 
+    const orderRepository = new OrderRepository();
+    const order = await orderRepository.findOne({ 
       _id: req.params.id,
       user: req.user._id,
       status: 'open'
     });
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found or cannot be deleted' });
+      throw new AppError('Order not found or cannot be deleted', 404);
     }
 
-    await order.remove();
+    await orderRepository.delete(req.params.id);
     sendWebSocketNotification(req.user._id, 'order_deleted', { orderId: req.params.id });
+
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (error) {
     logger.error('Error deleting order:', error);
-    res.status(500).json({ error: 'Failed to delete order' });
+    throw new AppError('Failed to delete order', 500);
   }
 };
