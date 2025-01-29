@@ -143,6 +143,24 @@ exports.completeOrder = async (orderId, userId) => {
   return order;
 };
 
+exports.handleOrderComplete = async (req, res, next) => {
+  try {
+    const order = await exports.completeOrder(req.params.id, req.user._id);
+    res.status(200).json(order);
+  } catch (error) {
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+};
+
+exports.handleOrderExpire = async (req, res, next) => {
+  try {
+    const order = await exports.expireOrder(req.params.id);
+    res.status(200).json(order);
+  } catch (error) {
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+};
+
 exports.expireOrder = async (orderId) => {
   const order = await orderRepository.findById(orderId);
   

@@ -16,6 +16,12 @@ const createOrderValidator = [
     .withMessage('Expiration must be between 1 and 168 hours')
 ];
 
+const validateOrderId = [
+  param('id')
+    .isMongoId()
+    .withMessage('Invalid order ID format')
+];
+
 const getOrdersValidator = [
   query('type')
     .optional()

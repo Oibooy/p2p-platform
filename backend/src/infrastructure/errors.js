@@ -8,6 +8,18 @@ class AppError extends Error {
   }
 }
 
+class OrderNotFoundError extends AppError {
+  constructor(message = 'Order not found') {
+    super(message, 404);
+  }
+}
+
+class OrderStatusError extends AppError {
+  constructor(message = 'Invalid order status transition') {
+    super(message, 400);
+  }
+}
+
 class ValidationError extends AppError {
   constructor(message) {
     super(message, 400);

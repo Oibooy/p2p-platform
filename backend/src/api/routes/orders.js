@@ -10,29 +10,32 @@ const router = express.Router();
 // Public routes
 router.get('/public', orderController.getPublicOrders);
 
-// Protected routes
-router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
+// Protected routes - Order CRUD
+router.route('/')
+  .get(verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders)
+  .post(verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
 
-router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
-router.get('/:id', verifyToken, orderController.getOrderById);
-router.delete('/:id', verifyToken, orderController.deleteOrder);
+router.route('/:id')
+  .get(verifyToken, orderController.getOrderById)
+  .delete(verifyToken, orderController.deleteOrder);
 
-router.patch('/:id/complete', verifyToken, async (req, res, next) => {
-  try {
-    const order = await orderController.completeOrder(req.params.id, req.user._id);
-    res.status(200).json(order);
-  } catch (error) {
-    next(error instanceof AppError ? error : new AppError(error.message, 500));
-  }
-});
-
-router.patch('/:id/expire', verifyToken, async (req, res, next) => {
-  try {
-    const order = await orderController.expireOrder(req.params.id);
-    res.status(200).json(order);
-  } catch (error) {
-    next(error instanceof AppError ? error : new AppError(error.message, 500));
-  }
-});
+// Protected routes - Order status management
+router.route('/:id/status')
+  .patch('/complete', verifyToken, async (req, res, next) => {
+    try {
+      const order = await orderController.completeOrder(req.params.id, req.user._id);
+      res.status(200).json(order);
+    } catch (error) {
+      next(error instanceof AppError ? error : new AppError(error.message, 500));
+    }
+  })
+  .patch('/expire', verifyToken, async (req, res, next) => {
+    try {
+      const order = await orderController.expireOrder(req.params.id);
+      res.status(200).json(order);
+    } catch (error) {
+      next(error instanceof AppError ? error : new AppError(error.message, 500));
+    }
+  });
 
 module.exports = router;
