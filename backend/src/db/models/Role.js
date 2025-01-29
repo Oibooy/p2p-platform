@@ -8,6 +8,10 @@ const roleSchema = new mongoose.Schema({
     unique: true,
     enum: ['user', 'moderator', 'admin']
   },
+  description: {
+    type: String,
+    required: true
+  },
   permissions: [{
     type: String,
     required: true
@@ -15,5 +19,8 @@ const roleSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Индексы
+roleSchema.index({ name: 1 }, { unique: true });
 
 module.exports = mongoose.model('Role', roleSchema);

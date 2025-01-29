@@ -57,13 +57,19 @@ async function up() {
   await AdminLog.collection.createIndex({ createdAt: -1 });
   
   // Создание базовых ролей
-  const roles = ['user', 'moderator', 'admin'];
-  for (const roleName of roles) {
+  const roles = [
+    { name: 'user', description: 'Regular user with basic permissions' },
+    { name: 'moderator', description: 'Moderator with dispute resolution permissions' },
+    { name: 'admin', description: 'Administrator with full system access' }
+  ];
+  
+  for (const role of roles) {
     await Role.findOneAndUpdate(
-      { name: roleName },
+      { name: role.name },
       { 
-        name: roleName,
-        permissions: getRolePermissions(roleName)
+        name: role.name,
+        description: role.description,
+        permissions: getRolePermissions(role.name)
       },
       { upsert: true }
     );

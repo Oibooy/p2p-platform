@@ -7,6 +7,15 @@ const messageSchema = new mongoose.Schema(
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Отправитель
     content: { type: String, required: true }, // Текст сообщения
     isModerated: { type: Boolean, default: false }, // Статус модерации
+    attachments: [{ 
+      type: String,
+      validate: {
+        validator: function(v) {
+          return /^https?:\/\/.*/.test(v);
+        },
+        message: 'Attachment URL must be valid'
+      }
+    }],
   },
   { timestamps: true }
 );

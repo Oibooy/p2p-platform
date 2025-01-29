@@ -14,11 +14,12 @@ const adminLogSchema = new mongoose.Schema({
   details: {
     type: Object,
     required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true });
+
+// Индексы для оптимизации
+adminLogSchema.index({ admin: 1 });
+adminLogSchema.index({ action: 1 });
+adminLogSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('AdminLog', adminLogSchema);
