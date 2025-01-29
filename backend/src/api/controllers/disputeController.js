@@ -1,17 +1,10 @@
-const DisputeRepository = require('../../db/repositories/DisputeRepository');
-const OrderRepository = require('../../db/repositories/OrderRepository');
-const { sendEmail } = require('../../infrastructure/emailSender');
-const logger = require('../../infrastructure/logger');
-const { AppError } = require('../../infrastructure/errors');
-const { validateDispute } = require('../validators/disputeValidator');
 const mongoose = require('mongoose');
 const DisputeService = require('../../core/services/disputeService');
+const { validateDispute } = require('../validators/disputeValidator');
 
 exports.getAllDisputes = async (req, res, next) => {
   try {
-    const disputeRepository = new DisputeRepository();
-    const disputes = await disputeRepository.findAllWithDetails();
-
+    const disputes = await DisputeService.getAllDisputes();
     res.status(200).json({ success: true, data: disputes });
   } catch (error) {
     next(error);
