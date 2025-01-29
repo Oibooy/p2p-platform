@@ -1,13 +1,18 @@
-const Notification = require('../../db/models/Notification');
-const logger = require('../../infrastructure/logger');
 
-// Получение уведомлений пользователя
+const NotificationRepository = require('../../db/repositories/NotificationRepository');
+const logger = require('../../infrastructure/logger');
+const { AppError } = require('../../infrastructure/errors');
+
 exports.getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    const notifications = await Notification.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const notificationRepository = new NotificationRepository();
+    
+    const notifications = await notificationRepository.findByUser(userId, {
+      sort: { createdAt: -1 },
+      limit: 50
+    });
+    
     res.json(notifications);
   } catch (error) {
     logger.error('Error in getUserNotifications:', error);
@@ -15,39 +20,51 @@ exports.getUserNotifications = async (req, res) => {
   }
 };
 
-// Пометить уведомление как прочитанное
 exports.markAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findOne({
+    const notificationRepository = new NotificationRepository();
+    const notification = await notificationRepository.findOne({
       _id: notificationId,
       user: userId
     });
 
     if (!notification) {
-      return res.status(404).json({ error: 'Уведомление не найдено' });
+      throw new AppError('Уведомление не найдено', 404);
     }
 
-    notification.read = true;
-    await notification.save();
+    const updatedNotification = await notificationRepository.update(
+      notificationId,
+      { read: true }
+    );
 
-    res.json(notification);
+    res.json(updatedNotification);
   } catch (error) {
     logger.error('Error in markAsRead:', error);
-    res.status(500).json({ error: 'Ошибка при обновлении уведомления' });
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Ошибка при обновлении уведомления' });
+    }
   }
 };
 
-// Пометить все уведомления как прочитанные
 exports.markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
-    await Notification.updateMany(
+    const notificationRepository = new NotificationRepository();
+    
+    await notificationRepository.updateMany(
       { user: userId, read: false },
-      { $set: { read: true } }
+      { read: true }
     );
+
+    logger.info({
+      event: 'notifications_marked_read',
+      userId
+    });
 
     res.json({ message: 'Все уведомления помечены как прочитанные' });
   } catch (error) {
@@ -56,24 +73,34 @@ exports.markAllAsRead = async (req, res) => {
   }
 };
 
-// Удаление уведомления
 exports.deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findOneAndDelete({
+    const notificationRepository = new NotificationRepository();
+    const result = await notificationRepository.deleteOne({
       _id: notificationId,
       user: userId
     });
 
-    if (!notification) {
-      return res.status(404).json({ error: 'Уведомление не найдено' });
+    if (!result) {
+      throw new AppError('Уведомление не найдено', 404);
     }
+
+    logger.info({
+      event: 'notification_deleted',
+      notificationId,
+      userId
+    });
 
     res.json({ message: 'Уведомление удалено' });
   } catch (error) {
     logger.error('Error in deleteNotification:', error);
-    res.status(500).json({ error: 'Ошибка при удалении уведомления' });
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Ошибка при удалении уведомления' });
+    }
   }
 };
