@@ -1,56 +1,74 @@
-const { body } = require('express-validator');
-const { ValidationError } = require('../../infrastructure/errors');
 
-// Validation rules for creating a dispute
+const { body, param } = require('express-validator');
+const { ValidationError } = require('../../infrastructure/errors');
+const DisputeRepository = require('../../db/repositories/DisputeRepository');
+const OrderRepository = require('../../db/repositories/OrderRepository');
+
 const createDisputeValidator = [
   body('orderId')
-    .notEmpty().withMessage('Order ID is required')
-    .isMongoId().withMessage('Invalid order ID format'),
-
+    .notEmpty().withMessage('ID заказа обязателен')
+    .isMongoId().withMessage('Неверный формат ID заказа'),
+    
   body('reason')
-    .notEmpty().withMessage('Reason is required')
-    .isString().withMessage('Reason must be a string')
+    .notEmpty().withMessage('Причина обязательна')
+    .isString().withMessage('Причина должна быть строкой')
     .isLength({ min: 10, max: 500 })
-    .withMessage('Reason must be between 10 and 500 characters')
-    .trim()
-    .escape(),
-
+    .withMessage('Причина должна содержать от 10 до 500 символов')
+    .trim(),
+    
   body('evidence')
     .optional()
-    .isURL().withMessage('Evidence must be a valid URL')
+    .isArray().withMessage('Доказательства должны быть массивом')
+    .custom((value) => {
+      if (value && value.length > 5) {
+        throw new Error('Максимум 5 доказательств');
+      }
+      return true;
+    })
 ];
 
-// Validation rules for resolving a dispute
 const resolveDisputeValidator = [
+  param('id')
+    .isMongoId().withMessage('Неверный формат ID спора'),
+    
   body('resolution')
-    .notEmpty().withMessage('Resolution is required')
-    .isIn(['refund', 'complete', 'cancel'])
-    .withMessage('Invalid resolution type'),
-
+    .notEmpty().withMessage('Решение обязательно')
+    .isIn(['refund', 'release'])
+    .withMessage('Неверный тип решения'),
+    
   body('comment')
-    .optional()
-    .isString().withMessage('Comment must be a string')
-    .isLength({ max: 1000 })
-    .withMessage('Comment must not exceed 1000 characters')
-    .trim()
-    .escape()
+    .notEmpty().withMessage('Комментарий обязателен')
+    .isString().withMessage('Комментарий должен быть строкой')
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Комментарий должен содержать от 10 до 1000 символов')
 ];
 
-// Direct validation function for programmatic use
-const validateDispute = async (data) => {
-  const { orderId, reason } = data;
+const validateBusinessRules = async (orderId, userId) => {
+  const disputeRepository = new DisputeRepository();
+  const orderRepository = new OrderRepository();
 
-  if (!orderId) {
-    throw new ValidationError('Order ID is required');
+  const existingDispute = await disputeRepository.findOne({ order: orderId });
+  if (existingDispute) {
+    throw new ValidationError('Спор по этому заказу уже существует');
   }
 
-  if (!reason || reason.length < 10 || reason.length > 500) {
-    throw new ValidationError('Reason must be between 10 and 500 characters');
+  const order = await orderRepository.findById(orderId);
+  if (!order) {
+    throw new ValidationError('Заказ не найден');
+  }
+
+  if (order.status === 'disputed') {
+    throw new ValidationError('Заказ уже находится в состоянии спора');
+  }
+
+  const disputeCount = await disputeRepository.countUserDisputes(userId, 24);
+  if (disputeCount >= 5) {
+    throw new ValidationError('Превышен дневной лимит споров');
   }
 };
 
 module.exports = {
   createDisputeValidator,
   resolveDisputeValidator,
-  validateDispute
+  validateBusinessRules
 };

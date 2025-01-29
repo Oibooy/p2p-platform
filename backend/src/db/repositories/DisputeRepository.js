@@ -1,6 +1,7 @@
 
 const BaseRepository = require('./BaseRepository');
 const Dispute = require('../models/Dispute');
+const redisClient = require('../../infrastructure/redisClient');
 
 class DisputeRepository extends BaseRepository {
   constructor() {
@@ -8,23 +9,38 @@ class DisputeRepository extends BaseRepository {
   }
 
   async findPendingDisputes() {
-    return this.find({ status: 'pending' })
+    const cacheKey = 'pending_disputes';
+    const cached = await redisClient.get(cacheKey);
+    
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    const disputes = await this.model
+      .find({ status: 'pending' })
       .populate('order')
       .populate('initiator', 'username')
-      .populate('moderator', 'username');
+      .populate('moderator', 'username')
+      .lean();
+
+    await redisClient.setex(cacheKey, 300, JSON.stringify(disputes));
+    return disputes;
   }
 
-  async findByModerator(moderatorId) {
-    return this.find({ moderator: moderatorId })
-      .populate('order')
-      .populate('initiator', 'username');
-  }
-
-  async assignModerator(disputeId, moderatorId) {
-    return this.update(disputeId, {
-      moderator: moderatorId,
-      status: 'in_progress'
+  async countUserDisputes(userId, hours) {
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+    return this.model.countDocuments({
+      initiator: userId,
+      createdAt: { $gte: since }
     });
+  }
+
+  async findByIdWithTransaction(id, session) {
+    return this.model
+      .findById(id)
+      .populate('order')
+      .populate('initiator')
+      .session(session);
   }
 }
 
