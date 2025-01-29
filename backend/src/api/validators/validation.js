@@ -49,8 +49,26 @@ const validateDealCreation = [
   handleValidationErrors
 ];
 
+const { body: body2 } = require('express-validator');
+
+exports.validateReview = [
+  body2('dealId').isMongoId().withMessage('Invalid deal ID'),
+  body2('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+  body2('comment').isString().trim().isLength({ min: 3, max: 1000 })
+    .withMessage('Comment must be between 3 and 1000 characters')
+];
+
+exports.validateReviewUpdate = [
+  body2('rating').optional().isInt({ min: 1, max: 5 })
+    .withMessage('Rating must be between 1 and 5'),
+  body2('comment').optional().isString().trim().isLength({ min: 3, max: 1000 })
+    .withMessage('Comment must be between 3 and 1000 characters')
+];
+
 module.exports = {
   validateAmount,
   validateDealCreation,
-  handleValidationErrors
+  handleValidationErrors,
+  validateReview,
+  validateReviewUpdate
 };

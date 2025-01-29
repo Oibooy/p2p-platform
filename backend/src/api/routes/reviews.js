@@ -1,40 +1,35 @@
+
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
-const ReviewRepository = require('../../db/repositories/ReviewRepository');
-const { validateReview } = require('../validators/validation'); // Added this line
+const reviewController = require('../controllers/reviewController');
+const validateRequest = require('../middleware/validationMiddleware');
+const { validateReview, validateReviewUpdate } = require('../validators/validation');
 
-// Get all reviews
-router.get('/', async (req, res) => {
-  try {
-    const reviews = await ReviewRepository.find().populate('user', 'username');
-    res.json(reviews);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch reviews' });
-  }
-});
+// Public routes
+router.get('/public/:userId', reviewController.getUserReviews);
 
-// Create a review
-router.post('/', verifyToken, validateReview, async (req, res) => { // Added validateReview middleware
-  try {
-    const review = await ReviewRepository.create({
-      ...req.body,
-      from: req.user.id
-    });
-    return res.status(201).json({ review });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
+// Protected routes
+router.use(verifyToken);
 
-// Get reviews by user ID
-router.get('/:userId', async (req, res) => {
-  try {
-    const reviews = await ReviewRepository.find({ to: req.params.userId });
-    res.status(200).json({ reviews });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// Create review
+router.post('/', 
+  validateReview,
+  validateRequest,
+  reviewController.createReview
+);
+
+// Get user's reviews
+router.get('/user/:userId', reviewController.getUserReviews);
+
+// Update review
+router.put('/:id',
+  validateReviewUpdate,
+  validateRequest, 
+  reviewController.updateReview
+);
+
+// Delete review
+router.delete('/:id', reviewController.deleteReview);
 
 module.exports = router;
