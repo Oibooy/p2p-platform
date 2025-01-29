@@ -15,7 +15,8 @@ exports.registerUser = async (req, res) => {
     }
 
     // Проверка существующего пользователя
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const userRepository = new UserRepository();
+    const existingUser = await userRepository.findByEmailOrUsername(email, username);
     if (existingUser) {
       return res.status(400).json({
         error: existingUser.email === email ? 'Email уже используется' : 'Имя пользователя уже занято'
@@ -70,7 +71,8 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).populate('role');
+    const userRepository = new UserRepository();
+    const user = await userRepository.findByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
@@ -118,7 +120,8 @@ exports.resendConfirmationEmail = async (req, res) => {
     const { email } = req.body;
 
     // Проверка, существует ли пользователь
-    const user = await User.findOne({ email });
+    const userRepository = new UserRepository();
+    const user = await userRepository.findByEmail(email);
     if (!user) {
       return res.status(404).json({ error: 'Пользователь с указанным email не найден' });
     }
@@ -152,7 +155,8 @@ exports.confirmEmail = async (req, res) => {
     const { token } = req.params;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
+    const userRepository = new UserRepository();
+    const user = await userRepository.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }

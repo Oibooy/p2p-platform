@@ -2,10 +2,12 @@ const Message = require('../../db/models/Message');
 const Deal = require('../../db/models/Deal');
 const logger = require('../../infrastructure/logger');
 const { sendNotification } = require('../../infrastructure/notifications');
+const { messageValidator } = require('../validators/messageValidator');
 
 // Отправка сообщения
 exports.sendMessage = async (req, res) => {
   try {
+    await messageValidator.validate(req.body);
     const { dealId, content } = req.body;
     const senderId = req.user.id;
 
