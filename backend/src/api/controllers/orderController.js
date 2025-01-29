@@ -3,7 +3,7 @@ const { AppError, ValidationError } = require('../../infrastructure/errors');
 const logger = require('../../infrastructure/logger');
 const { sendWebSocketNotification } = require('../../infrastructure/webSocket');
 
-exports.getAllOrders = async (req, res) => {
+exports.getAllOrders = async (req, res, next) => {
   try {
     const { type, status, sortBy = 'createdAt', order = 'desc', minPrice, maxPrice, page = 1, limit = 10 } = req.query;
     const orderRepository = new OrderRepository();
@@ -27,7 +27,7 @@ exports.getAllOrders = async (req, res) => {
       orderRepository.count(filter)
     ]);
 
-    res.status(200).json({
+    return res.status(200).json({
       orders,
       pagination: {
         currentPage: parseInt(page),
