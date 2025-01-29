@@ -1,8 +1,7 @@
 const express = require('express');
-const { verifyToken } = require('../middleware/authMiddleware');
-const { isModerator } = require('../middleware/roleMiddleware');
+const { verifyToken, isModerator, validateRequest } = require('../middleware');
+const { validateDispute } = require('../validators/disputeValidator');
 const disputeController = require('../controllers/disputeController');
-const { validateDispute } = require('../middleware/validation');
 
 // Получение списка споров (только для модераторов)
 router.get('/', verifyToken, isModerator, async (req, res) => {
