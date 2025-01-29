@@ -1,21 +1,22 @@
 
+const BaseRepository = require('./BaseRepository');
 const User = require('../models/User');
 
-class UserRepository {
-  async findById(id) {
-    return User.findById(id);
+class UserRepository extends BaseRepository {
+  constructor() {
+    super(User);
   }
 
   async findByEmail(email) {
-    return User.findOne({ email });
+    return this.findOne({ email });
   }
 
-  async create(userData) {
-    return User.create(userData);
+  async updateRole(userId, roleId) {
+    return this.update(userId, { role: roleId });
   }
 
-  async update(id, updateData) {
-    return User.findByIdAndUpdate(id, updateData, { new: true });
+  async getActiveUsers() {
+    return this.find({ isActive: true });
   }
 }
 

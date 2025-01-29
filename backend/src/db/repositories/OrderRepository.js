@@ -1,19 +1,23 @@
 
+const BaseRepository = require('./BaseRepository');
 const Order = require('../models/Order');
 
-class OrderRepository {
-  async findById(id) {
-    return Order.findById(id).populate('seller buyer');
-  }
-
-  async create(orderData) {
-    return Order.create(orderData);
+class OrderRepository extends BaseRepository {
+  constructor() {
+    super(Order);
   }
 
   async findByUser(userId) {
-    return Order.find({
-      $or: [{ seller: userId }, { buyer: userId }]
-    }).populate('seller buyer');
+    return this.find({
+      $or: [{ user: userId }]
+    }).populate('user');
+  }
+
+  async findActiveOrders() {
+    return this.find({
+      status: 'open',
+      expiresAt: { $gt: new Date() }
+    }).populate('user');
   }
 }
 
