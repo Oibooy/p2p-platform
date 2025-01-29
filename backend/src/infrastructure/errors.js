@@ -20,6 +20,18 @@ class AuthorizationError extends AppError {
   }
 }
 
+class ForbiddenError extends AppError {
+  constructor(message = 'Access forbidden') {
+    super(message, 403);
+  }
+}
+
+class RateLimitError extends AppError {
+  constructor(message = 'Too many requests') {
+    super(message, 429);
+  }
+}
+
 module.exports = {
   AppError,
   ValidationError,
