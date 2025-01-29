@@ -41,3 +41,33 @@ module.exports = {
   createDisputeValidator,
   resolveDisputeValidator
 };
+const { body } = require('express-validator');
+const { ValidationError } = require('../../infrastructure/errors');
+
+const validateDispute = async (data) => {
+  const { orderId, reason } = data;
+  
+  if (!orderId) {
+    throw new ValidationError('ID заказа обязателен');
+  }
+  
+  if (!reason || reason.length < 10) {
+    throw new ValidationError('Причина спора должна содержать минимум 10 символов');
+  }
+};
+
+const disputeValidation = [
+  body('orderId').notEmpty().withMessage('ID заказа обязателен'),
+  body('reason')
+    .isLength({ min: 10 })
+    .withMessage('Причина спора должна содержать минимум 10 символов'),
+  body('resolution')
+    .optional()
+    .isIn(['refund', 'complete'])
+    .withMessage('Неверный тип разрешения спора')
+];
+
+module.exports = {
+  validateDispute,
+  disputeValidation
+};

@@ -27,3 +27,30 @@ module.exports = {
   releaseFundsValidator,
   refundFundsValidator
 };
+const { body } = require('express-validator');
+const { ValidationError } = require('../../infrastructure/errors');
+
+const validateDeal = async (data) => {
+  const { orderId } = data;
+  
+  if (!orderId) {
+    throw new ValidationError('ID ордера обязателен');
+  }
+};
+
+const dealValidation = [
+  body('orderId').notEmpty().withMessage('ID ордера обязателен'),
+  body('amount')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Сумма должна быть положительным числом'),
+  body('price')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Цена должна быть положительным числом')
+];
+
+module.exports = {
+  validateDeal,
+  dealValidation
+};

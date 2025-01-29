@@ -3,28 +3,34 @@ const DealRepository = require('../../db/repositories/DealRepository');
 const OrderRepository = require('../../db/repositories/OrderRepository');
 const UserRepository = require('../../db/repositories/UserRepository');
 const logger = require('../../infrastructure/logger');
+const { AppError } = require('../../infrastructure/errors');
 const { sendNotification } = require('../../infrastructure/notifications');
+const { validateDeal } = require('../validators/dealValidator');
 
-// Создание новой сделки
 exports.createDeal = async (req, res) => {
   try {
-    const { orderId } = req.body;
-    if (!orderId) {
-      return res.status(400).json({ error: 'OrderId is required' });
-    }
-    const userId = req.user.id;
-    
-    // Rate limiting check
-    const dealRepository = new DealRepository();
-    const dealCount = await dealRepository.countRecentDeals(userId, 24);
-    if (dealCount >= 50) {
-      return res.status(429).json({ error: 'Daily deal limit exceeded' });
-    }
+    try {
+      const { orderId } = req.body;
+      const userId = req.user.id;
 
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ error: 'Ордер не найден' });
-    }
+      await validateDeal(req.body);
+      
+      const dealRepository = new DealRepository();
+      const orderRepository = new OrderRepository();
+
+      const dealCount = await dealRepository.countUserDeals(userId, 24);
+      if (dealCount >= 50) {
+        throw new AppError('Превышен дневной лимит сделок', 429);
+      }
+
+      const order = await orderRepository.findById(orderId);
+      if (!order) {
+        throw new AppError('Ордер не найден', 404);
+      }
+
+      if (order.status !== 'active') {
+        throw new AppError('Ордер недоступен для создания сделки', 400);
+      }
 
     if (order.user.toString() === userId) {
       return res.status(400).json({ error: 'Нельзя создать сделку с собственным ордером' });

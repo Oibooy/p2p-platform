@@ -1,10 +1,11 @@
 
-const Dispute = require('../../db/models/Dispute');
-const Order = require('../../db/models/Order');
+const DisputeRepository = require('../../db/repositories/DisputeRepository');
+const OrderRepository = require('../../db/repositories/OrderRepository');
 const { sendEmail } = require('../../infrastructure/emailSender');
 const logger = require('../../infrastructure/logger');
+const { AppError } = require('../../infrastructure/errors');
+const { validateDispute } = require('../validators/disputeValidator');
 
-// Получение списка всех споров
 exports.getAllDisputes = async (req, res) => {
   try {
     const disputes = await Dispute.find()
@@ -21,25 +22,28 @@ exports.getAllDisputes = async (req, res) => {
 // Создание нового спора
 exports.createDispute = async (req, res) => {
   try {
-    const { orderId, reason } = req.body;
-    if (!orderId || !reason || reason.length < 10) {
-      return res.status(400).json({ error: 'Invalid input data' });
-    }
-    const userId = req.user.id;
+    try {
+      const { orderId, reason } = req.body;
+      const userId = req.user.id;
 
-    // Проверка лимитов
-    const disputeCount = await Dispute.countDocuments({
-      initiator: userId,
-      createdAt: { $gt: new Date(Date.now() - 24*60*60*1000) }
-    });
-    if (disputeCount >= 5) {
-      return res.status(429).json({ error: 'Daily dispute limit exceeded' });
-    }
+      await validateDispute(req.body);
+      
+      const disputeRepository = new DisputeRepository();
+      const orderRepository = new OrderRepository();
 
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ error: 'Заказ не найден' });
-    }
+      const disputeCount = await disputeRepository.countUserDisputes(userId, 24);
+      if (disputeCount >= 5) {
+        throw new AppError('Превышен дневной лимит споров', 429);
+      }
+
+      const order = await orderRepository.findById(orderId);
+      if (!order) {
+        throw new AppError('Заказ не найден', 404);
+      }
+
+      if (order.status === 'disputed') {
+        throw new AppError('Спор по этому заказу уже существует', 400);
+      }
 
     const dispute = await Dispute.createDispute(orderId, userId, reason);
     
@@ -60,22 +64,31 @@ exports.createDispute = async (req, res) => {
 // Разрешение спора
 exports.resolveDispute = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { resolution } = req.body;
-    const moderatorId = req.user.id;
+    try {
+      const { id } = req.params;
+      const { resolution } = req.body;
+      const moderatorId = req.user.id;
 
-    const dispute = await Dispute.findById(id);
-    if (!dispute) {
-      return res.status(404).json({ error: 'Спор не найден' });
-    }
+      const disputeRepository = new DisputeRepository();
+      const orderRepository = new OrderRepository();
 
-    await dispute.assignModerator(moderatorId);
-    await dispute.resolve(resolution);
+      const dispute = await disputeRepository.findByIdWithDetails(id);
+      if (!dispute) {
+        throw new AppError('Спор не найден', 404);
+      }
 
-    // Обновление статуса заказа
-    const order = await Order.findById(dispute.order);
-    order.status = resolution === 'refund' ? 'refunded' : 'completed';
-    await order.save();
+      if (dispute.status === 'resolved') {
+        throw new AppError('Спор уже разрешен', 400);
+      }
+
+      await disputeRepository.assignModerator(id, moderatorId);
+      await disputeRepository.resolve(id, resolution);
+
+      const order = await orderRepository.findById(dispute.order);
+      await orderRepository.updateStatus(
+        order._id, 
+        resolution === 'refund' ? 'refunded' : 'completed'
+      );
 
     // Отправка уведомлений участникам
     await sendEmail(
