@@ -1,3 +1,4 @@
+
 const express = require('express');
 const { verifyToken, validateRequest } = require('../middleware');
 const orderController = require('../controllers/orderController');
@@ -10,10 +11,19 @@ const router = express.Router();
 router.get('/public', orderController.getPublicOrders);
 
 // Protected routes
-router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
+router.get('/', verifyToken, getOrdersValidator, validateRequest, async (req, res, next) => {
+  try {
+    const result = await orderController.getAllOrders(req, res);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
 router.get('/:id', verifyToken, orderController.getOrderById);
 router.delete('/:id', verifyToken, orderController.deleteOrder);
+
 router.patch('/:id/complete', verifyToken, async (req, res, next) => {
   try {
     const order = await orderController.completeOrder(req.params.id, req.user.userId);
