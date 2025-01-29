@@ -3,7 +3,7 @@ const router = express.Router();
 const { verifyToken, isModerator, validateRequest } = require('../middleware');
 const { createDisputeValidator, resolveDisputeValidator } = require('../validators/disputeValidator');
 const disputeController = require('../controllers/disputeController');
-const { asyncHandler } = require('../middleware/errorHandler');
+const { asyncHandler } = require('../middleware');
 
 // Get all disputes (moderators only)
 router.get('/', 

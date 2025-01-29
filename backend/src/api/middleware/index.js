@@ -1,6 +1,6 @@
 const { verifyToken, checkRole, checkRevokedToken } = require('./authMiddleware');
 const { isModerator, isAdmin, hasRole } = require('./roleMiddleware');
-const { errorHandler } = require('./errorHandler');
+const { errorHandler, asyncHandler } = require('./errorHandler');
 const { apiLimiter, authLimiter } = require('./rateLimiter');
 const { validateRequest } = require('./validationMiddleware');
 const adminLogger = require('./adminLogger');
@@ -19,6 +19,7 @@ module.exports = {
   
   // Request handling
   errorHandler,
+  asyncHandler,
   validateRequest,
   
   // Rate limiting

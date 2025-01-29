@@ -1,26 +1,40 @@
-
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
-
 
 const logger = require('../../infrastructure/logger');
 const { AppError } = require('../../infrastructure/errors');
 
 const errorHandler = (err, req, res, next) => {
-  // Логируем ошибку с дополнительным контекстом
-  logger.error({
+  // Логируем ошибку
+  const logData = {
     type: err.constructor.name,
     message: err.message,
     statusCode: err.statusCode || 500,
     path: req.path,
     method: req.method,
-    userId: req.user?.id,
+    userId: req.user?.id || null,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     timestamp: new Date().toISOString()
-  });
+  };
 
-  // Обработка операционных ошибок (известные ошибки приложения)
+  if (err instanceof AppError || err.name === 'ValidationError' || err.code === 11000) {
+    logger.warn(logData); // Используем warn для предсказуемых ошибок
+  } else {
+    logger.error(logData);
+  }
+
+  res.setHeader('Content-Type', 'application/json'); // Гарантируем JSON
+
+  // Ошибки JSON (например, неверный формат тела запроса)
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Invalid JSON syntax'
+    });
+  }
+
+  // Кастомные ошибки приложения
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -29,7 +43,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Обработка ошибок валидации MongoDB
+  // Ошибки валидации MongoDB
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       status: 'fail',
@@ -38,7 +52,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Обработка дубликатов MongoDB
+  // Ошибки дубликатов MongoDB
   if (err.code === 11000) {
     return res.status(400).json({
       status: 'fail',
@@ -47,7 +61,16 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // В production отправляем общее сообщение об ошибке
+  // Ошибки MongoDB, которые не попали в другие проверки
+  if (err.name && err.name.includes('Mongo')) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Database error',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+
+  // Общая ошибка сервера
   if (process.env.NODE_ENV === 'production') {
     return res.status(500).json({
       status: 'error',
@@ -55,7 +78,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // В development отправляем детали ошибки
+  // Ошибка в режиме разработки (отдаём стек)
   return res.status(500).json({
     status: 'error',
     message: err.message,
@@ -64,4 +87,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = { errorHandler };
+module.exports = { errorHandler, asyncHandler };

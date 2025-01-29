@@ -1,4 +1,3 @@
-
 const DisputeRepository = require('../../db/repositories/DisputeRepository');
 const OrderRepository = require('../../db/repositories/OrderRepository');
 const { sendEmail } = require('../../infrastructure/emailSender');
@@ -6,118 +5,110 @@ const logger = require('../../infrastructure/logger');
 const { AppError } = require('../../infrastructure/errors');
 const { validateDispute } = require('../validators/disputeValidator');
 
-exports.getAllDisputes = async (req, res) => {
+exports.getAllDisputes = async (req, res, next) => {
   try {
-    const disputes = await Dispute.find()
-      .populate('order')
-      .populate('initiator', 'username email')
-      .populate('moderator', 'username email');
-    res.json(disputes);
+    const disputeRepository = new DisputeRepository();
+    const disputes = await disputeRepository.findAllWithDetails();
+
+    res.status(200).json({ success: true, data: disputes });
   } catch (error) {
-    logger.error('Error in getAllDisputes:', error);
-    res.status(500).json({ error: 'Ошибка при получении списка споров' });
+    next(error);
   }
 };
 
 // Создание нового спора
-exports.createDispute = async (req, res) => {
+exports.createDispute = async (req, res, next) => {
   try {
     const { orderId, reason } = req.body;
     const userId = req.user.id;
 
     await validateDispute(req.body);
-    
+
     const disputeRepository = new DisputeRepository();
     const orderRepository = new OrderRepository();
 
+    // Проверка лимита споров
     const disputeCount = await disputeRepository.countUserDisputes(userId, 24);
     if (disputeCount >= 5) {
-      throw new AppError('Превышен дневной лимит споров', 429);
+      return next(new AppError('Превышен дневной лимит споров', 429));
     }
 
+    // Проверка существования заказа
     const order = await orderRepository.findById(orderId);
     if (!order) {
-      throw new AppError('Заказ не найден', 404);
+      return next(new AppError('Заказ не найден', 404));
     }
 
     if (order.status === 'disputed') {
-      throw new AppError('Спор по этому заказу уже существует', 400);
+      return next(new AppError('Спор по этому заказу уже существует', 400));
     }
 
-    const dispute = await Dispute.createDispute(orderId, userId, reason);
-    
+    const dispute = await disputeRepository.create(orderId, userId, reason);
+
     // Отправка уведомления администратору
-    await sendEmail(
+    sendEmail(
       process.env.ADMIN_EMAIL,
       'Новый спор',
       `Создан новый спор по заказу ${orderId}. Причина: ${reason}`
-    );
+    ).catch((emailError) => logger.error('Ошибка отправки email:', emailError));
 
-    res.status(201).json(dispute);
+    res.status(201).json({ success: true, data: dispute });
   } catch (error) {
-    logger.error('Error in createDispute:', error);
-    res.status(500).json({ error: 'Ошибка при создании спора' });
+    next(error);
   }
 };
 
 // Разрешение спора
-exports.resolveDispute = async (req, res) => {
+exports.resolveDispute = async (req, res, next) => {
   try {
-    try {
-      const { id } = req.params;
-      const { resolution } = req.body;
-      const moderatorId = req.user.id;
+    const { id } = req.params;
+    const { resolution } = req.body;
+    const moderatorId = req.user.id;
 
-      const disputeRepository = new DisputeRepository();
-      const orderRepository = new OrderRepository();
+    const disputeRepository = new DisputeRepository();
+    const orderRepository = new OrderRepository();
 
-      const dispute = await disputeRepository.findByIdWithDetails(id);
-      if (!dispute) {
-        throw new AppError('Спор не найден', 404);
-      }
+    const dispute = await disputeRepository.findByIdWithDetails(id);
+    if (!dispute) {
+      return next(new AppError('Спор не найден', 404));
+    }
 
-      if (dispute.status === 'resolved') {
-        throw new AppError('Спор уже разрешен', 400);
-      }
+    if (dispute.status === 'resolved') {
+      return next(new AppError('Спор уже разрешен', 400));
+    }
 
-      await disputeRepository.assignModerator(id, moderatorId);
-      await disputeRepository.resolve(id, resolution);
+    await disputeRepository.assignModerator(id, moderatorId);
+    await disputeRepository.resolve(id, resolution);
 
-      const order = await orderRepository.findById(dispute.order);
-      await orderRepository.updateStatus(
-        order._id, 
-        resolution === 'refund' ? 'refunded' : 'completed'
-      );
+    const order = await orderRepository.findById(dispute.order._id); // Исправлено
+    const newStatus = resolution === 'refund' ? 'refunded' : 'completed';
+    await orderRepository.updateStatus(order._id, newStatus);
 
     // Отправка уведомлений участникам
-    await sendEmail(
+    sendEmail(
       order.buyer.email,
       'Спор разрешен',
       `Спор по заказу ${order._id} был разрешен. Решение: ${resolution}`
-    );
+    ).catch((emailError) => logger.error('Ошибка отправки email:', emailError));
 
-    res.json(dispute);
+    res.status(200).json({ success: true, data: dispute });
   } catch (error) {
-    logger.error('Error in resolveDispute:', error);
-    res.status(500).json({ error: 'Ошибка при разрешении спора' });
+    next(error);
   }
 };
 
 // Получение деталей спора
-exports.getDisputeDetails = async (req, res) => {
+exports.getDisputeDetails = async (req, res, next) => {
   try {
-    const dispute = await Dispute.findById(req.params.id)
-      .populate('order')
-      .populate('initiator', 'username email')
-      .populate('moderator', 'username email');
+    const disputeRepository = new DisputeRepository();
+    const dispute = await disputeRepository.findByIdWithDetails(req.params.id);
 
     if (!dispute) {
-      return res.status(404).json({ error: 'Спор не найден' });
+      return next(new AppError('Спор не найден', 404));
     }
 
-    res.json(dispute);
+    res.status(200).json({ success: true, data: dispute });
   } catch (error) {
-    logger.error('Error in getDisputeDetails:', error);
-    res.status(500).json({ error: 'Ошибка при получении деталей спора' });
+    next(error);
   }
 };
