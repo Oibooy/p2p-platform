@@ -96,8 +96,9 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
-exports.getPublicOrders = async (req, res) => {
+exports.getPublicOrders = async (req, res, next) => {
   try {
+    const orderRepository = new OrderRepository();
     const { type, sortBy = 'createdAt', order = 'desc', minPrice, maxPrice } = req.query;
     const filter = { status: 'active' };
     
@@ -113,9 +114,10 @@ exports.getPublicOrders = async (req, res) => {
       populate: 'user'
     });
     
-    res.status(200).json(orders);
+    return res.status(200).json(orders);
   } catch (error) {
-    throw new AppError('Failed to fetch public orders', 500);
+    logger.error('Error fetching public orders:', error);
+    next(new AppError('Failed to fetch public orders', 500));
   }
 };
 
