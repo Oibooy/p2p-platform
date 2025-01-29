@@ -1,7 +1,7 @@
 
-const Deal = require('../../db/models/Deal');
-const Order = require('../../db/models/Order');
-const User = require('../../db/models/User');
+const DealRepository = require('../../db/repositories/DealRepository');
+const OrderRepository = require('../../db/repositories/OrderRepository');
+const UserRepository = require('../../db/repositories/UserRepository');
 const logger = require('../../infrastructure/logger');
 const { sendNotification } = require('../../infrastructure/notifications');
 
