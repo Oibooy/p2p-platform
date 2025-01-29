@@ -34,6 +34,14 @@ exports.sendMessage = async (req, res) => {
 
     res.status(201).json(message);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (error instanceof AuthorizationError) {
+      return res.status(401).json({ error: error.message });
+    }
+
     logger.error({
       event: 'message_send_failed',
       error: error.message,
@@ -41,7 +49,8 @@ exports.sendMessage = async (req, res) => {
       userId: senderId,
       stack: error.stack
     });
-    res.status(500).json({ error: 'Ошибка при отправке сообщения' });
+
+    throw new AppError('Ошибка при отправке сообщения', 500);
   }
 };
 

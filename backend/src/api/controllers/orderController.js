@@ -52,17 +52,23 @@ exports.getAllOrders = async (req, res) => {
 };
 
 exports.createOrder = async (req, res) => {
-  const { amount, type, price, expirationHours = 24 } = req.body;
+  try {
+    const { amount, type, price, expirationHours = 24 } = req.body;
+    const orderRepository = new OrderRepository();
+    
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + expirationHours);
 
-  if (!amount || amount <= 0) {
-    return res.status(400).json({ error: 'Amount must be positive' });
-  }
-  if (!type || !['buy', 'sell'].includes(type)) {
-    return res.status(400).json({ error: 'Invalid order type' });
-  }
-  if (!price || price <= 0) {
-    return res.status(400).json({ error: 'Invalid price' });
-  }
+    const order = await orderRepository.create({
+      type,
+      amount,
+      price,
+      status: 'open',
+      user: req.user._id,
+      expiresAt
+    });
+
+    await order.populate('user', 'username reputation');
 
   try {
     const expiresAt = new Date();
