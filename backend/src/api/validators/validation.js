@@ -54,7 +54,5 @@ const validateDealCreation = [
 module.exports = {
   validateAmount,
   validateDealCreation,
-  handleValidationErrors,
-  validateReview,
-  validateReviewUpdate
+  handleValidationErrors
 };
