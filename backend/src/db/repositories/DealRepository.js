@@ -1,17 +1,43 @@
 
+const BaseRepository = require('./BaseRepository');
 const Deal = require('../models/Deal');
 
-class DealRepository {
-  async findById(id) {
-    return Deal.findById(id).populate('order');
+class DealRepository extends BaseRepository {
+  constructor() {
+    super(Deal);
   }
 
-  async create(dealData) {
-    return Deal.create(dealData);
+  async findByIdWithDetails(id) {
+    return this.model.findById(id)
+      .populate('buyer', 'username')
+      .populate('seller', 'username');
   }
 
-  async updateStatus(id, status) {
-    return Deal.findByIdAndUpdate(id, { status }, { new: true });
+  async findUserDeals(userId) {
+    return this.find({
+      $or: [{ buyer: userId }, { seller: userId }]
+    }).populate('buyer seller', 'username');
+  }
+
+  async findActiveDeals() {
+    return this.find({
+      status: { $in: ['pending', 'active'] },
+      deadline: { $gt: new Date() }
+    }).populate('buyer seller', 'username');
+  }
+
+  async updateDealStatus(id, status) {
+    const deal = await this.findById(id);
+    if (!deal) return null;
+    
+    await deal.addStatusToHistory(status);
+    return deal;
+  }
+
+  async findDisputedDeals() {
+    return this.find({
+      status: 'disputed'
+    }).populate('buyer seller', 'username');
   }
 }
 
