@@ -2,7 +2,7 @@
 const UserRepository = require('../../db/repositories/UserRepository');
 const AdminLogRepository = require('../../db/repositories/AdminLogRepository');
 const { ValidationError, AppError } = require('../../infrastructure/errors');
-const { exportUsers, exportDeals } = require('../../infrastructure/exportService');
+const { exportUsers, exportDeals } = require('../../core/services/exportService');
 
 class AdminController {
   async getUsers(req, res) {
