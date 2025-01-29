@@ -22,28 +22,27 @@ exports.getAllDisputes = async (req, res) => {
 // Создание нового спора
 exports.createDispute = async (req, res) => {
   try {
-    try {
-      const { orderId, reason } = req.body;
-      const userId = req.user.id;
+    const { orderId, reason } = req.body;
+    const userId = req.user.id;
 
-      await validateDispute(req.body);
-      
-      const disputeRepository = new DisputeRepository();
-      const orderRepository = new OrderRepository();
+    await validateDispute(req.body);
+    
+    const disputeRepository = new DisputeRepository();
+    const orderRepository = new OrderRepository();
 
-      const disputeCount = await disputeRepository.countUserDisputes(userId, 24);
-      if (disputeCount >= 5) {
-        throw new AppError('Превышен дневной лимит споров', 429);
-      }
+    const disputeCount = await disputeRepository.countUserDisputes(userId, 24);
+    if (disputeCount >= 5) {
+      throw new AppError('Превышен дневной лимит споров', 429);
+    }
 
-      const order = await orderRepository.findById(orderId);
-      if (!order) {
-        throw new AppError('Заказ не найден', 404);
-      }
+    const order = await orderRepository.findById(orderId);
+    if (!order) {
+      throw new AppError('Заказ не найден', 404);
+    }
 
-      if (order.status === 'disputed') {
-        throw new AppError('Спор по этому заказу уже существует', 400);
-      }
+    if (order.status === 'disputed') {
+      throw new AppError('Спор по этому заказу уже существует', 400);
+    }
 
     const dispute = await Dispute.createDispute(orderId, userId, reason);
     
