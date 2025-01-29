@@ -5,7 +5,14 @@ const { createOrderValidator, getOrdersValidator } = require('../validators/orde
 
 const router = express.Router();
 
-router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
+router.get('/', verifyToken, getOrdersValidator, validateRequest, async (req, res, next) => {
+  try {
+    const result = await orderController.getAllOrders(req, res);
+    return result;
+  } catch (error) {
+    next(error);
+  }
+});
 router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
 router.get('/:id', verifyToken, orderController.getOrderById);
 router.delete('/:id', verifyToken, orderController.deleteOrder);
