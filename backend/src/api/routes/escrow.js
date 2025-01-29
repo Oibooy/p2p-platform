@@ -28,7 +28,13 @@ router.post('/deposit', escrowLimiter, verifyToken, validateAmount, async (req, 
     res.status(200).json(result);
   } catch (error) {
     logger.error(`Deposit error: ${error.message}`);
-    res.status(500).json({ error: error.message });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
+    }
+    if (error instanceof AuthorizationError) {
+      return res.status(403).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

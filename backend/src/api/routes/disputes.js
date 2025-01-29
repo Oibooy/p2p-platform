@@ -35,7 +35,12 @@ router.post('/', verifyToken, validateDispute, async (req, res) => {
 });
 
 // Решить арбитраж
-router.patch('/:id/resolve', verifyToken, isModerator, async (req, res) => {
+router.patch('/:id/resolve', [
+  verifyToken,
+  isModerator,
+  body('resolution').notEmpty().withMessage('Resolution is required'),
+  validateRequest
+], async (req, res) => {
   try {
     const dispute = await disputeController.resolveDispute(req.params.id, req.body.resolution);
     res.json(dispute);
