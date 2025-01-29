@@ -11,13 +11,8 @@ const router = express.Router();
 router.get('/public', orderController.getPublicOrders);
 
 // Protected routes
-router.get('/', verifyToken, getOrdersValidator, validateRequest, async (req, res, next) => {
-  try {
-    const result = await orderController.getAllOrders(req, res);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
+router.get('/', verifyToken, getOrdersValidator, validateRequest, (req, res, next) => {
+  orderController.getAllOrders(req, res).catch(next);
 });
 
 router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
