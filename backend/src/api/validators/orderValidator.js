@@ -49,7 +49,19 @@ const getOrdersValidator = [
     .withMessage('Limit must be between 1 and 100')
 ];
 
+const validateStatusUpdate = [
+  param('id')
+    .isMongoId()
+    .withMessage('Invalid order ID format'),
+  body('status')
+    .optional()
+    .isIn(['completed', 'expired'])
+    .withMessage('Invalid status value')
+];
+
 module.exports = {
   createOrderValidator,
-  getOrdersValidator
+  getOrdersValidator,
+  validateOrderId,
+  validateStatusUpdate
 };

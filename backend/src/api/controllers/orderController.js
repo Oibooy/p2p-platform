@@ -201,3 +201,21 @@ exports.deleteOrder = async (req, res) => {
     throw new AppError('Failed to delete order', 500);
   }
 };
+
+exports.handleOrderComplete = async (req, res, next) => {
+  try {
+    const order = await exports.completeOrder(req.params.id, req.user._id);
+    res.status(200).json(order);
+  } catch (error) {
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+};
+
+exports.handleOrderExpire = async (req, res, next) => {
+  try {
+    const order = await exports.expireOrder(req.params.id);
+    res.status(200).json(order);
+  } catch (error) {
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+};

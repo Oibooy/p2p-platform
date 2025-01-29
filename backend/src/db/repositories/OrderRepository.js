@@ -31,6 +31,20 @@ class OrderRepository extends BaseRepository {
       expiresAt: { $gt: new Date() }
     }).populate('user');
   }
+
+  async updateStatus(orderId, status, userId) {
+    return this.findOneAndUpdate(
+      { _id: orderId },
+      { 
+        $set: { 
+          status,
+          lastModifiedBy: userId,
+          updatedAt: new Date()
+        }
+      },
+      { new: true }
+    ).populate('user');
+  }
 }
 
 module.exports = new OrderRepository();
