@@ -6,17 +6,34 @@ const { AppError } = require('../../infrastructure/errors');
 exports.getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { page = 1, limit = 50, read } = req.query;
     const notificationRepository = new NotificationRepository();
     
-    const notifications = await notificationRepository.findByUser(userId, {
-      sort: { createdAt: -1 },
-      limit: 50
-    });
+    const filter = { user: userId };
+    if (read !== undefined) {
+      filter.read = read === 'true';
+    }
+
+    const [notifications, total] = await Promise.all([
+      notificationRepository.findWithPagination(filter, {
+        sort: { createdAt: -1 },
+        skip: (page - 1) * limit,
+        limit: parseInt(limit)
+      }),
+      notificationRepository.count(filter)
+    ]);
     
-    res.json(notifications);
+    res.json({
+      notifications,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalNotifications: total
+      }
+    });
   } catch (error) {
     logger.error('Error in getUserNotifications:', error);
-    res.status(500).json({ error: 'Ошибка при получении уведомлений' });
+    throw new AppError('Failed to fetch notifications', 500);
   }
 };
 
@@ -32,7 +49,7 @@ exports.markAsRead = async (req, res) => {
     });
 
     if (!notification) {
-      throw new AppError('Уведомление не найдено', 404);
+      throw new AppError('Notification not found', 404);
     }
 
     const updatedNotification = await notificationRepository.update(
@@ -43,11 +60,7 @@ exports.markAsRead = async (req, res) => {
     res.json(updatedNotification);
   } catch (error) {
     logger.error('Error in markAsRead:', error);
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Ошибка при обновлении уведомления' });
-    }
+    throw new AppError(error.message, error.statusCode || 500);
   }
 };
 
@@ -56,20 +69,24 @@ exports.markAllAsRead = async (req, res) => {
     const userId = req.user.id;
     const notificationRepository = new NotificationRepository();
     
-    await notificationRepository.updateMany(
+    const result = await notificationRepository.updateMany(
       { user: userId, read: false },
       { read: true }
     );
 
     logger.info({
       event: 'notifications_marked_read',
-      userId
+      userId,
+      count: result.modifiedCount
     });
 
-    res.json({ message: 'Все уведомления помечены как прочитанные' });
+    res.json({ 
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    });
   } catch (error) {
     logger.error('Error in markAllAsRead:', error);
-    res.status(500).json({ error: 'Ошибка при обновлении уведомлений' });
+    throw new AppError('Failed to update notifications', 500);
   }
 };
 
@@ -85,7 +102,7 @@ exports.deleteNotification = async (req, res) => {
     });
 
     if (!result) {
-      throw new AppError('Уведомление не найдено', 404);
+      throw new AppError('Notification not found', 404);
     }
 
     logger.info({
@@ -94,13 +111,9 @@ exports.deleteNotification = async (req, res) => {
       userId
     });
 
-    res.json({ message: 'Уведомление удалено' });
+    res.json({ message: 'Notification deleted successfully' });
   } catch (error) {
     logger.error('Error in deleteNotification:', error);
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Ошибка при удалении уведомления' });
-    }
+    throw new AppError(error.message, error.statusCode || 500);
   }
 };

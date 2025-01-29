@@ -1,83 +1,94 @@
-const Message = require('../../db/models/Message');
-const Deal = require('../../db/models/Deal');
+const MessageRepository = require('../../db/repositories/MessageRepository');
+const DealRepository = require('../../db/repositories/DealRepository');
 const logger = require('../../infrastructure/logger');
+const { AppError } = require('../../infrastructure/errors');
 const { sendNotification } = require('../../infrastructure/notifications');
-const { messageValidator } = require('../validators/messageValidator');
 
-// Отправка сообщения
 exports.sendMessage = async (req, res) => {
   try {
-    await messageValidator.validate(req.body);
     const { dealId, content } = req.body;
     const senderId = req.user.id;
 
-    const deal = await Deal.findById(dealId);
+    const dealRepository = new DealRepository();
+    const deal = await dealRepository.findById(dealId);
+
     if (!deal) {
-      return res.status(404).json({ error: 'Сделка не найдена' });
+      throw new AppError('Deal not found', 404);
     }
 
-    // Проверяем, является ли пользователь участником сделки
     if (deal.buyer.toString() !== senderId && deal.seller.toString() !== senderId) {
-      return res.status(403).json({ error: 'Нет прав для отправки сообщения' });
+      throw new AppError('Not authorized to send messages in this deal', 403);
     }
 
-    const message = await Message.create({
+    const messageRepository = new MessageRepository();
+    const message = await messageRepository.create({
       deal: dealId,
       sender: senderId,
       content,
       readBy: [senderId]
     });
 
-    // Определяем получателя уведомления
+    await message.populate('sender', 'username');
+
     const recipientId = deal.buyer.toString() === senderId ? deal.seller : deal.buyer;
-    await sendNotification(recipientId, 'new_message', { dealId, messageId: message._id });
+    await sendNotification(recipientId, 'new_message', {
+      dealId,
+      messageId: message._id,
+      preview: content.substring(0, 50)
+    });
 
     res.status(201).json(message);
   } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    if (error instanceof AuthorizationError) {
-      return res.status(401).json({ error: error.message });
-    }
-
-    logger.error({
-      event: 'message_send_failed',
-      error: error.message,
-      dealId,
-      userId: senderId,
-      stack: error.stack
-    });
-
-    throw new AppError('Ошибка при отправке сообщения', 500);
+    logger.error('Error in sendMessage:', error);
+    throw new AppError(error.message, error.statusCode || 500);
   }
 };
 
-// Получение сообщений сделки
 exports.getDealMessages = async (req, res) => {
   try {
     const { dealId } = req.params;
+    const { page = 1, limit = 50 } = req.query;
     const userId = req.user.id;
 
-    const deal = await Deal.findById(dealId);
+    const dealRepository = new DealRepository();
+    const deal = await dealRepository.findById(dealId);
+
     if (!deal) {
-      return res.status(404).json({ error: 'Сделка не найдена' });
+      throw new AppError('Deal not found', 404);
     }
 
-    // Проверяем, является ли пользователь участником сделки
     if (deal.buyer.toString() !== userId && deal.seller.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для просмотра сообщений' });
+      throw new AppError('Not authorized to view these messages', 403);
     }
 
-    const messages = await Message.find({ deal: dealId })
-      .populate('sender', 'username')
-      .sort({ createdAt: 1 });
+    const messageRepository = new MessageRepository();
+    const [messages, total] = await Promise.all([
+      messageRepository.findWithPagination(
+        { deal: dealId },
+        {
+          sort: { createdAt: -1 },
+          skip: (page - 1) * limit,
+          limit: parseInt(limit),
+          populate: {
+            path: 'sender',
+            select: 'username'
+          }
+        }
+      ),
+      messageRepository.count({ deal: dealId })
+    ]);
 
-    res.json(messages);
+    res.json({
+      messages,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalMessages: total
+      }
+    });
   } catch (error) {
     logger.error('Error in getDealMessages:', error);
-    res.status(500).json({ error: 'Ошибка при получении сообщений' });
+    throw new AppError(error.message, error.statusCode || 500);
   }
 };
 
