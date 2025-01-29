@@ -2,7 +2,7 @@
 const ReviewRepository = require('../../db/repositories/ReviewRepository');
 const DealRepository = require('../../db/repositories/DealRepository');
 const logger = require('../../infrastructure/logger');
-const { AppError } = require('../../infrastructure/errors');
+const { AppError, ValidationError } = require('../../infrastructure/errors');
 
 exports.createReview = async (req, res) => {
   try {
@@ -10,18 +10,27 @@ exports.createReview = async (req, res) => {
     const fromUserId = req.user.id;
 
     const dealRepository = new DealRepository();
+    const reviewRepository = new ReviewRepository();
+
+    // Проверка существования сделки
     const deal = await dealRepository.findById(dealId);
     if (!deal) {
-      throw new AppError('Сделка не найдена', 404);
+      throw new ValidationError('Deal not found');
     }
 
+    // Проверка прав на создание отзыва
     if (deal.buyer.toString() !== fromUserId && deal.seller.toString() !== fromUserId) {
-      throw new AppError('Нет прав для создания отзыва', 403);
+      throw new ValidationError('No permission to create review');
+    }
+
+    // Проверка на существование отзыва
+    const existingReview = await reviewRepository.checkExistingReview(dealId, fromUserId);
+    if (existingReview) {
+      throw new ValidationError('Review already exists');
     }
 
     const toUserId = deal.buyer.toString() === fromUserId ? deal.seller : deal.buyer;
 
-    const reviewRepository = new ReviewRepository();
     const review = await reviewRepository.create({
       dealId,
       from: fromUserId,
@@ -39,12 +48,11 @@ exports.createReview = async (req, res) => {
 
     res.status(201).json(review);
   } catch (error) {
-    logger.error('Error in createReview:', error);
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Ошибка при создании отзыва' });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
     }
+    logger.error('Error in createReview:', error);
+    throw new AppError('Failed to create review', 500);
   }
 };
 
@@ -52,12 +60,14 @@ exports.getUserReviews = async (req, res) => {
   try {
     const userId = req.params.userId;
     const reviewRepository = new ReviewRepository();
-    const reviews = await reviewRepository.findByUserId(userId);
+    const reviews = await reviewRepository.findByUser(userId);
 
-    res.json(reviews);
+    const stats = await reviewRepository.getUserStats(userId);
+    
+    res.json({ reviews, stats });
   } catch (error) {
     logger.error('Error in getUserReviews:', error);
-    res.status(500).json({ error: 'Ошибка при получении отзывов' });
+    throw new AppError('Failed to get user reviews', 500);
   }
 };
 
@@ -71,22 +81,21 @@ exports.updateReview = async (req, res) => {
     const review = await reviewRepository.findById(id);
     
     if (!review) {
-      throw new AppError('Отзыв не найден', 404);
+      throw new ValidationError('Review not found');
     }
 
     if (review.from.toString() !== userId) {
-      throw new AppError('Нет прав для редактирования отзыва', 403);
+      throw new ValidationError('No permission to edit review');
     }
 
     const updatedReview = await reviewRepository.update(id, { rating, comment });
     res.json(updatedReview);
   } catch (error) {
-    logger.error('Error in updateReview:', error);
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Ошибка при обновлении отзыва' });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
     }
+    logger.error('Error in updateReview:', error);
+    throw new AppError('Failed to update review', 500);
   }
 };
 
@@ -99,11 +108,11 @@ exports.deleteReview = async (req, res) => {
     const review = await reviewRepository.findById(id);
 
     if (!review) {
-      throw new AppError('Отзыв не найден', 404);
+      throw new ValidationError('Review not found');
     }
 
     if (review.from.toString() !== userId) {
-      throw new AppError('Нет прав для удаления отзыва', 403);
+      throw new ValidationError('No permission to delete review');
     }
 
     await reviewRepository.delete(id);
@@ -113,13 +122,12 @@ exports.deleteReview = async (req, res) => {
       userId
     });
 
-    res.json({ message: 'Отзыв успешно удален' });
+    res.json({ message: 'Review deleted successfully' });
   } catch (error) {
-    logger.error('Error in deleteReview:', error);
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Ошибка при удалении отзыва' });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
     }
+    logger.error('Error in deleteReview:', error);
+    throw new AppError('Failed to delete review', 500);
   }
 };

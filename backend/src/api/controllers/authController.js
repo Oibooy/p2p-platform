@@ -4,101 +4,110 @@ const UserRepository = require('../../db/repositories/UserRepository');
 const Role = require('../../db/models/Role');
 const { sendEmail } = require('../../infrastructure/emailSender');
 const logger = require('../../infrastructure/logger');
+const { AppError, ValidationError, AuthError } = require('../../infrastructure/errors');
+
+const generateTokens = (userId, role) => {
+  const accessToken = jwt.sign(
+    { userId, role },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    { userId },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { accessToken, refreshToken };
+};
 
 exports.registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // Валидация входных данных
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
-    }
-
-    // Проверка существующего пользователя
     const userRepository = new UserRepository();
+
     const existingUser = await userRepository.findByEmailOrUsername(email, username);
     if (existingUser) {
-      return res.status(400).json({
-        error: existingUser.email === email ? 'Email уже используется' : 'Имя пользователя уже занято'
-      });
+      throw new ValidationError(
+        existingUser.email === email ? 'Email already in use' : 'Username already taken'
+      );
     }
 
-    // Хэширование пароля
-    console.log('Hashing password for new user:', { password });
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    console.log('Password hashed successfully:', { 
-      hashedPasswordStart: hashedPassword.substring(0, 10),
-      hashedPasswordLength: hashedPassword.length 
-    });
 
-    // Получение или создание роли пользователя
-    let userRole = await Role.findOne({ name: 'user' });
-    if (!userRole) {
-      userRole = new Role({ name: 'user' });
-      await userRole.save();
-    }
+    const userRole = await Role.findOne({ name: 'user' }) || 
+                    await new Role({ name: 'user' }).save();
 
-    // Создание пользователя
-    const newUser = new User({
+    const newUser = await userRepository.create({
       username,
       email,
       password: hashedPassword,
       role: userRole._id,
-      isEmailConfirmed: true // Временно установим true для тестирования
+      isEmailConfirmed: false
     });
 
-    const savedUser = await newUser.save();
+    const confirmToken = jwt.sign(
+      { userId: newUser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    // Генерация токена для подтверждения email
-    const token = jwt.sign({ userId: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${token}`;
+    const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${confirmToken}`;
+    await sendEmail(
+      email,
+      'Registration Confirmation',
+      `Hello ${username}!\n\nPlease confirm your registration: ${confirmLink}`
+    );
 
-    await sendEmail(email, 'Подтверждение регистрации', 
-      `Здравствуйте, ${username}!\n\nДля подтверждения регистрации перейдите по ссылке: ${confirmLink}`);
+    logger.info({
+      event: 'user_registered',
+      userId: newUser._id,
+      username
+    });
 
     res.status(201).json({
-      message: 'Регистрация успешна. Проверьте email для подтверждения.',
-      userId: savedUser._id
+      message: 'Registration successful. Please check your email for confirmation.',
+      userId: newUser._id
     });
   } catch (error) {
-    console.error('Ошибка регистрации:', error);
-    res.status(500).json({ error: 'Ошибка сервера при регистрации' });
+    if (error instanceof ValidationError) {
+      return res.status(400).json({ error: error.message });
+    }
+    logger.error('Registration error:', error);
+    throw new AppError('Failed to register user', 500);
   }
 };
 
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const userRepository = new UserRepository();
+
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: 'Неверный email или пароль' });
+      throw new AuthError('Invalid email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Неверный email или пароль' });
+      throw new AuthError('Invalid email or password');
     }
 
     if (!user.isEmailConfirmed) {
-      return res.status(403).json({ error: 'Пожалуйста, подтвердите email для входа' });
+      throw new ValidationError('Please confirm your email to login');
     }
 
-    const accessToken = jwt.sign(
-      { userId: user._id, role: user.role.name },
-      process.env.JWT_SECRET,
-      { expiresIn: '15m' }
-    );
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role.name);
 
-    const refreshToken = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' }
-    );
+    logger.info({
+      event: 'user_login',
+      userId: user._id,
+      username: user.username
+    });
 
-    res.status(200).json({
+    res.json({
       accessToken,
       refreshToken,
       user: {
@@ -109,8 +118,11 @@ exports.loginUser = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Ошибка входа:', error);
-    res.status(500).json({ error: 'Ошибка сервера при входе' });
+    if (error instanceof AuthError || error instanceof ValidationError) {
+      return res.status(401).json({ error: error.message });
+    }
+    logger.error('Login error:', error);
+    throw new AppError('Failed to login', 500);
   }
 };
 
