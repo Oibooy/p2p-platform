@@ -83,6 +83,37 @@ router.post('/reset-password/:token', async (req, res) => {
 const isEmailConfirmationEnabled = process.env.EMAIL_CONFIRMATION_ENABLED === 'true';
 
 // Регистрация пользователя
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minimum: 6
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input data
+ */
 router.post(
   '/register',
   [

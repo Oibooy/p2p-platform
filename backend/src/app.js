@@ -1,4 +1,6 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -75,6 +77,9 @@ app.use(morgan('dev', { stream: { write: (message) => logger.info(message.trim()
 const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 app.use('/api/', apiLimiter);
 app.use('/api/auth', authLimiter);
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Public routes first
 app.use('/api/auth', authRoutes);
@@ -209,20 +214,20 @@ app.use(errorHandler);
 // Graceful shutdown
 const shutdown = async (signal) => {
   logger.info(`${signal} received. Shutting down gracefully`);
-  
+
   try {
     await mongoose.disconnect();
     server.close(() => {
       logger.info('HTTP server closed');
       process.exit(0);
     });
-    
+
     // Принудительное закрытие через 10 секунд
     setTimeout(() => {
       logger.error('Could not close connections in time, forcefully shutting down');
       process.exit(1);
     }, 10000);
-    
+
   } catch (err) {
     logger.error('Error during shutdown:', err);
     process.exit(1);
