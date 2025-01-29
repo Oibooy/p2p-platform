@@ -1,4 +1,3 @@
-
 const { body, query } = require('express-validator');
 
 const createOrderValidator = [
