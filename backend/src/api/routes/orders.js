@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { verifyToken, validateRequest } = require('../middleware');
 const orderController = require('../controllers/orderController');
@@ -20,22 +19,7 @@ router.route('/:id')
   .delete(verifyToken, orderController.deleteOrder);
 
 // Protected routes - Order status management
-router.route('/:id/status')
-  .patch('/complete', verifyToken, async (req, res, next) => {
-    try {
-      const order = await orderController.completeOrder(req.params.id, req.user._id);
-      res.status(200).json(order);
-    } catch (error) {
-      next(error instanceof AppError ? error : new AppError(error.message, 500));
-    }
-  })
-  .patch('/expire', verifyToken, async (req, res, next) => {
-    try {
-      const order = await orderController.expireOrder(req.params.id);
-      res.status(200).json(order);
-    } catch (error) {
-      next(error instanceof AppError ? error : new AppError(error.message, 500));
-    }
-  });
+router.patch('/:id/complete', verifyToken, orderController.handleOrderComplete);
+router.patch('/:id/expire', verifyToken, orderController.handleOrderExpire);
 
 module.exports = router;
