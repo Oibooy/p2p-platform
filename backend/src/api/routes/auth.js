@@ -1,5 +1,6 @@
 // Auth routes implementation
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validateRequest } = require('../middleware');
