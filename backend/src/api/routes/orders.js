@@ -11,13 +11,7 @@ const router = express.Router();
 router.get('/public', orderController.getPublicOrders);
 
 // Protected routes
-router.get('/', verifyToken, getOrdersValidator, validateRequest, async (req, res, next) => {
-  try {
-    await orderController.getAllOrders(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
 
 router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
 router.get('/:id', verifyToken, orderController.getOrderById);
@@ -25,19 +19,19 @@ router.delete('/:id', verifyToken, orderController.deleteOrder);
 
 router.patch('/:id/complete', verifyToken, async (req, res, next) => {
   try {
-    const order = await orderController.completeOrder(req.params.id, req.user.userId);
+    const order = await orderController.completeOrder(req.params.id, req.user._id);
     res.status(200).json(order);
   } catch (error) {
-    next(error);
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
   }
 });
 
 router.patch('/:id/expire', verifyToken, async (req, res, next) => {
   try {
-    const order = await orderController.expireOrder(req.params.id, req.user.userId);
+    const order = await orderController.expireOrder(req.params.id);
     res.status(200).json(order);
   } catch (error) {
-    next(error);
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
   }
 });
 
