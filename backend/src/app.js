@@ -207,13 +207,30 @@ process.on('unhandledRejection', (error) => {
 app.use(errorHandler);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
+const shutdown = async (signal) => {
+  logger.info(`${signal} received. Shutting down gracefully`);
+  
+  try {
+    await mongoose.disconnect();
+    server.close(() => {
+      logger.info('HTTP server closed');
+      process.exit(0);
+    });
+    
+    // Принудительное закрытие через 10 секунд
+    setTimeout(() => {
+      logger.error('Could not close connections in time, forcefully shutting down');
+      process.exit(1);
+    }, 10000);
+    
+  } catch (err) {
+    logger.error('Error during shutdown:', err);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 const PORT = process.env.PORT || 5000;
 
