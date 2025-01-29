@@ -194,7 +194,6 @@ exports.deleteOrder = async (req, res) => {
 
     await orderRepository.delete(req.params.id);
     sendWebSocketNotification(req.user._id, 'order_deleted', { orderId: req.params.id });
-
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (error) {
     logger.error('Error deleting order:', error);
