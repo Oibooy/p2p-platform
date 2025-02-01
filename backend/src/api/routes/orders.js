@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { verifyToken, validateRequest } = require('../middleware');
 const orderController = require('../controllers/orderController');
@@ -10,8 +9,8 @@ const router = express.Router();
 router.get('/public', orderController.getPublicOrders);
 
 // Protected routes - Order CRUD
-//router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
-//router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
+router.get('/', verifyToken, getOrdersValidator, validateRequest, orderController.getAllOrders);
+router.post('/', verifyToken, createOrderValidator, validateRequest, orderController.createOrder);
 router.get('/:id', verifyToken, orderController.getOrderById);
 router.delete('/:id', verifyToken, orderController.deleteOrder);
 

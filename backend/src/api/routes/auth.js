@@ -1,94 +1,40 @@
-// Auth routes implementation
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { validateRequest } = require('../middleware');
-const { loginValidator, registerValidator } = require('../validators/authValidator');
-const UserRepository = require("../../db/repositories/UserRepository");
-const sendEmail = require('../../infrastructure/emailSender');
-const redisClient = require('../../infrastructure/redisClient');
+const authController = require('../controllers/authController');
+const { authLimiter, forgotPasswordLimiter, resetPasswordLimiter, confirmEmailLimiter, resendConfirmationLimiter, apiLimiter } = require('../middleware');
+const { registerValidator, 
+       loginValidator, 
+       forgotPasswordValidator, 
+       resetPasswordValidator, 
+       confirmEmailValidator, 
+       resendConfirmationValidator, 
+       getCurrentUserValidator } = require('../validators/authValidator');
+
+
 const router = express.Router();
-const crypto = require('crypto');
 
-// Запрос на сброс пароля
-router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
+router.post('/register', registerValidator, authController.register);
 
-  try {
-    const user = await UserRepository.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+router.post('/login', authLimiter, loginValidator, authController.login);
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidator, authController.forgotPassword);
 
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpiry = resetTokenExpiry;
-    await user.save();
+router.post('/reset-password/:token', resetPasswordLimiter, resetPasswordValidator, authController.resetPassword);
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+router.get('/confirm-email/:token', confirmEmailLimiter, confirmEmailValidator, authController.confirmEmail);
 
-    try {
-      await sendEmail(
-        email,
-        'Password Reset Request',
-        `To reset your password, click the link: ${resetLink}\nThis link will expire in 1 hour.`
-      );
-      res.json({ message: 'Password reset link sent to email' });
-    } catch (emailError) {
-      console.error('Email sending error:', emailError);
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpiry = undefined;
-      await user.save();
-      res.status(500).json({ error: 'Error sending reset email' });
-    }
-  } catch (error) {
-    console.error('Password reset request error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.post('/resend-confirmation', resendConfirmationLimiter, resendConfirmationValidator, authController.resendConfirmation);
 
-// Сброс пароля
-router.post('/reset-password/:token', async (req, res) => {
-  const { password } = req.body;
-  const { token } = req.params;
+router.get('/me', apiLimiter, getCurrentUserValidator, authController.getCurrentUser);
 
-  try {
-    const user = await UserRepository.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpiry: { $gt: Date.now() }
-    });
+module.exports = router;
 
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired reset token' });
-    }
-
-    user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiry = undefined;
-    await user.save();
-
-    res.json({ message: 'Password has been reset' });
-  } catch (error) {
-    console.error('Password reset error:', error);
-    res.status(500).json({ error: 'Error resetting password' });
-  }
-});
-
-const isEmailConfirmationEnabled = process.env.EMAIL_CONFIRMATION_ENABLED === 'true';
-
-// Регистрация пользователя
 /**
  * @swagger
  * /api/auth/register:
  *   post:
  *     tags: [Authentication]
  *     summary: Register a new user
+ *     description: Register a new user with username, email, and password.
  *     requestBody:
  *       required: true
  *       content:
@@ -102,393 +48,290 @@ const isEmailConfirmationEnabled = process.env.EMAIL_CONFIRMATION_ENABLED === 't
  *             properties:
  *               username:
  *                 type: string
+ *                 example: john_doe
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: john.doe@example.com
  *               password:
  *                 type: string
- *                 minimum: 6
+ *                 format: password
+ *                 example: Password123!
  *     responses:
  *       201:
  *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User registered successfully.
+ *                 userId:
+ *                   type: string
+ *                   example: 60d0fe4f5311236168a109ca
  *       400:
  *         description: Invalid input data
+ *       500:
+ *         description: Internal server error
  */
-router.post(
-  '/register',
-  [
-    body('username').trim().notEmpty().withMessage('Username is required'),
-    body('email').isEmail().withMessage('Invalid email format'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
 
-    const { username, email, password } = req.body;
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Login a user
+ *     description: Authenticate a user with email and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john.doe@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: Password123!
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful.
+ *                 accessToken:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 refreshToken:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: 60d0fe4f5311236168a109ca
+ *                     username:
+ *                       type: string
+ *                       example: john_doe
+ *                     email:
+ *                       type: string
+ *                       example: john.doe@example.com
+ *                     role:
+ *                       type: string
+ *                       example: user
+ *                     isActive:
+ *                       type: boolean
+ *                       example: true
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Account is deactivated
+ *       500:
+ *         description: Internal server error
+ *
+ * /api/auth/forgot-password:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Request a password reset
+ *     description: Send a password reset link to the user's email.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john.doe@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset link sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password reset link sent to email
+ *       400:
+ *         description: Invalid input data
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 
-    try {
-      const existingUser = await UserRepository.findOne({ 
-        email: email.toLowerCase() 
-      }).lean();
-
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email is already in use.' });
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const user = new UserRepository({
-        username,
-        email,
-        password: hashedPassword,
-        isEmailConfirmed: !isEmailConfirmationEnabled,
-      });
-      await user.save();
-
-      if (isEmailConfirmationEnabled) {
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${token}`;
-        await sendEmail(email, 'Confirm Your Email', `Hello ${username},\n\nClick below to confirm your email:\n${confirmLink}`);
-        res.status(201).json({ message: 'User registered. Please confirm your email.' });
-      } else {
-        res.status(201).json({ 
-          message: 'User registered successfully.',
-          userId: user._id
-        });
-      }
-    } catch (error) {
-      console.error('Registration error:', error.message);
-      if (error.code === 11000) {
-        return res.status(400).json({ error: 'Username or email already exists' });
-      }
-      res.status(500).json({ error: 'An unexpected error occurred.' });
-    }
-  }
-);
-
-// Подтверждение email
-router.get('/confirm-email/:token', async (req, res) => {
-  const { token } = req.params;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId);
-    if (!user) return res.status(404).json({ error: 'User not found.' });
-
-    if (user.isEmailConfirmed) {
-      return res.status(400).json({ error: 'Email already confirmed.' });
-    }
-
-    user.isEmailConfirmed = true;
-    await user.save();
-    res.status(200).json({ message: 'Email confirmed successfully.' });
-  } catch (error) {
-    console.error('Email confirmation error:', error.message);
-    res.status(400).json({ error: 'Invalid or expired token.' });
-  }
-});
-
-// Повторная отправка подтверждения
-router.post('/resend-confirmation', async (req, res) => {
-  const { email } = req.body;
-
-  try {
-    const user = await UserRepository.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    if (user.isEmailConfirmed) {
-      return res.status(400).json({ error: 'Email is already confirmed.' });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${token}`;
-    await sendEmail(email, 'Confirm Your Email', `Hello ${user.username},\n\nClick below to confirm your email:\n${confirmLink}`);
-    res.status(200).json({ message: 'Confirmation email resent.' });
-  } catch (error) {
-    console.error('Error resending confirmation email:', error.message);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
-
-// Логин
-router.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Invalid email format'),
-    body('password').notEmpty().withMessage('Password is required'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    try {
-      const user = await UserRepository.findOne({ 
-        $or: [
-          { email: { $regex: new RegExp('^' + email + '$', 'i') } },
-          { username: { $regex: new RegExp('^' + email + '$', 'i') } }
-        ]
-      }).populate('role');
-      console.log('Login attempt:', { 
-        email, 
-        userFound: !!user,
-        isEmailConfirmed: user?.isEmailConfirmed
-      });
-
-      if (!user) {
-        return res.status(401).json({ error: 'User not found. Please register first' });
-      }
-
-      console.log('Checking password for user:', user.email);
-      console.log('Password details:', {
-        providedPassword: password,
-        storedHashLength: user.password.length,
-        storedHashStart: user.password.substring(0, 10)
-      });
-
-      // Используем bcrypt.compare для сравнения паролей
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Login attempt details:', {
-        email,
-        userFound: !!user,
-        passwordMatch: isPasswordValid,
-        userActive: user.isActive,
-        userRole: user.role?.name,
-        emailConfirmed: user.isEmailConfirmed
-      });
-
-      if (!isPasswordValid) {
-        console.log('Password validation failed for user:', user.email);
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      if (!user.isActive) {
-        return res.status(403).json({ error: 'Account is deactivated' });
-      }
-
-      if (!user.role) {
-        const Role = require('../models/Role');
-        const userRole = await Role.findOne({ name: 'user' });
-        if (userRole) {
-          user.role = userRole;
-          await user.save();
-        }
-      }
-
-      // Temporarily disabled email confirmation check
-      // if (isEmailConfirmationEnabled && !user.isEmailConfirmed) {
-      //   return res.status(403).json({ error: 'Please confirm your email to log in.' });
-      // }
-
-      if (!process.env.JWT_SECRET) {
-        console.error('JWT_SECRET is not defined');
-        return res.status(500).json({ error: 'Server configuration error' });
-      }
-
-      if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-        console.error('JWT secrets are not properly configured');
-        return res.status(500).json({ error: 'Server configuration error' });
-      }
-
-      // Создаем уникальный tokenId для refresh токена
-      const tokenId = crypto.randomBytes(32).toString('hex');
-
-      const token = jwt.sign(
-        { userId: user._id, type: 'access' },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
-
-      const refreshToken = jwt.sign(
-        { userId: user._id, tokenId, type: 'refresh' },
-        process.env.JWT_REFRESH_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      // Сохраняем refresh token в Redis
-      const redis = await redisClient.getClient();
-      if (!redis) {
-        // Continue without Redis, using only JWT
-        console.warn('Redis unavailable, continuing with JWT only');
-        return res.status(200).json({ 
-          message: 'Login successful.',
-          accessToken: token,
-          refreshToken,
-          user: {
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            role: user.role.name,
-            isActive: user.isActive
-          }
-        });
-      }
-
-      try {
-        await redis.set(
-          `refresh_token:${user._id}:${tokenId}`,
-          JSON.stringify({
-            refreshToken,
-            userAgent: req.headers['user-agent'],
-            ip: req.ip,
-            createdAt: new Date().toISOString()
-          }),
-          'EX',
-          7 * 24 * 60 * 60 // 7 days
-        );
-
-        res.status(200).json({ 
-          message: 'Login successful.',
-          accessToken: token,
-          refreshToken,
-          user: {
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            role: user.role.name,
-            isActive: user.isActive
-          }
-        });
-      } catch (error) {
-        console.error('Redis error:', error);
-        // Fall back to JWT-only response
-        res.status(200).json({ 
-          message: 'Login successful.',
-          accessToken: token,
-          refreshToken,
-          user: {
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            role: user.role.name,
-            isActive: user.isActive
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Login error:', error.message);
-      res.status(500).json({ error: 'An unexpected error occurred.' });
-    }
-  }
-);
-
-// Получение информации о текущем пользователе
-router.get('/me', async (req, res) => {
-  try {
-    const user = await UserRepository.findById(req.user._id).select('-password');
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user data:', error.message);
-    res.status(500).json({ error: 'Failed to fetch user data.' });
-  }
-});
-
-// Выход из системы (аннулирование токена)
-router.post('/logout', async (req, res) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) {
-    return res.status(400).json({ error: 'Token is required for logout.' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Отзыв токена в Redis с истечением срока действия
-    const client = await redisClient.getClient();
-    if (client) {
-      await client.set(
-        token,
-        'revoked',
-        {
-          EX: decoded.exp - Math.floor(Date.now() / 1000)
-        }
-      );
-    }
-
-    res.status(200).json({ message: 'Logged out successfully.' });
-  } catch (error) {
-    console.error('Logout error:', error.message);
-    res.status(500).json({ error: 'Failed to log out.' });
-  }
-});
-
-module.exports = router;
-
-
-// Обновление токена
-router.post('/refresh-token', async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(400).json({ error: 'Refresh token is required' });
-  }
-
-  try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const { id, tokenId } = decoded;
-
-    const storedData = await redisClient.get(`refresh_token:${id}:${tokenId}`);
-    if (!storedData) {
-      return res.status(401).json({ error: 'Refresh token expired or revoked' });
-    }
-
-    const storedToken = JSON.parse(storedData);
-    if (storedToken.refreshToken !== refreshToken) {
-      // Возможная попытка повторного использования токена
-      await redisClient.del(`refresh_token:${id}:${tokenId}`);
-      return res.status(401).json({ error: 'Token reuse detected' });
-    }
-
-    // Создание нового access token
-    const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
-      expiresIn: '15m',
-    });
-
-    // Создание нового refresh token
-    const newTokenId = crypto.randomBytes(32).toString('hex');
-    const newRefreshToken = jwt.sign(
-      { id, tokenId: newTokenId },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    // Удаление старого refresh token
-    await redisClient.del(`refresh_token:${id}:${tokenId}`);
-
-    // Сохранение нового refresh token
-    await redisClient.set(
-      `refresh_token:${id}:${newTokenId}`,
-      JSON.stringify({
-        refreshToken: newRefreshToken,
-        userAgent: req.headers['user-agent'],
-        ip: req.ip,
-        createdAt: new Date().toISOString()
-      }),
-      'EX',
-      7 * 24 * 60 * 60
-    );
-
-    res.json({ accessToken, refreshToken: newRefreshToken });
-  } catch (error) {
-    console.error('Refresh token error:', error);
-    res.status(401).json({ error: 'Invalid refresh token' });
-  }
-});
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Reset user password
+ *     description: Reset the user's password using a valid reset token.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reset token received via email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: NewPassword123!
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password has been reset
+ *       400:
+ *         description: Invalid or expired reset token
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /api/auth/confirm-email/{token}:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Confirm user email
+ *     description: Confirm the user's email using a valid confirmation token.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The confirmation token received via email
+ *     responses:
+ *       200:
+ *         description: Email confirmed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Email confirmed successfully.
+ *       400:
+ *         description: Invalid or expired token
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /api/auth/resend-confirmation:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Resend email confirmation
+ *     description: Resend the email confirmation link to the user's email.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john.doe@example.com
+ *     responses:
+ *       200:
+ *         description: Confirmation email resent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Confirmation email resent.
+ *       400:
+ *         description: Email is already confirmed
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Get current user information
+ *     description: Retrieve information about the currently authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: 60d0fe4f5311236168a109ca
+ *                 username:
+ *                   type: string
+ *                   example: john_doe
+ *                 email:
+ *                   type: string
+ *                   example: john.doe@example.com
+ *                 role:
+ *                   type: string
+ *                   example: user
+ *                 isActive:
+ *                   type: boolean
+ *                   example: true
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
