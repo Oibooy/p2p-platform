@@ -1,123 +1,48 @@
-
-const DisputeRepository = require('../../db/repositories/DisputeRepository');
-const OrderRepository = require('../../db/repositories/OrderRepository');
-const NotificationRepository = require('../../db/repositories/NotificationRepository');
-const { AppError } = require('../../infrastructure/errors');
-const { sendEmail } = require('../../infrastructure/emailSender');
+// src/core/services/disputeService.js (Рефакторинг + управление спорами)
+const { DisputeRepository } = require('../../db/repositories/DisputeRepository');
+const { OrderRepository } = require('../../db/repositories/OrderRepository');
 const logger = require('../../infrastructure/logger');
+const metrics = require('../../infrastructure/metrics');
 
 class DisputeService {
-  constructor() {
-    this.disputeRepository = new DisputeRepository();
-    this.orderRepository = new OrderRepository();
-    this.notificationRepository = new NotificationRepository();
-  }
-
-  async getAllDisputes(filters = {}) {
-    return this.disputeRepository.findPendingDisputes();
-  }
-
-  async getDisputeDetails(disputeId) {
-    const dispute = await this.disputeRepository.findByIdWithDetails(disputeId);
-    if (!dispute) {
-      throw new AppError('Спор не найден', 404);
-    }
-    return dispute;
-  }
-
-  async createDispute(orderId, userId, reason, evidence, session) {
-    const order = await this.orderRepository.findById(orderId);
-    if (!order) {
-      throw new AppError('Заказ не найден', 404);
+    constructor() {
+        this.disputeRepository = new DisputeRepository();
+        this.orderRepository = new OrderRepository();
     }
 
-    // Создание спора в транзакции
-    const dispute = await this.disputeRepository.create({
-      order: orderId,
-      initiator: userId,
-      reason,
-      evidence,
-      status: 'pending'
-    }, session);
+    async createDispute(orderId, userId, reason) {
+        try {
+            logger.info(`Creating dispute for order ${orderId} by user ${userId}`);
 
-    // Обновление статуса заказа
-    await this.orderRepository.updateStatus(orderId, 'disputed', session);
+            const order = await this.orderRepository.findById(orderId);
+            if (!order) throw new Error('Order not found');
+            if (order.status !== 'PAID') throw new Error('Order is not eligible for dispute');
 
-    // Отправка уведомлений
-    await this._sendDisputeNotifications(dispute, order);
-
-    return dispute;
-  }
-
-  async resolveDispute(disputeId, moderatorId, resolution, comment, session) {
-    const dispute = await this.disputeRepository.findByIdWithTransaction(disputeId, session);
-    if (!dispute) {
-      throw new AppError('Спор не найден', 404);
+            const dispute = await this.disputeRepository.create({ orderId, userId, reason, status: 'OPEN' });
+            metrics.increment('disputes.created');
+            return dispute;
+        } catch (error) {
+            logger.error(`Dispute creation error: ${error.message}`);
+            throw error;
+        }
     }
 
-    if (dispute.status === 'resolved') {
-      throw new AppError('Спор уже разрешен', 400);
+    async resolveDispute(disputeId, resolution, adminId) {
+        try {
+            logger.info(`Resolving dispute ${disputeId} by admin ${adminId}`);
+
+            const dispute = await this.disputeRepository.findById(disputeId);
+            if (!dispute) throw new Error('Dispute not found');
+            if (dispute.status !== 'OPEN') throw new Error('Dispute is not open');
+
+            await this.disputeRepository.updateStatus(disputeId, 'RESOLVED', resolution, adminId);
+            metrics.increment('disputes.resolved');
+            return { success: true, resolution };
+        } catch (error) {
+            logger.error(`Dispute resolution error: ${error.message}`);
+            throw error;
+        }
     }
-
-    // Обновление спора
-    dispute.moderator = moderatorId;
-    dispute.resolution = resolution;
-    dispute.status = 'resolved';
-    dispute.resolvedAt = new Date();
-    if (comment) {
-      dispute.comments.push({ author: moderatorId, text: comment });
-    }
-
-    await dispute.save({ session });
-
-    // Обновление статуса заказа
-    const newOrderStatus = resolution === 'refund' ? 'refunded' : 'completed';
-    await this.orderRepository.updateStatus(dispute.order, newOrderStatus, session);
-
-    // Отправка уведомлений
-    await this._sendResolutionNotifications(dispute);
-
-    return dispute;
-  }
-
-  async _sendDisputeNotifications(dispute, order) {
-    try {
-      // Уведомление администратора
-      await sendEmail(
-        process.env.ADMIN_EMAIL,
-        'Новый спор',
-        `Создан новый спор по заказу ${order._id}. Причина: ${dispute.reason}`
-      );
-
-      // Уведомление участников
-      await this.notificationRepository.create({
-        user: order.seller,
-        type: 'dispute_created',
-        message: `По вашему заказу ${order._id} открыт спор`,
-        reference: dispute._id
-      });
-    } catch (error) {
-      logger.error('Ошибка отправки уведомлений:', error);
-    }
-  }
-
-  async _sendResolutionNotifications(dispute) {
-    try {
-      const order = await this.orderRepository.findById(dispute.order);
-      const participants = [order.buyer, order.seller];
-
-      for (const userId of participants) {
-        await this.notificationRepository.create({
-          user: userId,
-          type: 'dispute_resolved',
-          message: `Спор по заказу ${order._id} разрешен. Решение: ${dispute.resolution}`,
-          reference: dispute._id
-        });
-      }
-    } catch (error) {
-      logger.error('Ошибка отправки уведомлений о разрешении:', error);
-    }
-  }
 }
 
 module.exports = new DisputeService();

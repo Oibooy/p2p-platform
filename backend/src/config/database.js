@@ -14,3 +14,11 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+// src/config.js
+require('dotenv').config();
+
+module.exports = {
+    JWT_SECRET: process.env.JWT_SECRET,
+    USDT_TOKEN_ADDRESS: process.env.USDT_TOKEN_ADDRESS,
+    TRON_PRIVATE_KEY: process.env.TRON_PRIVATE_KEY
+};

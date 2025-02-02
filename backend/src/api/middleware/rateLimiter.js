@@ -3,6 +3,22 @@ const logger = require('../../infrastructure/logger');
 const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('../../infrastructure/redisClient');
 
+// src/core/middleware/rateLimiter.js (Рефакторинг + контроль доступа и лимит запросов)
+const rateLimit = require('express-rate-limit');
+const logger = require('../services/loggingService');
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 минут
+    max: 100, // Ограничение 100 запросов на IP
+    message: 'Слишком много запросов с этого IP, попробуйте позже',
+    handler: (req, res, next) => {
+        logger.logWarn(`Rate limit exceeded for IP: ${req.ip}`);
+        res.status(429).json({ success: false, message: 'Слишком много запросов, попробуйте позже' });
+    }
+});
+
+module.exports = limiter;
+
 const createRateLimiter = (windowMs, max, message) => {
   return rateLimit({
     store: new RedisStore({

@@ -1,118 +1,35 @@
-const NotificationRepository = require('../../db/repositories/NotificationRepository');
+// src/api/controllers/notificationController.js (Рефакторинг)
+const express = require('express');
+const router = express.Router();
+const notificationService = require('../../core/services/notificationService');
 const logger = require('../../infrastructure/logger');
-const { AppError } = require('../../infrastructure/errors');
 
-exports.getUserNotifications = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { page = 1, limit = 50, read } = req.query;
-    const notificationRepository = new NotificationRepository();
-    
-    const filter = { user: userId };
-    if (read !== undefined) {
-      filter.read = read === 'true';
+// Отправка уведомления пользователю через Telegram Mini App
+router.post('/send', async (req, res) => {
+    try {
+        const { userId, message } = req.body;
+        
+        await notificationService.sendTelegramNotification(userId, message);
+        logger.info(`Notification sent to user ${userId}`);
+        
+        res.status(200).json({ success: true });
+    } catch (error) {
+        logger.error(`Notification error: ${error.message}`);
+        res.status(500).json({ success: false, message: error.message });
     }
+});
 
-    const [notifications, total] = await Promise.all([
-      notificationRepository.findWithPagination(filter, {
-        sort: { createdAt: -1 },
-        skip: (page - 1) * limit,
-        limit: parseInt(limit)
-      }),
-      notificationRepository.count(filter)
-    ]);
-    
-    res.json({
-      notifications,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        totalNotifications: total
-      }
-    });
-  } catch (error) {
-    logger.error('Error in getUserNotifications:', error);
-    throw new AppError('Failed to fetch notifications', 500);
-  }
-};
-
-exports.markAsRead = async (req, res) => {
-  try {
-    const { notificationId } = req.params;
-    const userId = req.user.id;
-
-    const notificationRepository = new NotificationRepository();
-    const notification = await notificationRepository.findOne({
-      _id: notificationId,
-      user: userId
-    });
-
-    if (!notification) {
-      throw new AppError('Notification not found', 404);
+// Получение всех уведомлений пользователя
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const notifications = await notificationService.getUserNotifications(userId);
+        res.status(200).json({ success: true, notifications });
+    } catch (error) {
+        logger.error(`Fetch notifications error: ${error.message}`);
+        res.status(500).json({ success: false, message: error.message });
     }
+});
 
-    const updatedNotification = await notificationRepository.update(
-      notificationId,
-      { read: true }
-    );
-
-    res.json(updatedNotification);
-  } catch (error) {
-    logger.error('Error in markAsRead:', error);
-    throw new AppError(error.message, error.statusCode || 500);
-  }
-};
-
-exports.markAllAsRead = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const notificationRepository = new NotificationRepository();
-    
-    const result = await notificationRepository.updateMany(
-      { user: userId, read: false },
-      { read: true }
-    );
-
-    logger.info({
-      event: 'notifications_marked_read',
-      userId,
-      count: result.modifiedCount
-    });
-
-    res.json({ 
-      message: 'All notifications marked as read',
-      modifiedCount: result.modifiedCount
-    });
-  } catch (error) {
-    logger.error('Error in markAllAsRead:', error);
-    throw new AppError('Failed to update notifications', 500);
-  }
-};
-
-exports.deleteNotification = async (req, res) => {
-  try {
-    const { notificationId } = req.params;
-    const userId = req.user.id;
-
-    const notificationRepository = new NotificationRepository();
-    const result = await notificationRepository.deleteOne({
-      _id: notificationId,
-      user: userId
-    });
-
-    if (!result) {
-      throw new AppError('Notification not found', 404);
-    }
-
-    logger.info({
-      event: 'notification_deleted',
-      notificationId,
-      userId
-    });
-
-    res.json({ message: 'Notification deleted successfully' });
-  } catch (error) {
-    logger.error('Error in deleteNotification:', error);
-    throw new AppError(error.message, error.statusCode || 500);
-  }
-};
+module.exports = router;
