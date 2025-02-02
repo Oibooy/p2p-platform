@@ -1,5 +1,4 @@
-// src/server.js
-const express = require('express');
+
 const { monitorIncomingTransactions } = require('./services/hotWalletService');
 
 const app = express();
