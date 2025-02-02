@@ -9,7 +9,16 @@ const authenticate = (req, res, next) => {
         if (!token) {
             throw new Error('Access denied. No token provided');
         }
+
         const decoded = jwt.verify(token.replace('Bearer ', ''), config.JWT_SECRET);
+
+        // Проверяем, что IP и User-Agent соответствуют токену
+        if (decoded.ip !== req.ip || decoded.userAgent !== req.headers['user-agent']) {
+            logger.logWarn(`Session invalid for user ${decoded.id}, possible token misuse`);
+            metrics.increment('authentication.session_invalid');
+            return next({ status: 403, message: 'Сессия недействительна, выполните повторный вход' });
+        }
+
         req.user = decoded;
         metrics.increment('authentication.success');
         next();
@@ -33,3 +42,5 @@ const authorize = (roles = []) => {
 };
 
 module.exports = { authenticate, authorize };
+
+

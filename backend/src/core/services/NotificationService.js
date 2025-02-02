@@ -12,10 +12,10 @@ class NotificationService {
     async sendNotification(userId, message) {
         try {
             logger.info(`Sending notification to user ${userId}`);
-            
+
             const notification = await this.notificationRepository.create({ userId, message });
             await telegramBot.sendMessage(userId, message);
-            
+
             metrics.increment('notifications.sent');
             return notification;
         } catch (error) {

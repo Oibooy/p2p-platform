@@ -1,142 +1,33 @@
-const DealRepository = require('../../db/repositories/DealRepository');
-const OrderRepository = require('../../db/repositories/OrderRepository');
-const UserRepository = require('../../db/repositories/UserRepository');
-const logger = require('../../infrastructure/logger');
-const { AppError } = require('../../infrastructure/errors');
-const { sendNotification } = require('../../infrastructure/notifications');
-const { validateDeal } = require('../validators/dealValidator');
+// controllers/dealController.js
+const P2PService = require('../core/services/P2PService');
 
-exports.createDeal = async (req, res) => {
-  try {
+class DealController {
+  static async createOrder(req, res) {
     try {
-      const { orderId } = req.body;
-      const userId = req.user.id;
-
-      await validateDeal(req.body);
-      
-      const dealRepository = new DealRepository();
-      const orderRepository = new OrderRepository();
-
-      const dealCount = await dealRepository.countUserDeals(userId, 24);
-      if (dealCount >= 50) {
-        throw new AppError('Превышен дневной лимит сделок', 429);
-      }
-
-      const order = await orderRepository.findById(orderId);
-      if (!order) {
-        throw new AppError('Ордер не найден', 404);
-      }
-
-      if (order.status !== 'active') {
-        throw new AppError('Ордер недоступен для создания сделки', 400);
-      }
-
-    if (order.user.toString() === userId) {
-      return res.status(400).json({ error: 'Нельзя создать сделку с собственным ордером' });
+      const order = await P2PService.createOrder(req.user.id, req.body);
+      res.json({ order });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create order' });
     }
-
-    const deal = await Deal.create({
-      order: orderId,
-      buyer: order.type === 'sell' ? userId : order.user,
-      seller: order.type === 'sell' ? order.user : userId,
-      amount: order.amount,
-      price: order.price,
-      status: 'pending'
-    });
-
-    // Уведомляем участников сделки
-    await sendNotification(order.user, 'new_deal', { dealId: deal._id });
-    await sendNotification(userId, 'new_deal', { dealId: deal._id });
-
-    res.status(201).json(deal);
-  } catch (error) {
-    logger.error('Error in createDeal:', error);
-    res.status(500).json({ error: 'Ошибка при создании сделки' });
   }
-};
 
-// Получение сделок пользователя
-exports.getUserDeals = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const deals = await Deal.find({
-      $or: [{ buyer: userId }, { seller: userId }]
-    })
-    .populate('order')
-    .populate('buyer', 'username')
-    .populate('seller', 'username');
-
-    res.json(deals);
-  } catch (error) {
-    logger.error('Error in getUserDeals:', error);
-    res.status(500).json({ error: 'Ошибка при получении сделок' });
+  static async acceptOrder(req, res) {
+    try {
+      const order = await P2PService.acceptOrder(req.user.id, req.params.id);
+      res.json({ order });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to accept order' });
+    }
   }
-};
 
-// Подтверждение сделки
-exports.confirmDeal = async (req, res) => {
-  try {
-    const { dealId } = req.params;
-    const userId = req.user.id;
-
-    const deal = await Deal.findById(dealId);
-    if (!deal) {
-      return res.status(404).json({ error: 'Сделка не найдена' });
+  static async cancelOrder(req, res) {
+    try {
+      const order = await P2PService.cancelOrder(req.user.id, req.params.id);
+      res.json({ order });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to cancel order' });
     }
-
-    if (deal.buyer.toString() !== userId && deal.seller.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для подтверждения сделки' });
-    }
-
-    if (userId === deal.buyer.toString()) {
-      deal.buyerConfirmed = true;
-    } else {
-      deal.sellerConfirmed = true;
-    }
-
-    if (deal.buyerConfirmed && deal.sellerConfirmed) {
-      deal.status = 'completed';
-      // Обновляем статус ордера
-      await Order.findByIdAndUpdate(deal.order, { status: 'completed' });
-    }
-
-    await deal.save();
-    res.json(deal);
-  } catch (error) {
-    logger.error('Error in confirmDeal:', error);
-    res.status(500).json({ error: 'Ошибка при подтверждении сделки' });
   }
-};
+}
 
-// Отмена сделки
-exports.cancelDeal = async (req, res) => {
-  try {
-    const { dealId } = req.params;
-    const userId = req.user.id;
-
-    const deal = await Deal.findById(dealId);
-    if (!deal) {
-      return res.status(404).json({ error: 'Сделка не найдена' });
-    }
-
-    if (deal.buyer.toString() !== userId && deal.seller.toString() !== userId) {
-      return res.status(403).json({ error: 'Нет прав для отмены сделки' });
-    }
-
-    if (deal.status !== 'pending') {
-      return res.status(400).json({ error: 'Нельзя отменить завершенную сделку' });
-    }
-
-    deal.status = 'cancelled';
-    await deal.save();
-
-    // Уведомляем участников об отмене
-    const otherUserId = userId === deal.buyer.toString() ? deal.seller : deal.buyer;
-    await sendNotification(otherUserId, 'deal_cancelled', { dealId: deal._id });
-
-    res.json({ message: 'Сделка отменена', deal });
-  } catch (error) {
-    logger.error('Error in cancelDeal:', error);
-    res.status(500).json({ error: 'Ошибка при отмене сделки' });
-  }
-};
+module.exports = DealController;
