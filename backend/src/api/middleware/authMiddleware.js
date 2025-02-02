@@ -11,25 +11,30 @@ const cors = require('cors');
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 
+
 /**
- * Middleware для аутентификации пользователей по JWT-токену
+ * Middleware для проверки JWT-токена
  */
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     try {
         const token = req.header('Authorization');
         if (!token) {
-            throw new Error('Access denied. No token provided');
+            return res.status(401).json({ message: 'Access denied. No token provided' });
         }
+
         const decoded = jwt.verify(token.replace('Bearer ', ''), config.JWT_SECRET);
-        req.user = decoded;
-        metrics.increment('authentication.success');
+        req.user = await UserRepository.findById(decoded.userId);
+        if (!req.user) {
+            return res.status(401).json({ message: 'Invalid token. User not found' });
+        }
+
         next();
     } catch (error) {
         logger.logError(`Authentication error: ${error.message}`);
-        metrics.increment('authentication.failure');
-        next({ status: 401, message: 'Доступ запрещен. Недействительный или отсутствующий токен' });
+        return res.status(401).json({ message: 'Invalid token' });
     }
 };
+
 
 /**
  * Middleware для авторизации пользователей по ролям
