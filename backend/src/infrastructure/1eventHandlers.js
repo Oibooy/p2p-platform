@@ -2,6 +2,8 @@ const Deal = require('../db/models/Deal');
 const Notification = require('../db/models/Notification');
 const { sendWebSocketNotification } = require('./webSocket');
 const logger = require('./logger');
+const messageQueue = require('./messageQueue');
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 /**
  * Обработчик события DealCreated
@@ -37,6 +39,31 @@ async function handleDealCreated(event) {
 }
 
 /**
+ * Обработчик события DealCreated с ретраями и очередью сообщений
+ */
+async function handleDealCreated(event, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { dealId, buyer, seller, amount } = event;
+      logger.info(`✅ DealCreated: dealId=${dealId}, buyer=${buyer}, seller=${seller}, amount=${amount}`);
+
+      const deal = new Deal({ _id: dealId, buyer, seller, amount, status: 'pending' });
+      await deal.save();
+
+      await messageQueue.publish('notifications', { userId: buyer, message: 'Deal created successfully.' });
+      await messageQueue.publish('notifications', { userId: seller, message: 'You have a new deal request.' });
+
+      sendWebSocketNotification(buyer, 'deal_created', { dealId });
+      sendWebSocketNotification(seller, 'deal_created', { dealId });
+      return;
+    } catch (error) {
+      logger.error(`❌ Ошибка обработки DealCreated (попытка ${i + 1}): ${error.message}`);
+      if (i < retries - 1) await delay(5000);
+    }
+  }
+}
+
+/**
  * Обработчик события FundsReleased
  */
 async function handleFundsReleased(event) {
@@ -60,6 +87,26 @@ async function handleFundsReleased(event) {
     sendWebSocketNotification(seller, 'funds_released', { dealId });
   } catch (error) {
     logger.error(`Error handling FundsReleased event: ${error.message}`);
+  }
+}
+
+/**
+ * Обработчик события FundsReleased с ретраями
+ */
+async function handleFundsReleased(event, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { dealId, seller, amount } = event;
+      logger.info(`✅ FundsReleased: dealId=${dealId}, seller=${seller}, amount=${amount}`);
+
+      await Deal.findByIdAndUpdate(dealId, { status: 'completed' });
+      await messageQueue.publish('notifications', { userId: seller, message: `Funds released: ${amount}` });
+      sendWebSocketNotification(seller, 'funds_released', { dealId, amount });
+      return;
+    } catch (error) {
+      logger.error(`❌ Ошибка обработки FundsReleased (попытка ${i + 1}): ${error.message}`);
+      if (i < retries - 1) await delay(5000);
+    }
   }
 }
 
@@ -112,3 +159,10 @@ module.exports = {
   handleFundsReleased,
   handleFundsRefunded,
 };
+
+
+
+
+
+
+

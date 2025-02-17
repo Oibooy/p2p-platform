@@ -1,11 +1,12 @@
-// infrastructure/metrics.js
 const promClient = require('prom-client');
+const express = require('express');
+const logger = require('./logger');
 
 class Metrics {
     constructor() {
         this.register = new promClient.Registry();
         promClient.collectDefaultMetrics({ register: this.register });
-        
+
         this.metrics = {
             disputesCreated: new promClient.Counter({
                 name: 'disputes_created_total',
@@ -27,14 +28,10 @@ class Metrics {
                 help: 'Total number of failed authentications',
                 registers: [this.register]
             }),
-            withdrawalsSuccess: new promClient.Counter({
-                name: 'wallet_withdraw_success_total',
-                help: 'Total number of successful withdrawals',
-                registers: [this.register]
-            }),
-            withdrawalsFailure: new promClient.Counter({
-                name: 'wallet_withdraw_failure_total',
-                help: 'Total number of failed withdrawals',
+            transactionTime: new promClient.Histogram({
+                name: 'transaction_processing_time_seconds',
+                help: 'Time taken for transactions to complete',
+                buckets: [0.1, 0.5, 1, 2, 5, 10],
                 registers: [this.register]
             })
         };
@@ -46,9 +43,24 @@ class Metrics {
         }
     }
 
+    observeTransactionTime(duration) {
+        this.metrics.transactionTime.observe(duration);
+    }
+
     getMetrics() {
         return this.register.metrics();
     }
 }
 
-module.exports = new Metrics();
+const metricsInstance = new Metrics();
+const metricsApp = express();
+metricsApp.get('/metrics', async (req, res) => {
+    res.set('Content-Type', promClient.register.contentType);
+    res.end(await metricsInstance.getMetrics());
+});
+
+metricsApp.listen(9100, () => {
+    logger.info('✅ Prometheus metrics сервер запущен на порту 9100');
+});
+
+module.exports = metricsInstance;

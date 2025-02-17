@@ -1,24 +1,33 @@
 const mongoose = require('mongoose');
 const logger = require('../infrastructure/logger');
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-const connectDB = async () => {
+const connectDB = async (retries = 5) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000,
+        maxPoolSize: 10,
+      });
+      logger.info('✅ MongoDB успешно подключена');
+      return;
+    } catch (err) {
+      logger.error(`❌ Ошибка подключения к MongoDB (попытка ${i + 1}): ${err.message}`);
+      if (i < retries - 1) await delay(5000);
+    }
+  }
+  process.exit(1);
+};
+
+const disconnectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000
-    });
-    logger.info('MongoDB успешно подключена');
+    await mongoose.disconnect();
+    logger.info('🔴 Соединение с MongoDB закрыто');
   } catch (err) {
-    logger.error(`Ошибка подключения к MongoDB: ${err.message}`);
-    process.exit(1);
+    logger.error(`Ошибка при отключении от MongoDB: ${err.message}`);
   }
 };
 
-module.exports = connectDB;
-// src/config.js
-require('dotenv').config();
-
-module.exports = {
-    JWT_SECRET: process.env.JWT_SECRET,
-    USDT_TOKEN_ADDRESS: process.env.USDT_TOKEN_ADDRESS,
-    TRON_PRIVATE_KEY: process.env.TRON_PRIVATE_KEY
-};
+module.exports = { connectDB, disconnectDB };

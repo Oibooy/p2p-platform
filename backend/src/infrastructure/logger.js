@@ -1,5 +1,9 @@
 const { createLogger, format, transports } = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
+const Sentry = require('@sentry/node');
+
+// Инициализация Sentry для мониторинга ошибок
+Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const logger = createLogger({
   level: 'info',
@@ -17,5 +21,9 @@ const logger = createLogger({
   ],
 });
 
-module.exports = logger;
+// Логирование критических ошибок в Sentry
+logger.on('error', (error) => {
+  Sentry.captureException(error);
+});
 
+module.exports = logger;

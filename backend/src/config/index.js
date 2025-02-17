@@ -1,28 +1,36 @@
+require('dotenv').config();
+
 const config = {
-  mongo_uri: process.env.MONGO_URI || 'mongodb+srv://kerimkulonesoul:Ola2z0fUVCiZcYgX@cluster0.f5ce1.mongodb.net/p2p_platform?retryWrites=true&w=majority&appName=Cluster0',
+  mongo_uri: process.env.MONGO_URI,
+  redis_url: process.env.REDIS_URL,
   node_env: process.env.NODE_ENV || 'development',
-  disable_web: process.env.DISABLE_WEB || 'false',
   port: process.env.PORT || '5000',
   host: process.env.HOST || '0.0.0.0',
-  frontend_url: process.env.FRONTEND_URL || 'http://0.0.0.0:5173',
-  jwt_secret: process.env.JWT_SECRET || 'your_jwt_secret_here',
-  jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || 'your_refresh_secret_here',
-  redis_url: process.env.REDIS_URL || '$REDIS_URL',
-  email_confirmation_enabled: process.env.EMAIL_CONFIRMATION_ENABLED || 'false',
-  email_user: process.env.EMAIL_USER || 'dulatssshah@gmail.com',
-  email_app_password: process.env.EMAIL_APP_PASSWORD || 'ydjb tnnb kedz rwum',
-  email_from_name: process.env.EMAIL_FROM_NAME || 'p2p',
-  mtt_rpc_url: process.env.MTT_RPC_URL || 'https://evm-rpc.mtt.network',
-  mtt_private_key: process.env.MTT_PRIVATE_KEY || 'd63bfdf0b5715f458ade8431fb2a678bc184eae34c9143bce2765a2627d2fccf',
-  mtt_escrow_address: process.env.MTT_ESCROW_ADDRESS || '0x2D60963d23928a2f311e673Aea04f3565E592687',
-  mtt_commission_wallet_address: process.env.MTT_COMMISSION_WALLET_ADDRESS || '0xd8A90e19D0C53Ad7e0f93D935E2E4A4044D3A62E',
-  tron_api_url: process.env.TRON_API_URL || 'https://nile.trongrid.io',
-  tron_escrow_address: process.env.TRON_ESCROW_ADDRESS || 'TAMxAMGSvVSJ1YAHK65ncBDymZBMNKb1pu',
-  tron_private_key: process.env.TRON_PRIVATE_KEY || '74b6c3dcc9c6d766ec0a57c3eed3e3b4039c420f37898b61df3fc7cec0d366ce',
-  tron_commission_wallet_address: process.env.TRON_COMMISSION_WALLET_ADDRESS || 'TJqLzXmKes3wwD4Mm3SrRMQ6KPALzWGzBA',
-  usdt_token_address: process.env.USDT_TOKEN_ADDRESS || 'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
-  telegram_bot_token: process.env.TELEGRAM_BOT_TOKEN || 'your_telegram_bot_token',
-  telegram_chat_id: process.env.TELEGRAM_CHAT_ID || 'your_telegram_chat_id',
+  frontend_url: process.env.FRONTEND_URL,
+
+  // Безопасность
+  jwt_secret: process.env.JWT_SECRET,
+  jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
+
+  // Blockchain
+  mtt_rpc_url: process.env.MTT_RPC_URL,
+  mtt_escrow_address: process.env.MTT_ESCROW_ADDRESS,
+  tron_api_url: process.env.TRON_API_URL,
+  tron_escrow_address: process.env.TRON_ESCROW_ADDRESS,
+  usdt_token_address: process.env.USDT_TOKEN_ADDRESS,
+
+  // Telegram
+  telegram_bot_token: process.env.TELEGRAM_BOT_TOKEN,
+  telegram_chat_id: process.env.TELEGRAM_CHAT_ID,
+
+  // Email
+  email_user: process.env.EMAIL_USER,
+  email_from_name: process.env.EMAIL_FROM_NAME,
+  email_confirmation_enabled: process.env.EMAIL_CONFIRMATION_ENABLED === 'true',
 };
+
+if (!config.mongo_uri || !config.jwt_secret || !config.tron_api_url) {
+  throw new Error('❌ Ошибка: Отсутствуют критические переменные окружения! Проверьте .env');
+}
 
 module.exports = config;

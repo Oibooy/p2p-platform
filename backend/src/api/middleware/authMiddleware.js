@@ -1,46 +1,45 @@
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
-const logger = require('../services/loggingService');
-const metrics = require('../services/metricsService');
+const logger = require('../../infrastructure/logger');
+const redisClient = require('../../infrastructure/redisClient');
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     try {
         const token = req.header('Authorization');
         if (!token) {
-            throw new Error('Access denied. No token provided');
+            return res.status(401).json({ success: false, message: 'Нет токена, доступ запрещён' });
         }
 
-        const decoded = jwt.verify(token.replace('Bearer ', ''), config.JWT_SECRET);
+        const decoded = jwt.verify(token.replace('Bearer ', ''), config.jwt_secret);
 
-        // Проверяем, что IP и User-Agent соответствуют токену
+        // Проверяем, заблокирован ли токен в Redis (например, после выхода пользователя)
+        const isBlacklisted = await redisClient.get(`blacklist:${decoded.id}`);
+        if (isBlacklisted) {
+            return res.status(403).json({ success: false, message: 'Токен недействителен, выполните повторный вход' });
+        }
+
+        // Проверяем IP и User-Agent, чтобы предотвратить кражу сессии
         if (decoded.ip !== req.ip || decoded.userAgent !== req.headers['user-agent']) {
-            logger.logWarn(`Session invalid for user ${decoded.id}, possible token misuse`);
-            metrics.increment('authentication.session_invalid');
-            return next({ status: 403, message: 'Сессия недействительна, выполните повторный вход' });
+            logger.warn(`🚨 Подозрительная сессия для пользователя ${decoded.id}, возможное использование токена`);
+            return res.status(403).json({ success: false, message: 'Сессия недействительна, выполните повторный вход' });
         }
 
         req.user = decoded;
-        metrics.increment('authentication.success');
         next();
     } catch (error) {
-        logger.logError(`Authentication error: ${error.message}`);
-        metrics.increment('authentication.failure');
-        next({ status: 401, message: 'Доступ запрещен. Недействительный или отсутствующий токен' });
+        logger.error(`❌ Ошибка аутентификации: ${error.message}`);
+        return res.status(401).json({ success: false, message: 'Недействительный или истёкший токен' });
     }
 };
 
 const authorize = (roles = []) => {
     return (req, res, next) => {
         if (!req.user || !roles.includes(req.user.role)) {
-            logger.logWarn(`Access denied. User role: ${req.user ? req.user.role : 'Unknown'}`);
-            metrics.increment('authorization.failure');
-            return next({ status: 403, message: 'Доступ запрещен. Недостаточно прав' });
+            logger.warn(`🚫 Доступ запрещён: ${req.user ? req.user.role : 'Неизвестный пользователь'}`);
+            return res.status(403).json({ success: false, message: 'Недостаточно прав' });
         }
-        metrics.increment('authorization.success');
         next();
     };
 };
 
 module.exports = { authenticate, authorize };
-
-

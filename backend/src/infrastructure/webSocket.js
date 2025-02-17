@@ -1,11 +1,23 @@
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const logger = require('./logger');
+const redis = require('redis');
 
 // Конфигурация WebSocket сервера
 const webSocketServer = new WebSocket.Server({ noServer: true });
 const clients = new Map(); // Хранение подключённых клиентов
 const messageRateLimits = new Map(); // Лимиты сообщений по клиентам
+const pub = redis.createClient();
+const sub = redis.createClient();
+
+// Подписка на канал сообщений
+sub.subscribe('websocket_messages');
+sub.on('message', (channel, message) => {
+  const { userId, type, payload } = JSON.parse(message);
+  if (clients.has(userId)) {
+    sendMessage(clients.get(userId), type, payload);
+  }
+});
 
 // Максимальное количество сообщений в минуту
 const MAX_MESSAGES_PER_MINUTE = 20;
@@ -59,26 +71,32 @@ function handleMessage(userId, message) {
   }
 }
 
-// Обработка подключений
-webSocketServer.on('connection', async (ws, req) => {
+// Обработка подключения
+webSocketServer.on('connection', (ws, req) => {
   try {
-    ws.isAlive = true;
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    
-    // Добавляем обработку ошибок соединения
-    ws.on('error', (error) => {
-      logger.error(`WebSocket error: ${error.message}`);
-      ws.terminate();
+    const token = req.headers['sec-websocket-protocol'];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    clients.set(decoded.userId, ws);
+
+    logger.info(`✅ WebSocket подключён: ${decoded.userId}`);
+
+    ws.on('message', (message) => {
+      if (isRateLimited(decoded.userId)) {
+        return;
+      }
+      pub.publish('websocket_messages', JSON.stringify({ userId: decoded.userId, message }));
     });
-    
-    // Добавляем heartbeat
-    ws.on('pong', () => {
-      ws.isAlive = true;
+
+    ws.on('close', () => {
+      clients.delete(decoded.userId);
+      logger.info(`❌ WebSocket отключён: ${decoded.userId}`);
     });
-    ws.isAlive = true;
-    ws.on('pong', () => {
-      ws.isAlive = true;
-    });
+  } catch (error) {
+    logger.error(`❌ Ошибка аутентификации WebSocket: ${error.message}`);
+    ws.close();
+  }
+});
+
     
     // Ping every 30 seconds
     const interval = setInterval(() => {
@@ -164,4 +182,4 @@ function notifyDealUpdate(dealId, buyerId, sellerId, status, additionalData = {}
   sendWebSocketNotification(sellerId, 'deal_update', notification);
 }
 
-module.exports = { webSocketServer, notifyUser, broadcast, sendWebSocketNotification, notifyDealUpdate };
+module.exports = { webSocketServer, notifyUser, broadcast, sendWebSocketNotification, notifyDealUpdate, handleMessage, isRateLimited };
